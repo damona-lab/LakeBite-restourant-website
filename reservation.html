@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reserve a Table — LakeBite Nairobi</title>
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a><a href="about.html">About</a>
+        <a href="menu.html">Menu</a><a href="gallery.html">Gallery</a>
+        <a href="reservation.html" class="active">Reservations</a><a href="contact.html">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button class="cart-btn"><i class="fa-solid fa-bag-shopping"></i><span class="cart-count">0</span></button>
+        <button class="theme-btn"><i class="fa-solid fa-moon"></i></button>
+        <button class="mobile-menu-btn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+  <nav class="mobile-nav">
+    <a href="index.html">Home</a><a href="about.html">About</a>
+    <a href="menu.html">Menu</a><a href="gallery.html">Gallery</a>
+    <a href="reservation.html" class="active">Reservations</a><a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="page-banner">
+    <img src="imege/caption (11).jpg" alt="LakeBite reservation view">
+    <div class="page-banner-overlay"></div>
+    <div class="page-banner-content">
+      <h1>Reserve a Table</h1>
+      <p>Secure your perfect dining experience at LakeBite</p>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ═══ BOOKING SECTION ═══ -->
+    <section class="section">
+      <div class="container">
+        <div class="reservation-layout">
+
+          <!-- Form -->
+          <div class="res-form-wrap reveal-left">
+            <div class="res-form-header">
+              <span class="section-label">Book Your Table</span>
+              <h2 class="section-title">Make a Reservation</h2>
+              <div class="divider"></div>
+              <p>Fill in the form below and we'll confirm your booking within 2 hours via phone or email.</p>
+            </div>
+
+            <form class="res-form" id="resForm" onsubmit="handleReservation(event)">
+              <div class="res-form-grid">
+                <div class="form-group">
+                  <label for="res-fname">First Name</label>
+                  <input type="text" id="res-fname" class="form-control" placeholder="e.g. Amara" required>
+                </div>
+                <div class="form-group">
+                  <label for="res-lname">Last Name</label>
+                  <input type="text" id="res-lname" class="form-control" placeholder="e.g. Ochieng" required>
+                </div>
+                <div class="form-group">
+                  <label for="res-email">Email Address</label>
+                  <input type="email" id="res-email" class="form-control" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                  <label for="res-phone">Phone Number</label>
+                  <input type="tel" id="res-phone" class="form-control" placeholder="+254 7XX XXX XXX" required>
+                </div>
+                <div class="form-group">
+                  <label for="res-date">Preferred Date</label>
+                  <input type="date" id="res-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="res-time">Preferred Time</label>
+                  <select id="res-time" class="form-control" required>
+                    <option value="">Select time...</option>
+                    <option>11:00 AM</option>
+                    <option>11:30 AM</option>
+                    <option>12:00 PM</option>
+                    <option>12:30 PM</option>
+                    <option>1:00 PM</option>
+                    <option>1:30 PM</option>
+                    <option>2:00 PM</option>
+                    <option>2:30 PM</option>
+                    <option>6:00 PM</option>
+                    <option>6:30 PM</option>
+                    <option>7:00 PM</option>
+                    <option>7:30 PM</option>
+                    <option>8:00 PM</option>
+                    <option>8:30 PM</option>
+                    <option>9:00 PM</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="res-guests">Number of Guests</label>
+                  <select id="res-guests" class="form-control" required>
+                    <option value="">Select guests...</option>
+                    <option>1 Guest</option>
+                    <option>2 Guests</option>
+                    <option>3 Guests</option>
+                    <option>4 Guests</option>
+                    <option>5 Guests</option>
+                    <option>6 Guests</option>
+                    <option>7–10 Guests</option>
+                    <option>10+ Guests (Event)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="res-room">Preferred Room</label>
+                  <select id="res-room" class="form-control">
+                    <option>No preference</option>
+                    <option>Main Dining Hall</option>
+                    <option>VIP Conservatory</option>
+                    <option>Open-Air Terrace</option>
+                    <option>Family Dining Room</option>
+                    <option>Private Event Room</option>
+                  </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                  <label for="res-occasion">Special Occasion (optional)</label>
+                  <input type="text" id="res-occasion" class="form-control"
+                    placeholder="e.g. Birthday, Anniversary, Business Dinner...">
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                  <label for="res-notes">Special Requests</label>
+                  <textarea id="res-notes" class="form-control"
+                    placeholder="Dietary requirements, seating preferences, decorations..."></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary res-submit-btn">
+                <i class="fa-regular fa-calendar-check"></i> Confirm Reservation
+              </button>
+            </form>
+
+            <div class="res-success" id="resSuccess" style="display:none">
+              <div class="res-success-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <h3>Reservation Received!</h3>
+              <p>Thank you for choosing LakeBite. We'll confirm your booking within 2 hours at the email and phone
+                number you provided. We can't wait to host you!</p>
+              <a href="menu.html" class="btn btn-outline" style="margin-top:1.5rem">Browse Our Menu</a>
+            </div>
+          </div>
+
+          <!-- Side Info -->
+          <div class="res-info-col reveal-right">
+            <!-- Policy card -->
+            <div class="res-info-card">
+              <h4><i class="fa-solid fa-circle-info"></i> Booking Policy</h4>
+              <ul class="res-policy-list">
+                <li><i class="fa-solid fa-check"></i> Reservations available up to 30 days in advance</li>
+                <li><i class="fa-solid fa-check"></i> Please arrive within 15 minutes of your booking time</li>
+                <li><i class="fa-solid fa-check"></i> Cancellations require 24-hour notice</li>
+                <li><i class="fa-solid fa-check"></i> Smart casual dress code applies to all rooms</li>
+                <li><i class="fa-solid fa-check"></i> Events of 10+ guests require a deposit</li>
+              </ul>
+            </div>
+
+            <!-- Contact card -->
+            <div class="res-info-card">
+              <h4><i class="fa-solid fa-phone"></i> Call to Reserve</h4>
+              <p style="font-size:0.9rem;color:var(--clr-text-sub);margin-bottom:0.8rem">Prefer to book by phone? Call
+                us directly:</p>
+              <a href="tel:+254700000000" class="res-phone-link">+254 700 000 000</a>
+              <p style="font-size:0.8rem;color:var(--clr-text-sub);margin-top:0.5rem">Mon–Thu: 9am–9pm · Fri–Sun:
+                9am–11pm</p>
+            </div>
+
+            <!-- Hours -->
+            <div class="res-info-card">
+              <h4><i class="fa-regular fa-clock"></i> Opening Hours</h4>
+              <div class="hours-row"><span>Monday – Thursday</span><span>11:00 AM – 10:00 PM</span></div>
+              <div class="hours-row"><span>Friday – Saturday</span><span>11:00 AM – 12:00 AM</span></div>
+              <div class="hours-row"><span>Sunday</span><span>10:00 AM – 9:00 PM</span></div>
+              <div class="hours-row highlight"><span>Kitchen Closes</span><span>30 min before closing</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ ROOMS ═══ -->
+    <section class="section rooms-section">
+      <div class="container">
+        <div class="section-header reveal" style="text-align:center">
+          <span class="section-label">Where You'll Dine</span>
+          <h2 class="section-title">Choose Your Space</h2>
+          <div class="divider divider-center"></div>
+        </div>
+        <div class="rooms-grid">
+          <div class="room-card reveal">
+            <div class="room-card-img"><img src="imege/caption (10).jpg" alt="Main Hall">
+              <div class="room-cap-badge">160 Guests</div>
+            </div>
+            <div class="room-card-body">
+              <h3>The Main Hall</h3>
+              <p>Our grand, light-filled principal dining room featuring soaring ceilings, locally crafted timber
+                furnishings, and curated East African artwork. Perfect for every occasion.</p>
+              <ul class="room-features">
+                <li><i class="fa-solid fa-check"></i> Seats up to 160 guests</li>
+                <li><i class="fa-solid fa-check"></i> Full table service</li>
+                <li><i class="fa-solid fa-check"></i> Live music on weekends</li>
+              </ul>
+            </div>
+          </div>
+          <div class="room-card reveal" style="transition-delay:0.1s">
+            <div class="room-card-img"><img src="imege/caption (13).jpg" alt="VIP Conservatory">
+              <div class="room-cap-badge room-cap-badge--gold">VIP</div>
+            </div>
+            <div class="room-card-body">
+              <h3>VIP Conservatory</h3>
+              <p>An intimate glass-ceilinged sanctuary ideal for romantic dinners, milestone celebrations, and exclusive
+                gatherings. Bespoke service, privacy, and luxury at every turn.</p>
+              <ul class="room-features">
+                <li><i class="fa-solid fa-check"></i> Seats 10–30 guests</li>
+                <li><i class="fa-solid fa-check"></i> Private butler service</li>
+                <li><i class="fa-solid fa-check"></i> Customisable décor</li>
+              </ul>
+            </div>
+          </div>
+          <div class="room-card reveal" style="transition-delay:0.2s">
+            <div class="room-card-img"><img src="imege/restaurant-interior-entrance.jpg" alt="Open Air Terrace">
+              <div class="room-cap-badge">90 Guests</div>
+            </div>
+            <div class="room-card-body">
+              <h3>Open-Air Terrace</h3>
+              <p>Al-fresco dining under Nairobi's famous sky, with live charcoal grill stations, fire pit seating, and
+                sweeping views. Our most popular evening destination.</p>
+              <ul class="room-features">
+                <li><i class="fa-solid fa-check"></i> Seats up to 90 guests</li>
+                <li><i class="fa-solid fa-check"></i> Live grill experience</li>
+                <li><i class="fa-solid fa-check"></i> Weather-covered canopy</li>
+              </ul>
+            </div>
+          </div>
+          <div class="room-card reveal" style="transition-delay:0.3s">
+            <div class="room-card-img"><img src="imege/jiko.jpg" alt="Family Room">
+              <div class="room-cap-badge">Family</div>
+            </div>
+            <div class="room-card-body">
+              <h3>Family Dining Room</h3>
+              <p>Designed for families with young children — spacious, relaxed, and close to our dedicated children's
+                play area. Kids' menu and high chairs available.</p>
+              <ul class="room-features">
+                <li><i class="fa-solid fa-check"></i> Children's play corner</li>
+                <li><i class="fa-solid fa-check"></i> High chairs & kids' menu</li>
+                <li><i class="fa-solid fa-check"></i> Seats up to 50 guests</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
+          <p>A culinary journey celebrating Kenya's rich flavours.</p>
+          <div class="social-links">
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i
+                class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a><a href="#"><i class="fa-brands fa-tiktok"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="reservation.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Opening Hours</h4>
+          <ul>
+            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Mon–Thu: 11am–10pm</li>
+            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Fri–Sat: 11am–12am</li>
+            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Sunday: 10am–9pm</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Find Us</h4>
+          <div class="footer-contact-item"><i class="fa-solid fa-location-dot"></i><span>Westlands, Nairobi</span></div>
+          <div class="footer-contact-item"><i class="fa-solid fa-phone"></i><span>+254 700 000 000</span></div>
+          <div class="footer-contact-item"><i class="fa-solid fa-envelope"></i><span>hello@lakebite.co.ke</span></div>
+        </div>
+      </div>
+      <div class="footer-bottom"><span>© 2025 LakeBite Restaurant. All rights reserved.</span><span>Crafted with love in
+          Nairobi 🇰🇪</span></div>
+    </div>
+  </footer>
+  <div class="cart-overlay"></div>
+  <div class="cart-drawer">
+    <div class="cart-drawer-header">
+      <h3>Your Order</h3><button class="cart-close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total"><span>Total</span><span class="total-price">KES 0</span></div>
+      <button class="btn btn-primary checkout-btn" style="width:100%;justify-content:center"><i
+          class="fa-solid fa-lock"></i> Checkout</button>
+    </div>
+  </div>
+  <div class="toast"></div>
+  <script src="script.js"></script>
+  <script>
+    function handleReservation(e) {
+      e.preventDefault();
+      document.getElementById('resForm').style.display = 'none';
+      document.getElementById('resSuccess').style.display = 'flex';
+    }
+    // Set min date to today
+    document.getElementById('res-date').min = new Date().toISOString().split('T')[0];
+  </script>
+
+  <style>
+    /* ═══ Reservation Page Styles ═══ */
+    .reservation-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 4rem;
+      align-items: flex-start;
+    }
+
+    .res-form-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .res-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .res-submit-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .res-success {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .res-success-icon {
+      font-size: 3.5rem;
+      color: var(--clr-gold);
+      margin-bottom: 1.2rem;
+    }
+
+    .res-success h3 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .res-success p {
+      color: var(--clr-text-sub);
+      font-size: 0.95rem;
+      line-height: 1.8;
+      max-width: 400px;
+    }
+
+    .res-info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+    }
+
+    .res-info-card {
+      background: var(--clr-card);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+
+    .res-info-card h4 {
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--clr-gold);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .res-policy-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .res-policy-list li {
+      display: flex;
+      gap: 0.6rem;
+      font-size: 0.86rem;
+      color: var(--clr-text-sub);
+    }
+
+    .res-policy-list i {
+      color: var(--clr-gold);
+      margin-top: 3px;
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+
+    .res-phone-link {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--clr-gold);
+      font-weight: 600;
+    }
+
+    .hours-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--clr-border);
+      color: var(--clr-text-sub);
+    }
+
+    .hours-row:last-child {
+      border-bottom: none;
+    }
+
+    .hours-row.highlight span {
+      color: var(--clr-gold);
+      font-weight: 500;
+    }
+
+    .rooms-section {
+      background: var(--clr-bg3);
+    }
+
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .room-card {
+      background: var(--clr-card);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: all var(--transition);
+    }
+
+    .room-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .room-card-img {
+      position: relative;
+      height: 200px;
+      background: var(--clr-bg3);
+      overflow: hidden;
+    }
+
+    .room-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .room-card:hover .room-card-img img {
+      transform: scale(1.06);
+    }
+
+    .room-cap-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--clr-primary);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.7rem;
+      border-radius: 50px;
+    }
+
+    .room-cap-badge--gold {
+      background: var(--clr-gold);
+    }
+
+    .room-card-body {
+      padding: 1.3rem;
+    }
+
+    .room-card-body h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .room-card-body p {
+      font-size: 0.84rem;
+      color: var(--clr-text-sub);
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+
+    .room-features {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .room-features li {
+      display: flex;
+      gap: 0.55rem;
+      font-size: 0.82rem;
+      color: var(--clr-text-sub);
+    }
+
+    .room-features i {
+      color: var(--clr-gold);
+      font-size: 0.72rem;
+      margin-top: 4px;
+    }
+
+    @media(max-width:1100px) {
+      .reservation-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .res-info-col {
+        position: static;
+      }
+    }
+
+    @media(max-width:900px) {
+      .rooms-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media(max-width:640px) {
+      .res-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .res-form-grid .form-group[style*="span 2"] {
+        grid-column: span 1;
+      }
+
+      .rooms-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</body>
+
+</html>

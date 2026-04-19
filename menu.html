@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu — LakeBite Nairobi</title>
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a><a href="about.html">About</a>
+        <a href="menu.html" class="active">Menu</a><a href="gallery.html">Gallery</a>
+        <a href="reservation.html">Reservations</a><a href="contact.html">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button class="cart-btn" aria-label="Open cart"><i class="fa-solid fa-bag-shopping"></i><span
+            class="cart-count">0</span></button>
+        <button class="theme-btn" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+        <button class="mobile-menu-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+  <nav class="mobile-nav">
+    <a href="index.html">Home</a><a href="about.html">About</a>
+    <a href="menu.html" class="active">Menu</a><a href="gallery.html">Gallery</a>
+    <a href="reservation.html">Reservations</a><a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="page-banner">
+    <img src="imege/caption (10).jpg" alt="Colourful menu dishes at LakeBite">
+    <div class="page-banner-overlay"></div>
+    <div class="page-banner-content">
+      <h1>Our Menu</h1>
+      <p>Fresh ingredients, bold flavours, and culinary artistry — all in one place</p>
+    </div>
+  </div>
+
+  <main>
+    <section class="section">
+      <div class="container">
+
+        <!-- Category Filter Tabs -->
+        <div class="menu-tabs reveal">
+          <button class="tab-btn active" data-cat="all">All</button>
+          <button class="tab-btn" data-cat="kenyan">🇰🇪 Kenyan</button>
+          <button class="tab-btn" data-cat="fastfood">🍔 Fast Food</button>
+          <button class="tab-btn" data-cat="seafood">🐟 Seafood</button>
+          <button class="tab-btn" data-cat="vegetarian">🥗 Vegetarian</button>
+          <button class="tab-btn" data-cat="desserts">🍰 Desserts</button>
+          <button class="tab-btn" data-cat="drinks">🍹 Drinks</button>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="menu-grid" id="menuGrid">
+
+          <!-- ──────── KENYAN ──────── -->
+          <div class="menu-card reveal" data-cat="kenyan">
+            <div class="mc-img"><img src="imege/kondoo-mchuzi.jpg" alt="Nyama Choma">
+              <div class="mc-badge">Signature</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Local Kenyan</div>
+              <h3>Nyama Choma Platter</h3>
+              <p>Slow-grilled goat ribs marinated in East African spices, served with kachumbari, ugali & sukuma wiki
+              </p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 2,400</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="nc-platter" data-name="Nyama Choma Platter"
+                  data-price="2400"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="kenyan" style="transition-delay:0.05s">
+            <div class="mc-img"><img src="" alt="Ugali with Sukuma Wiki"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Local Kenyan</div>
+              <h3>Ugali & Sukuma Wiki</h3>
+              <p>Stone-ground maize ugali paired with sautéed collard greens in garlic and tomato, served with your
+                choice of protein</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 650</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="ugali-sukuma" data-name="Ugali & Sukuma Wiki"
+                  data-price="650"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="kenyan" style="transition-delay:0.1s">
+            <div class="mc-img"><img src="imege/caption.jpg" alt="Swahili Pilau"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Local Kenyan</div>
+              <h3>Swahili Pilau</h3>
+              <p>Aromatic basmati rice slow-cooked with cumin, cardamom, and tender beef, garnished with crispy fried
+                onions</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,200</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="pilau" data-name="Swahili Pilau"
+                  data-price="1200"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="kenyan">
+            <div class="mc-img"><img src="" alt="Githeri Bowl">
+              <div class="mc-badge mc-badge--veg">Vegan</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Local Kenyan</div>
+              <h3>Heritage Githeri Bowl</h3>
+              <p>Classic mix of maize and beans slow-simmered with tomatoes, onions, and traditional spices — a Kenyan
+                staple elevated</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 750</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="githeri" data-name="Heritage Githeri Bowl"
+                  data-price="750"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="kenyan">
+            <div class="mc-img"><img src="imege/best-in-class-food-and.jpg" alt="Mutura"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Local Kenyan</div>
+              <h3>Artisan Mutura</h3>
+              <p>Kenyan blood sausage crafted with our own blend of herbs, char-grilled and served with fresh kachumbari
+                and chilli sauce</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 900</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="mutura" data-name="Artisan Mutura"
+                  data-price="900"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="kenyan">
+            <div class="mc-img"><img src="" alt="Irio"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Local Kenyan</div>
+              <h3>Kikuyu Irio & Lamb Chops</h3>
+              <p>Mashed potatoes blended with green peas and corn, served alongside herb-marinated grilled lamb chops
+              </p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,900</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="irio-lamb" data-name="Kikuyu Irio & Lamb Chops"
+                  data-price="1900"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ──────── FAST FOOD ──────── -->
+          <div class="menu-card reveal" data-cat="fastfood">
+            <div class="mc-img"><img src="imege/jiko-authentically-uplifts.jpg" alt="LakeBite Signature Burger">
+              <div class="mc-badge">Best Seller</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Fast Food</div>
+              <h3>LakeBite Signature Burger</h3>
+              <p>Double beef patty with aged cheddar, caramelised onions, avocado, and our house LB sauce on a brioche
+                bun</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,100</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="lb-burger"
+                  data-name="LakeBite Signature Burger" data-price="1100"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="fastfood">
+            <div class="mc-img"><img src="imege/caption (7).jpg" alt="Loaded Fries"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Fast Food</div>
+              <h3>Loaded Fries</h3>
+              <p>Thick-cut fries topped with pulled beef, jalapeños, melted cheese, sour cream, and spring onions</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 750</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="loaded-fries" data-name="Loaded Fries"
+                  data-price="750"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="fastfood">
+            <div class="mc-img"><img src="" alt="Wood-fired Pizza Margherita"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Fast Food</div>
+              <h3>Suruali Wood-Fired Pizza</h3>
+              <p>San Marzano tomato base, buffalo mozzarella, fresh basil, drizzled with Kenyan olive oil — baked in our
+                wood-fire oven</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,350</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="pizza" data-name="Suruali Wood-Fired Pizza"
+                  data-price="1350"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="fastfood">
+            <div class="mc-img"><img src="imege/caption (6).jpg" alt="Crispy Chicken Wrap"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Fast Food</div>
+              <h3>Crispy Chicken Wrap</h3>
+              <p>Buttermilk-fried chicken breast, shredded cabbage, pickled onions, and chipotle mayo in a warm tortilla
+              </p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 850</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="chicken-wrap" data-name="Crispy Chicken Wrap"
+                  data-price="850"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ──────── SEAFOOD ──────── -->
+          <div class="menu-card reveal" data-cat="seafood">
+            <div class="mc-img"><img src="imege/tomahawk-wagyu.jpg" alt="Whole Tilapia Fillet">
+              <div class="mc-badge mc-badge--gold">Chef's Pick</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Seafood</div>
+              <h3>Whole Tilapia Fillet</h3>
+              <p>Victoria Lake tilapia pan-seared in herb butter, with coconut rice, grilled plantain, and tamarind
+                chutney</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,850</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="tilapia" data-name="Whole Tilapia Fillet"
+                  data-price="1850"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="seafood">
+            <div class="mc-img"><img src="imege/food.jpg" alt="Nile Perch Curry"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Seafood</div>
+              <h3>Nile Perch Swahili Curry</h3>
+              <p>Tender Nile perch cooked in a rich coconut and tomato curry with turmeric, coriander, and fresh curry
+                leaves</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 2,100</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="perch-curry"
+                  data-name="Nile Perch Swahili Curry" data-price="2100"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="seafood">
+            <div class="mc-img"><img src="imege/tomahawk-wagyu.jpg" alt="Grilled Prawns"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Seafood</div>
+              <h3>Mombasa Grilled Prawns</h3>
+              <p>Tiger prawns marinated in lemon, garlic, and pilipili mboga, char-grilled and served with avocado salsa
+              </p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 2,800</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="prawns" data-name="Mombasa Grilled Prawns"
+                  data-price="2800"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="seafood">
+            <div class="mc-img"><img src="" alt="Octopus Salad"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Seafood</div>
+              <h3>Slow-Cooked Octopus</h3>
+              <p>Slow-braised octopus tentacle, charred on the grill, with lemon oil, capers, olive salsa, and herbed
+                potato</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 3,200</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="octopus" data-name="Slow-Cooked Octopus"
+                  data-price="3200"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ──────── VEGETARIAN ──────── -->
+          <div class="menu-card reveal" data-cat="vegetarian">
+            <div class="mc-img"><img src="" alt="Kenyan Veggie Bowl">
+              <div class="mc-badge mc-badge--veg">Vegan</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Vegetarian</div>
+              <h3>Rainbow Vegetable Bowl</h3>
+              <p>Roasted seasonal vegetables, turmeric quinoa, avocado, seeds, micro herbs, and ginger-miso dressing</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,050</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="veggie-bowl" data-name="Rainbow Vegetable Bowl"
+                  data-price="1050"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="vegetarian">
+            <div class="mc-img"><img src="" alt="Paneer Masala"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Vegetarian</div>
+              <h3>Paneer Masala</h3>
+              <p>Fresh paneer cubes in a rich spiced tomato and cashew curry, served with fragrant basmati rice and naan
+              </p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 1,100</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="paneer" data-name="Paneer Masala"
+                  data-price="1100"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="vegetarian">
+            <div class="mc-img"><img src="" alt="Avocado Toast Deluxe"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Vegetarian</div>
+              <h3>Kenyan Avocado Toast</h3>
+              <p>Thick sourdough, smashed Kenyan Hass avocado, poached eggs, dukkah, chilli flakes, and roasted tomatoes
+              </p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 850</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="avo-toast" data-name="Kenyan Avocado Toast"
+                  data-price="850"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ──────── DESSERTS ──────── -->
+          <div class="menu-card reveal" data-cat="desserts">
+            <div class="mc-img"><img src="" alt="Mango Passion Cheesecake">
+              <div class="mc-badge mc-badge--gold">Fan Favourite</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Desserts</div>
+              <h3>Mango & Passion Cheesecake</h3>
+              <p>Creamy baked cheesecake on a coconut biscuit base, topped with fresh mango compote and passion fruit
+                coulis</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 750</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="cheesecake"
+                  data-name="Mango & Passion Cheesecake" data-price="750"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="desserts">
+            <div class="mc-img"><img src="" alt="Chocolate Fondant"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Desserts</div>
+              <h3>Dark Chocolate Fondant</h3>
+              <p>Warm 70% Kenyan cacao fondant with a molten centre, served with salted caramel ice cream and
+                caramelised bananas</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 850</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="fondant" data-name="Dark Chocolate Fondant"
+                  data-price="850"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="desserts">
+            <div class="mc-img"><img src="" alt="Mandazi with Ice Cream"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Desserts</div>
+              <h3>Spiced Mandazi & Ice Cream</h3>
+              <p>Light, pillowy Kenyan mandazi dusted with cinnamon sugar, served with a scoop of cardamom ice cream and
+                honey</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 550</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="mandazi" data-name="Spiced Mandazi & Ice Cream"
+                  data-price="550"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="desserts">
+            <div class="mc-img"><img src="" alt="Fresh Fruit Platter"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Desserts</div>
+              <h3>Tropical Fruit Platter</h3>
+              <p>A stunning arrangement of seasonal Kenyan fruits — pawpaw, pineapple, watermelon, berries — with
+                honey-lime drizzle</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 650</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="fruit-platter"
+                  data-name="Tropical Fruit Platter" data-price="650"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ──────── DRINKS ──────── -->
+          <div class="menu-card reveal" data-cat="drinks">
+            <div class="mc-img"><img src="" alt="LakeBite Signature Cocktail">
+              <div class="mc-badge mc-badge--gold">Signature</div>
+            </div>
+            <div class="mc-body">
+              <div class="mc-cat">Cocktails</div>
+              <h3>Rift Valley Sunset</h3>
+              <p>Kenyan gin, passion fruit, hibiscus syrup, fresh lime, and soda water — a cocktail as beautiful as the
+                view</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 950</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="rift-cocktail" data-name="Rift Valley Sunset"
+                  data-price="950"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="drinks">
+            <div class="mc-img"><img src="" alt="Fresh Mango Juice"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Fresh Juices</div>
+              <h3>Fresh Mango Blend</h3>
+              <p>Cold-pressed Kenyan mango, ginger, turmeric, and a squeeze of lime — sunshine in a glass</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 350</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="mango-juice" data-name="Fresh Mango Blend"
+                  data-price="350"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="drinks">
+            <div class="mc-img"><img src="" alt="Kenyan Tea"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Hot Beverages</div>
+              <h3>Kenyan Masala Chai</h3>
+              <p>Premium Kenyan highland tea brewed with whole spices, milk, and natural honey — the ultimate comfort
+                cup</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 280</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="chai" data-name="Kenyan Masala Chai"
+                  data-price="280"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-card reveal" data-cat="drinks">
+            <div class="mc-img"><img src="" alt="Mocktail Passion Fizz"></div>
+            <div class="mc-body">
+              <div class="mc-cat">Mocktails</div>
+              <h3>Passion Flower Fizz</h3>
+              <p>Fresh passion fruit, elderflower cordial, cucumber, mint, and premium sparkling water — zero alcohol,
+                all pleasure</p>
+              <div class="mc-footer">
+                <span class="mc-price">KES 450</span>
+                <button class="btn btn-primary add-to-cart-btn" data-id="passionfizz" data-name="Passion Flower Fizz"
+                  data-price="450"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /menuGrid -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
+          <p>A culinary journey celebrating Kenya's rich flavours.</p>
+          <div class="social-links">
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="reservation.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Opening Hours</h4>
+          <ul>
+            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Mon–Thu: 11am – 10pm</li>
+            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Fri–Sat: 11am – 12am</li>
+            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Sunday: 10am – 9pm</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Find Us</h4>
+          <div class="footer-contact-item"><i class="fa-solid fa-location-dot"></i><span>Westlands, Nairobi</span></div>
+          <div class="footer-contact-item"><i class="fa-solid fa-phone"></i><span>+254 700 000 000</span></div>
+          <div class="footer-contact-item"><i class="fa-solid fa-envelope"></i><span>hello@lakebite.co.ke</span></div>
+        </div>
+      </div>
+      <div class="footer-bottom"><span>© 2025 LakeBite Restaurant. All rights reserved.</span><span>Crafted with love in
+          Nairobi 🇰🇪</span></div>
+    </div>
+  </footer>
+
+  <div class="cart-overlay"></div>
+  <div class="cart-drawer">
+    <div class="cart-drawer-header">
+      <h3>Your Order</h3><button class="cart-close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total"><span>Total</span><span class="total-price">KES 0</span></div>
+      <button class="btn btn-primary checkout-btn" style="width:100%;justify-content:center"><i
+          class="fa-solid fa-lock"></i> Checkout</button>
+    </div>
+  </div>
+  <div class="toast"></div>
+  <script src="script.js"></script>
+  <script>
+    // Menu filter tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.dataset.cat;
+        document.querySelectorAll('.menu-card').forEach(card => {
+          if (cat === 'all' || card.dataset.cat === cat) {
+            card.style.display = '';
+            setTimeout(() => card.classList.add('visible'), 50);
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+
+  <style>
+    /* ═══ Menu Page Styles ═══ */
+    .menu-tabs {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+      padding: 0.25rem;
+      background: var(--clr-bg3);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--clr-border);
+    }
+
+    .tab-btn {
+      padding: 0.65rem 1.3rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--clr-text-sub);
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--clr-primary);
+      color: #fff;
+    }
+
+    .tab-btn:hover:not(.active) {
+      background: var(--clr-card);
+      color: var(--clr-text);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .menu-card {
+      background: var(--clr-card);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: all var(--transition);
+    }
+
+    .menu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .mc-img {
+      position: relative;
+      height: 180px;
+      background: var(--clr-bg3);
+      overflow: hidden;
+    }
+
+    .mc-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .menu-card:hover .mc-img img {
+      transform: scale(1.07);
+    }
+
+    .mc-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--clr-primary);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.65rem;
+      border-radius: 50px;
+    }
+
+    .mc-badge--gold {
+      background: var(--clr-gold);
+    }
+
+    .mc-badge--veg {
+      background: #2e7d32;
+    }
+
+    .mc-body {
+      padding: 1.1rem;
+    }
+
+    .mc-cat {
+      font-size: 0.68rem;
+      color: var(--clr-gold);
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .mc-body h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .mc-body p {
+      font-size: 0.82rem;
+      color: var(--clr-text-sub);
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+
+    .mc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mc-price {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      color: var(--clr-gold);
+      font-weight: 600;
+    }
+
+    .mc-footer .btn {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.82rem;
+      border-radius: var(--radius-sm);
+    }
+
+    @media(max-width:1200px) {
+      .menu-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media(max-width:768px) {
+      .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .menu-tabs {
+        justify-content: flex-start;
+      }
+    }
+
+    @media(max-width:480px) {
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</body>
+
+</html>
