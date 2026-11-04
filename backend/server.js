@@ -144,11 +144,35 @@ const eventBookingSchema = new mongoose.Schema({ eventId: { type: mongoose.Schem
 const EventBooking = mongoose.model('EventBooking', eventBookingSchema);
 const guestNoteSchema = new mongoose.Schema({ email: { type: String, unique: true, lowercase: true, trim: true }, tags: { type: [String], default: [] }, staffNotes: { type: String, trim: true, maxlength: 2000 } });
 const GuestNote = mongoose.model('GuestNote', guestNoteSchema);
+const staffInviteSchema = new mongoose.Schema({ email: { type: String, required: true, lowercase: true, trim: true }, role: { type: String, enum: ['admin','manager','host','kitchen'], required: true }, tokenHash: { type: String, required: true }, expiresAt: { type: Date, required: true }, createdAt: { type: Date, default: Date.now } });
+const StaffInvite = mongoose.model('StaffInvite', staffInviteSchema);
 
 function validateRequest(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ error: 'Invalid request', details: errors.array().map(error => ({ field: error.path, message: error.msg })) });
   next();
+}
+function cleanReservationInput(input = {}) {
+  return {
+    tableNumber: Number(input.tableNumber), guestName: String(input.guestName || '').trim().slice(0,100),
+    guestEmail: String(input.guestEmail || '').trim().toLowerCase().slice(0,254), guestPhone: String(input.guestPhone || '').trim().slice(0,40),
+    partySize: Number(input.partySize), date: new Date(input.date), time: String(input.time || '').slice(0,5),
+    status: ['pending','confirmed','seated','completed','cancelled','no-show'].includes(input.status) ? input.status : 'pending',
+    occasion: String(input.occasion || '').trim().slice(0,120), dietary: String(input.dietary || '').trim().slice(0,300), notes: String(input.notes || '').trim().slice(0,500)
+  };
+}
+function validateReservationBody(input) {
+  if (!input.guestName || !Number.isInteger(Number(input.tableNumber)) || Number(input.tableNumber) < 1 || !Number.isInteger(Number(input.partySize)) || Number(input.partySize) < 1 || Number(input.partySize) > 50 || !Number.isFinite(+new Date(input.date)) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(input.time || ''))) return 'Enter a guest, valid table, party size, date, and 24-hour time.';
+  return null;
+}
+async function reservationConflict(tableNumber, date, time, excludeId, partySize) {
+  const table = await Table.findOne({ number: Number(tableNumber) });
+  if (!table) return 'Choose a table that exists in the floor plan.';
+  if (Number(table.seats) < Number(partySize)) return `Table ${tableNumber} seats up to ${table.seats}.`;
+  const start = new Date(date); start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate() + 1);
+  const filter = { tableNumber: Number(tableNumber), date: { $gte: start, $lt: end }, time: String(time).slice(0,5), status: { $nin: ['cancelled','no-show'] } };
+  if (excludeId) filter._id = { $ne: excludeId };
+  return await Reservation.exists(filter) ? `Table ${tableNumber} is already booked for ${time}.` : null;
 }
 
 function signToken(user) {
@@ -193,6 +217,9 @@ app.post('/api/register', authLimiter, async (req, res) => {
     res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (e) { res.status(500).json({ error: 'Registration failed' }); }
 });
+
+app.get('/api/site-content', async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }).lean(); const value = entry?.value || {}; res.json({ content: { name: value.name, address: value.address, phone: value.phone, whatsapp: value.whatsapp, openingHours: value.openingHours, heroTitle: value.heroTitle, heroSubtitle: value.heroSubtitle, aboutText: value.aboutText, socialLinks: value.socialLinks || {}, gallery: value.gallery || [] } }); } catch (error) { next(error); } });
+app.get('/api/admin/integrations/status', auth, adminOnly, (req, res) => res.json({ mpesa: Boolean(process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET && process.env.MPESA_SHORTCODE && process.env.MPESA_PASSKEY), email: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD), sms: Boolean(process.env.SMS_API_KEY), analytics: Boolean(process.env.GA_MEASUREMENT_ID) }));
 
 app.post('/api/login', authLimiter, async (req, res) => {
   try {
@@ -253,8 +280,20 @@ app.get('/api/me', auth, async (req, res) => {
 });
 
 app.get('/api/admin/users', auth, adminOnly, async (req, res) => {
-  const users = await User.find().select('-password').sort({ createdAt: -1 });
-  res.json({ users });
+  const users = await User.find({ role: { $ne: 'user' } }).select('-password').sort({ createdAt: -1 });
+  const invitations = await StaffInvite.find({ expiresAt: { $gt: new Date() } }).select('-tokenHash').sort({ createdAt: -1 }).lean();
+  res.json({ users, invitations });
+});
+
+app.patch('/api/admin/users/:id', auth, adminOnly, async (req, res, next) => {
+  try { const updates = {}; if (typeof req.body.name === 'string') updates.name = req.body.name.trim().slice(0,100); if (['admin','manager','host','kitchen'].includes(req.body.role)) updates.role = req.body.role; if (typeof req.body.active === 'boolean') updates.active = req.body.active; const target = await User.findById(req.params.id); if (!target || target.role === 'user') return res.status(404).json({ error: 'Staff member not found' }); if (target.role === 'admin' && updates.role && updates.role !== 'admin' && await User.countDocuments({ role: 'admin' }) <= 1) return res.status(409).json({ error: 'Cannot demote the last administrator.' }); Object.assign(target, updates); await target.save(); await logAudit(req.user.id, 'update_staff', req.path, `${target.email} role ${target.role}`); res.json({ user: { id: target.id, name: target.name, email: target.email, role: target.role, active: target.active } }); } catch (error) { next(error); }
+});
+
+app.post('/api/admin/staff-invites', auth, adminOnly, async (req, res, next) => {
+  try { const email = String(req.body.email || '').trim().toLowerCase(); const role = req.body.role; if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !['admin','manager','host','kitchen'].includes(role)) return res.status(400).json({ error: 'Enter a valid email and staff role.' }); if (await User.exists({ email })) return res.status(409).json({ error: 'That email already has an account.' }); const rawToken = crypto.randomBytes(32).toString('hex'); await StaffInvite.findOneAndUpdate({ email }, { email, role, tokenHash: crypto.createHash('sha256').update(rawToken).digest('hex'), expiresAt: new Date(Date.now()+7*86400000) }, { upsert: true, new: true }); await logAudit(req.user.id, 'invite_staff', req.path, `${email} (${role})`); res.status(201).json({ inviteUrl: `/staff-invite.html?token=${rawToken}`, expiresInDays: 7, delivery: 'Copy this invitation link and send it through your approved channel.' }); } catch (error) { next(error); }
+});
+app.post('/api/staff-invites/accept', authLimiter, async (req, res, next) => {
+  try { const token = String(req.body.token || ''); const tokenHash = crypto.createHash('sha256').update(token).digest('hex'); const invite = await StaffInvite.findOne({ tokenHash, expiresAt: { $gt: new Date() } }); if (!invite) return res.status(400).json({ error: 'Invitation is expired or invalid.' }); const name = String(req.body.name || '').trim(); const password = req.body.password; if (!name || name.length > 100 || typeof password !== 'string' || password.length < 8) return res.status(400).json({ error: 'Enter your name and a password with at least 8 characters.' }); if (await User.exists({ email: invite.email })) return res.status(409).json({ error: 'This email already has an account.' }); const user = await User.create({ name, email: invite.email, password: await bcrypt.hash(password,12), role: invite.role }); await invite.deleteOne(); setAuthCookie(res, signToken(user)); res.status(201).json({ user: { name: user.name, email: user.email, role: user.role } }); } catch (error) { next(error); }
 });
 
 app.delete('/api/admin/users/:id', auth, adminOnly, async (req, res) => {
@@ -684,7 +723,7 @@ app.get('/api/admin/reports/preview', auth, adminOnly, (req, res) => {
   });
 });
 
-app.get('/api/admin/dashboard-stats', auth, adminOnly, async (req, res) => {
+app.get('/api/admin/dashboard-stats', auth, authorize('admin','manager','host','kitchen'), async (req, res) => {
   const today = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
   const reservations = await Reservation.find({ date: { $gte: today, $lt: tomorrow } });
@@ -714,60 +753,74 @@ app.get('/api/admin/dashboard-stats', auth, adminOnly, async (req, res) => {
 });
 
 // ── Reservations ──
-app.get('/api/admin/reservations', auth, adminOnly, async (req, res) => {
-  const list = await Reservation.find().sort({ date: 1, time: 1 });
-  res.json({ reservations: list });
+app.get('/api/admin/reservations', auth, authorize('admin','manager','host'), async (req, res) => {
+  const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
+  const filter = {}; if (req.query.status) filter.status = String(req.query.status); if (req.query.date) { const start = new Date(req.query.date); if (Number.isFinite(+start)) { start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate()+1); filter.date = { $gte: start, $lt: end }; } }
+  if (req.query.q) { const q = String(req.query.q).slice(0,100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); filter.$or = ['guestName','guestEmail','guestPhone'].map(field => ({ [field]: { $regex: q, $options: 'i' } })); }
+  const [list,total] = await Promise.all([Reservation.find(filter).sort({ date: 1, time: 1 }).skip((page-1)*limit).limit(limit), Reservation.countDocuments(filter)]);
+  res.json({ reservations: list, page, limit, total, pages: Math.ceil(total/limit) });
 });
 
-app.post('/api/admin/reservations', auth, adminOnly, async (req, res) => {
-  const r = await Reservation.create(req.body);
+app.post('/api/admin/reservations', auth, authorize('admin','manager','host'), async (req, res, next) => {
+  const body = cleanReservationInput(req.body); const validationError = validateReservationBody(body); if (validationError) return res.status(400).json({ error: validationError });
+  const conflict = await reservationConflict(body.tableNumber, body.date, body.time, null, body.partySize); if (conflict) return res.status(409).json({ error: conflict });
+  const r = await Reservation.create(body);
   await logAudit(req.user.id || 'admin', 'create_reservation', '/api/admin/reservations', `Table ${r.tableNumber}`);
   res.json({ ok: true, reservation: r });
 });
 
-app.patch('/api/admin/reservations/:id', auth, adminOnly, async (req, res) => {
-  const r = await Reservation.findByIdAndUpdate(req.params.id, req.body, { new: true });
+app.patch('/api/admin/reservations/:id', auth, authorize('admin','manager','host'), async (req, res) => {
+  const existing = await Reservation.findById(req.params.id); if (!existing) return res.status(404).json({ error: 'Reservation not found' });
+  const body = cleanReservationInput({ ...existing.toObject(), ...req.body }); const validationError = validateReservationBody(body); if (validationError) return res.status(400).json({ error: validationError });
+  const conflict = await reservationConflict(body.tableNumber, body.date, body.time, existing._id, body.partySize); if (conflict) return res.status(409).json({ error: conflict });
+  const r = await Reservation.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
   await logAudit(req.user.id || 'admin', 'update_reservation', `/api/admin/reservations/${req.params.id}`, `Status: ${r.status}`);
   res.json({ ok: true, reservation: r });
 });
 
-app.delete('/api/admin/reservations/:id', auth, adminOnly, async (req, res) => {
+app.delete('/api/admin/reservations/:id', auth, authorize('admin','manager','host'), async (req, res) => {
   await Reservation.findByIdAndDelete(req.params.id);
   await logAudit(req.user.id || 'admin', 'delete_reservation', `/api/admin/reservations/${req.params.id}`, 'Deleted');
   res.json({ ok: true });
 });
 
 // ── Menu Items ──
-app.get('/api/admin/menu', auth, adminOnly, async (req, res) => {
-  const list = await MenuItem.find().sort({ category: 1, name: 1 });
+app.get('/api/admin/menu', auth, authorize('admin','manager','kitchen'), async (req, res) => {
+  const filter = {}; if (req.query.q) { const q = String(req.query.q).slice(0,100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); filter.$or = ['name','category'].map(field => ({ [field]: { $regex: q, $options: 'i' } })); }
+  const list = await MenuItem.find(filter).sort({ category: 1, name: 1 }).limit(500);
   res.json({ menu: list });
 });
 
-app.post('/api/admin/menu', auth, adminOnly, async (req, res) => {
+app.post('/api/admin/menu', auth, authorize('admin','manager'), async (req, res) => {
   const item = await MenuItem.create(req.body);
   await logAudit(req.user.id || 'admin', 'create_menu_item', '/api/admin/menu', item.name);
   res.json({ ok: true, item });
 });
 
-app.patch('/api/admin/menu/:id', auth, adminOnly, async (req, res) => {
+app.patch('/api/admin/menu/:id', auth, authorize('admin','manager'), async (req, res) => {
   const item = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
   await logAudit(req.user.id || 'admin', 'update_menu_item', `/api/admin/menu/${req.params.id}`, item.name);
   res.json({ ok: true, item });
 });
 
-app.delete('/api/admin/menu/:id', auth, adminOnly, async (req, res) => {
+app.delete('/api/admin/menu/:id', auth, authorize('admin','manager'), async (req, res) => {
   await MenuItem.findByIdAndDelete(req.params.id);
   res.json({ ok: true });
 });
 
 // ── Orders ──
-app.get('/api/admin/orders', auth, adminOnly, async (req, res) => {
-  const list = await Order.find().sort({ createdAt: -1 });
-  res.json({ orders: list });
+app.get('/api/admin/orders', auth, authorize('admin','manager','kitchen'), async (req, res) => {
+  const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100)); const filter = {};
+  if (req.query.status) filter.status = String(req.query.status); if (req.query.date) { const start = new Date(req.query.date); if (Number.isFinite(+start)) { start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate()+1); filter.createdAt = { $gte: start, $lt: end }; } }
+  if (req.query.q) { const q = String(req.query.q).slice(0,100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); filter.$or = ['orderNumber','customerName','customerPhone','customerEmail'].map(field => ({ [field]: { $regex: q, $options: 'i' } })); }
+  const [list,total] = await Promise.all([Order.find(filter).sort({ createdAt: -1 }).skip((page-1)*limit).limit(limit), Order.countDocuments(filter)]);
+  res.json({ orders: list, page, limit, total, pages: Math.ceil(total/limit) });
 });
 
-app.patch('/api/admin/orders/:id', auth, adminOnly, async (req, res) => {
-  const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+app.patch('/api/admin/orders/:id', auth, authorize('admin','manager','kitchen'), async (req, res) => {
+  const allowed = ['new','accepted','preparing','ready','out-for-delivery','completed','refunded','cancelled']; if (!allowed.includes(req.body.status)) return res.status(400).json({ error: 'Invalid order status' });
+  const updates = { status: req.body.status, updatedAt: new Date() }; const timestamp = { accepted: 'acceptedAt', preparing: 'preparingAt', ready: 'readyAt', completed: 'completedAt' }[req.body.status]; if (timestamp) updates[timestamp] = new Date();
+  const order = await Order.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }); if (!order) return res.status(404).json({ error: 'Order not found' });
   await logAudit(req.user.id || 'admin', 'update_order', `/api/admin/orders/${req.params.id}`, `Status: ${order.status}`);
   res.json({ ok: true, order });
 });
@@ -838,7 +891,7 @@ app.patch('/api/admin/reviews/:id', auth, authorize('admin','manager'), async (r
 app.get('/api/reviews', async (req, res, next) => { try { const reviews = await Review.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(100).lean(); const average = reviews.length ? reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length : null; res.json({ reviews, count: reviews.length, average }); } catch (error) { next(error); } });
 
 app.get('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }); res.json({ settings: entry?.value || {} }); } catch (error) { next(error); } });
-app.patch('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const allowed = ['name','address','phone','whatsapp','deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','openingHours','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours','heroTitle','heroSubtitle','aboutText','socialLinks','gallery']; const settings = {}; for (const key of allowed) if (req.body[key] !== undefined) settings[key] = typeof req.body[key] === 'string' ? req.body[key].trim().slice(0,5000) : req.body[key]; for (const field of ['deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours']) if (settings[field] !== undefined && (!Number.isFinite(Number(settings[field])) || Number(settings[field]) < 0)) return res.status(400).json({ error: `Invalid ${field}` }); const entry = await Setting.findOneAndUpdate({ key: 'restaurant' }, { $set: { value: settings, updatedAt: new Date() } }, { upsert: true, new: true }); await logAudit(req.user.id, 'update_restaurant_settings', req.path, 'Restaurant settings updated'); res.json({ settings: entry.value }); } catch (error) { next(error); } });
+app.patch('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const allowed = ['name','address','phone','whatsapp','deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','openingHours','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours','heroTitle','heroSubtitle','aboutText','socialLinks','gallery']; const updates = {}; for (const key of allowed) if (req.body[key] !== undefined) updates[key] = typeof req.body[key] === 'string' ? req.body[key].trim().slice(0,5000) : req.body[key]; for (const field of ['deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours']) if (updates[field] !== undefined && (!Number.isFinite(Number(updates[field])) || Number(updates[field]) < 0 || ['taxPercent','serviceChargePercent'].includes(field) && Number(updates[field]) > 100)) return res.status(400).json({ error: `Invalid ${field}` }); if (Array.isArray(updates.gallery)) updates.gallery = updates.gallery.slice(0,50).map(item => String(item).slice(0,500)); const entry = await Setting.findOne({ key: 'restaurant' }) || new Setting({ key: 'restaurant', value: {} }); entry.value = { ...(entry.value || {}), ...updates }; entry.updatedAt = new Date(); await entry.save(); await logAudit(req.user.id, 'update_restaurant_settings', req.path, 'Restaurant settings updated'); res.json({ settings: entry.value }); } catch (error) { next(error); } });
 
 app.get('/api/admin/notifications', auth, authorize('admin','manager','host','kitchen'), async (req, res, next) => { try { const since = new Date(Date.now() - 24*60*60*1000); const [orders,reservations,messages,unavailable] = await Promise.all([Order.countDocuments({ status: 'new', createdAt: { $gte: since } }), Reservation.countDocuments({ status: 'pending', createdAt: { $gte: since } }), ContactMessage.countDocuments({ status: 'unread' }), MenuItem.countDocuments({ available: false })]); res.json({ alerts: [{ type: 'orders', count: orders, label: 'New orders' },{ type: 'reservations', count: reservations, label: 'New reservations' },{ type: 'messages', count: messages, label: 'Unread messages' },{ type: 'menu', count: unavailable, label: 'Unavailable menu items' }].filter(item => item.count) }); } catch (error) { next(error); } });
 
@@ -851,7 +904,7 @@ app.use((error, req, res, next) => {
 
 app.use(express.static(path.join(__dirname, '../frontend'), { maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0 }));
 
-app.get('/admin', auth, adminOnly, (req, res) => {
+app.get('/admin', auth, authorize('admin','manager','host','kitchen'), (req, res) => {
   res.sendFile(path.resolve(__dirname, '../frontend/admin.html'), { dotfiles: 'allow' });
 });
 app.get('/login', (req, res) => {

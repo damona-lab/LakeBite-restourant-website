@@ -13,6 +13,46 @@ function safeImageUrl(value) {
   const url = String(value || '').trim();
   return /^(https:\/\/|\/|\.\/|imege\/)/i.test(url) && !/^\/\//.test(url) ? url : '';
 }
+function loadPublicContent() {
+  fetch('/api/site-content').then(response => response.ok ? response.json() : null).then(result => {
+    const content = result?.content; if (!content) return;
+    document.querySelectorAll('[data-cms]').forEach(element => {
+      const key = element.dataset.cms, value = content[key];
+      if (typeof value === 'string' && value.trim()) element.textContent = value;
+    });
+    document.querySelectorAll('.footer-contact-item [data-cms="address"], .contact-info-card [data-cms="address"]').forEach(element => { if (content.address) element.textContent = content.address; });
+    document.querySelectorAll('[data-cms="phone"]').forEach(element => { if (content.phone) element.textContent = content.phone; });
+    document.querySelectorAll('[data-cms="openingHours"]').forEach(element => { if (content.openingHours) element.textContent = content.openingHours; });
+    const about = document.querySelector('[data-cms="aboutText"]'); if (about && content.aboutText) about.textContent = content.aboutText;
+    if (Array.isArray(content.gallery) && document.querySelector('[data-cms-gallery]')) {
+      const gallery = document.querySelector('[data-cms-gallery]'); gallery.replaceChildren();
+      content.gallery.forEach((url, index) => { const image = document.createElement('img'); image.src = safeImageUrl(url); image.alt = `LakeBite gallery image ${index + 1}`; gallery.appendChild(image); });
+    }
+  }).catch(() => {});
+}
+function loadPublicEventsAndReviews() {
+  const eventsTarget = document.getElementById('publicEventsList');
+  if (eventsTarget) fetch('/api/events').then(response => response.json()).then(({ events = [] }) => {
+    eventsTarget.replaceChildren();
+    if (!events.length) { eventsTarget.textContent = 'There are no upcoming events at this time.'; return; }
+    for (const event of events) {
+      const card = document.createElement('article'); card.className = 'menu-card';
+      const image = document.createElement('img'); image.src = safeImageUrl(event.image); image.alt = event.title;
+      const title = document.createElement('h3'); title.textContent = event.title;
+      const details = document.createElement('p'); details.textContent = `${new Date(event.date).toLocaleString()} · ${event.type} · ${event.capacity} places · KES ${Number(event.price).toLocaleString()}`;
+      const description = document.createElement('p'); description.textContent = event.description || '';
+      const form = document.createElement('form'); form.dataset.eventBooking = event._id;
+      form.innerHTML = '<label>Name<input name="name" required maxlength="100"></label><label>Email<input name="email" type="email" required></label><label>Guests<input name="guests" type="number" min="1" value="1" required></label><button class="btn btn-primary" type="submit">Enquire / book</button><p role="status" aria-live="polite"></p>';
+      card.append(image, title, details, description, form); eventsTarget.appendChild(card);
+    }
+  }).catch(() => { eventsTarget.textContent = 'Event information is temporarily unavailable.'; });
+  const reviewsTarget = document.getElementById('publicReviewsList');
+  if (reviewsTarget) fetch('/api/reviews').then(response => response.json()).then(data => {
+    reviewsTarget.replaceChildren(); const summary = document.getElementById('publicReviewSummary');
+    if (data.average !== null) { summary.textContent = `${Number(data.average).toFixed(1)} out of 5 based on ${data.count} approved guest reviews.`; const ld = document.getElementById('aggregateReviews'); if (ld) ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Restaurant', name: 'LakeBite', aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(data.average).toFixed(1), reviewCount: data.count } }); }
+    for (const review of data.reviews || []) { const article = document.createElement('article'); article.className = 'menu-card'; const heading = document.createElement('h3'); heading.textContent = `${review.rating} / 5 · ${review.name || 'Guest'}`; const comment = document.createElement('p'); comment.textContent = review.comment; article.append(heading, comment); reviewsTarget.appendChild(article); }
+  }).catch(() => { reviewsTarget.textContent = 'Guest reviews are temporarily unavailable.'; });
+}
 
 function applyTheme(theme) {
   root.setAttribute('data-theme', theme);
@@ -422,5 +462,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateAuthUI();
   updateCartUI();
   loadPublicMenuState();
+  loadPublicContent();
+  loadPublicEventsAndReviews();
   initReveal();
+});
+
+document.addEventListener('submit', async event => {
+  const form = event.target.closest('form[data-event-booking]'); if (!form) return;
+  event.preventDefault(); const status = form.querySelector('[role="status"]'), submit = form.querySelector('[type="submit"]'); submit.disabled = true;
+  try { const values = new FormData(form); const response = await fetch(`/api/events/${encodeURIComponent(form.dataset.eventBooking)}/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(values)) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not book this event.'); status.textContent = 'Your event enquiry is recorded. LakeBite will follow up using your contact details.'; form.reset(); } catch (error) { status.textContent = error.message; } finally { submit.disabled = false; }
 });

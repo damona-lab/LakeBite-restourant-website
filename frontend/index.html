@@ -7,6 +7,7 @@
   <title>LakeBite — Premium Nairobi Restaurant</title>
   <meta name="description"
     content="LakeBite is a premium restaurant in Nairobi, Kenya, celebrating local and international cuisine with elegance.">
+  <script type="application/ld+json" id="aggregateReviews">{"@context":"https://schema.org","@type":"Restaurant","name":"LakeBite"}</script>
   <link rel="stylesheet" href="global.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -93,8 +94,8 @@
       <div class="hero-overlay"></div>
       <div class="hero-content container">
         <div class="hero-badge"><i class="fa-solid fa-star"></i> Fine Dining · Nairobi</div>
-        <h1>Where Kenya's Finest<br><em>Flavours Come Alive</em></h1>
-        <p>An extraordinary culinary experience inspired by the rich landscapes and traditions of East Africa — served
+        <h1 data-cms="heroTitle">Where Kenya's Finest<br><em>Flavours Come Alive</em></h1>
+        <p data-cms="heroSubtitle">An extraordinary culinary experience inspired by the rich landscapes and traditions of East Africa — served
           with world-class elegance.</p>
         <div class="hero-actions">
           <a href="menu.html" class="btn btn-primary"><i class="fa-solid fa-utensils"></i> Explore Menu</a>
@@ -351,6 +352,8 @@
     </section>
 
     <!-- ════════════ CTA BANNER ════════════ -->
+    <section class="section" aria-labelledby="publicEventsTitle"><div class="container"><span class="section-label">What's on</span><h2 class="section-title" id="publicEventsTitle">Upcoming experiences</h2><div id="publicEventsList" class="menu-grid" aria-live="polite"><p>Loading events…</p></div></div></section>
+    <section class="section" aria-labelledby="publicReviewsTitle"><div class="container"><span class="section-label">Guest stories</span><h2 class="section-title" id="publicReviewsTitle">Guest reviews</h2><p id="publicReviewSummary"></p><div id="publicReviewsList" class="menu-grid" aria-live="polite"></div></div></section>
     <section class="cta-banner">
       <div class="cta-banner-bg"><img src="" alt="LakeBite terrace evening"></div>
       <div class="cta-banner-overlay"></div>
@@ -397,7 +400,7 @@
         <div class="footer-col">
           <h4>Opening Hours</h4>
           <ul>
-            <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Mon – Thu: 11am – 10pm</li>
+            <li data-cms="openingHours" style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Mon – Thu: 11am – 10pm</li>
             <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Fri – Sat: 11am – 12am</li>
             <li style="color:rgba(255,255,255,0.65);font-size:0.88rem;padding:0.25rem 0">Sunday: 10am – 9pm</li>
             <li style="margin-top:0.8rem"><a href="reservation.html"
@@ -408,11 +411,11 @@
           <h4>Find Us</h4>
           <div class="footer-contact-item">
             <i class="fa-solid fa-location-dot"></i>
-            <span>Westlands, Nairobi, Kenya<br>Along Waiyaki Way</span>
+            <span data-cms="address">Westlands, Nairobi, Kenya<br>Along Waiyaki Way</span>
           </div>
           <div class="footer-contact-item">
             <i class="fa-solid fa-phone"></i>
-            <span>+254 700 000 000</span>
+            <span data-cms="phone">+254 700 000 000</span>
           </div>
           <div class="footer-contact-item">
             <i class="fa-solid fa-envelope"></i>

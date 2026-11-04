@@ -686,7 +686,7 @@ body.admin-body {
       <span class="admin-brand-mini">LakeBite <span style="font-size:0.6rem;color:var(--admin-gold);">Admin</span></span>
     </div>
     <div class="admin-topbar-center">
-      <input type="text" class="admin-search" placeholder="Search reservations, guests, menu items...">
+      <input type="search" class="admin-search" id="adminSearch" placeholder="Search reservations, guests, menu items..." aria-label="Search the admin records">
       <span class="admin-date-pill" id="adminDatePill">Today</span>
     </div>
     <div class="admin-topbar-right">
@@ -854,6 +854,7 @@ body.admin-body {
           <button class="admin-btn admin-btn-primary admin-btn-sm" data-admin-action="new-reservation"><i class="fa-solid fa-plus"></i> New Reservation</button>
         </div>
         <div class="admin-section-body">
+          <div class="report-toolbar"><label class="report-filter">Status<select id="reservationStatusFilter"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>seated</option><option>completed</option><option>cancelled</option><option>no-show</option></select></label><label class="report-filter">Service date<input type="date" id="reservationDateFilter"></label><button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="filter-reservations">Apply filters</button></div>
           <div class="admin-table-wrap">
             <table class="admin-table">
               <thead>
@@ -864,6 +865,7 @@ body.admin-body {
               <tbody id="reservationsTable"></tbody>
             </table>
           </div>
+          <div id="reservationPagination" class="floor-table-actions" aria-label="Reservation pages"></div>
         </div>
       </div>
     </section>
@@ -895,6 +897,7 @@ body.admin-body {
           <h2 class="admin-section-title">Online Orders</h2>
         </div>
         <div class="admin-section-body">
+          <div class="report-toolbar"><label class="report-filter">Status<select id="orderStatusFilter"><option value="">All statuses</option><option>new</option><option>accepted</option><option>preparing</option><option>ready</option><option>out-for-delivery</option><option>completed</option><option>refunded</option><option>cancelled</option></select></label><label class="report-filter">Created date<input type="date" id="orderDateFilter"></label><button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="filter-orders">Apply filters</button></div>
           <div class="admin-table-wrap">
             <table class="admin-table">
               <thead>
@@ -903,6 +906,7 @@ body.admin-body {
               <tbody id="ordersTable"></tbody>
             </table>
           </div>
+          <div id="orderPagination" class="floor-table-actions" aria-label="Order pages"></div>
         </div>
       </div>
     </section>
@@ -917,11 +921,12 @@ body.admin-body {
           <div class="admin-table-wrap">
             <table class="admin-table">
               <thead>
-                <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th></tr>
               </thead>
-              <tbody id="staffTable"></tbody>
+          <tbody id="staffTable"></tbody>
             </table>
           </div>
+          <form id="staffInviteForm" class="admin-form-row"><label class="admin-form-group">Invite email<input class="admin-form-control" type="email" name="email" required></label><label class="admin-form-group">Role<select class="admin-form-control" name="role"><option>manager</option><option>host</option><option>kitchen</option><option>admin</option></select></label><button class="admin-btn admin-btn-primary" type="submit">Create invitation link</button></form><div id="staffInvitations"></div>
         </div>
       </div>
     </section>
@@ -1149,6 +1154,9 @@ body.admin-body {
       let reservationsById = new Map();
       let menuById = new Map();
       let usersById = new Map();
+      let ordersById = new Map();
+      let reservationPage = 1;
+      let orderPage = 1;
 
       // Set date
       const now = new Date();
@@ -1241,11 +1249,19 @@ body.admin-body {
           case 'delete-table': deleteTable(id); break;
           case 'message-status': updateMessageStatus(id, control.dataset.status); break;
           case 'review-status': updateReview(id, control.dataset.status); break;
+          case 'toggle-staff': updateStaff(id, { active: control.dataset.active !== 'true' }); break;
+          case 'filter-reservations': loadReservations(); break;
+          case 'filter-orders': loadOrders(); break;
+          case 'reservation-page': reservationPage = Number(control.dataset.page); loadReservations(); break;
+          case 'order-page': orderPage = Number(control.dataset.page); loadOrders(); break;
+          case 'print-ticket': printKitchenTicket(id); break;
         }
       });
       document.addEventListener('change', event => {
         const control = event.target.closest('[data-admin-action="update-order"]');
         if (control) adminUpdateOrderStatus(control.dataset.id, control.value);
+        const role = event.target.closest('[data-admin-action="staff-role"]');
+        if (role) updateStaff(role.dataset.id, { role: role.value });
       });
 
       // Logout
@@ -1274,7 +1290,7 @@ body.admin-body {
             headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
             credentials: 'include'
           });
-          if (res.status === 401 || res.status === 403) {
+          if (res.status === 401) {
             window.location.href = '/login.html';
             return null;
           }
@@ -1296,7 +1312,7 @@ body.admin-body {
         const dialog = document.getElementById('adminActionDialog'), title = document.getElementById('actionDialogTitle'), fields = document.getElementById('actionDialogFields'), form = document.getElementById('adminActionForm');
         form.dataset.mode = mode; form.dataset.table = tableNumber; form.dataset.menuId = '';
         if (mode === 'walk-in') { title.textContent = 'Seat a walk-in guest'; fields.innerHTML = `<label class="admin-form-label" for="walkinName">Guest name</label><input class="admin-form-control" id="walkinName" name="guestName" required maxlength="100"><label class="admin-form-label" for="walkinParty">Party size</label><input class="admin-form-control" id="walkinParty" name="partySize" type="number" min="1" required><label class="admin-form-label" for="walkinTable">Available table</label><select class="admin-form-control" id="walkinTable" name="tableNumber" required></select>`; api('/api/admin/tables').then(data => { if (data) document.getElementById('walkinTable').innerHTML = data.tables.filter(table => table.serviceStatus === 'available').map(table => `<option value="${escapeHtml(table.number)}" ${String(table.number) === String(tableNumber) ? 'selected' : ''}>Table ${escapeHtml(table.number)} · ${escapeHtml(table.section)} · ${escapeHtml(table.seats)} seats</option>`).join(''); }); }
-        if (mode === 'block') { title.textContent = 'Block this table'; fields.innerHTML = `<label class="admin-form-label" for="blockReason">Reason for block</label><textarea class="admin-form-control" id="blockReason" name="reason" required maxlength="240"></textarea>`; }
+        if (mode === 'block') { title.textContent = 'Block a table'; fields.innerHTML = `<label class="admin-form-label" for="blockTableSelect">Table</label><select class="admin-form-control" id="blockTableSelect" name="tableNumber" required></select><label class="admin-form-label" for="blockReason">Reason for block</label><textarea class="admin-form-control" id="blockReason" name="reason" required maxlength="240"></textarea>`; api('/api/admin/tables').then(data => { if (data) document.getElementById('blockTableSelect').innerHTML = data.tables.filter(table => table.serviceStatus === 'available').map(table => `<option value="${escapeHtml(table.number)}" ${String(table.number) === String(tableNumber) ? 'selected' : ''}>Table ${escapeHtml(table.number)} · ${escapeHtml(table.section)}</option>`).join(''); }); }
         if (mode === 'unavailable') { title.textContent = 'Mark menu item sold out'; fields.innerHTML = `<label class="admin-form-label" for="unavailableItem">Search/select menu item</label><select class="admin-form-control" id="unavailableItem" name="item" required></select>`; api('/api/admin/menu').then(data => { if (data) { menuById = new Map(data.menu.map(item => [String(item._id), item])); document.getElementById('unavailableItem').innerHTML = data.menu.map(item => `<option value="${escapeHtml(item._id)}">${escapeHtml(item.name)}${item.available ? '' : ' — Sold out'}</option>`).join(''); } }); }
         dialog.showModal(); fields.querySelector('input,textarea,select')?.focus();
       }
@@ -1304,7 +1320,7 @@ body.admin-body {
       document.getElementById('adminActionForm').addEventListener('submit', async event => {
         event.preventDefault(); const form = event.currentTarget, values = new FormData(form); let result;
         if (form.dataset.mode === 'walk-in') result = await api('/api/admin/walkins', { method: 'POST', body: JSON.stringify(Object.fromEntries(values)) });
-        if (form.dataset.mode === 'block') result = await api(`/api/admin/tables/${form.dataset.table}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'blocked', reason: values.get('reason') }) });
+        if (form.dataset.mode === 'block') { const tables = await api('/api/admin/tables'); const target = tables?.tables.find(table => table.number === Number(values.get('tableNumber'))); if (!target) return showAdminToast('Select an available table.'); result = await api(`/api/admin/tables/${target._id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'blocked', reason: values.get('reason') }) }); }
         if (form.dataset.mode === 'unavailable') result = await api(`/api/admin/menu/${values.get('item')}/availability`, { method: 'PATCH', body: JSON.stringify({ available: false }) });
         if (result) { document.getElementById('adminActionDialog').close(); showAdminToast('Saved successfully.'); loadTables(); loadMenu(); loadDashboard(); }
       });
@@ -1890,7 +1906,10 @@ body.admin-body {
 
       // ── Load Reservations ──
       async function loadReservations() {
-        const data = await api('/api/admin/reservations');
+        const params = new URLSearchParams({ page: String(reservationPage), limit: '25' });
+        const status = document.getElementById('reservationStatusFilter')?.value, date = document.getElementById('reservationDateFilter')?.value, search = document.getElementById('adminSearch')?.value;
+        if (status) params.set('status', status); if (date) params.set('date', date); if (search) params.set('q', search);
+        const data = await api('/api/admin/reservations?' + params);
         if (!data) return;
         const tbody = document.getElementById('reservationsTable');
         reservationsById = new Map((data.reservations || []).map(r => [String(r._id), r]));
@@ -1912,11 +1931,13 @@ body.admin-body {
           `;
           tbody.appendChild(tr);
         });
+        document.getElementById('reservationPagination').innerHTML = Array.from({ length: data.pages || 0 }, (_, index) => `<button class="admin-action-btn" data-admin-action="reservation-page" data-page="${index + 1}" aria-current="${reservationPage === index + 1 ? 'page' : 'false'}">${index + 1}</button>`).join('');
       }
 
       // ── Load Menu ──
       async function loadMenu() {
-        const data = await api('/api/admin/menu');
+        const search = document.getElementById('adminSearch')?.value || '';
+        const data = await api('/api/admin/menu' + (search ? `?q=${encodeURIComponent(search)}` : ''));
         if (!data) return;
         const tbody = document.getElementById('menuTable');
         menuById = new Map((data.menu || []).map(item => [String(item._id), item]));
@@ -1940,9 +1961,13 @@ body.admin-body {
 
       // ── Load Orders ──
       async function loadOrders() {
-        const data = await api('/api/admin/orders');
+        const params = new URLSearchParams({ page: String(orderPage), limit: '25' });
+        const status = document.getElementById('orderStatusFilter')?.value, date = document.getElementById('orderDateFilter')?.value, search = document.getElementById('adminSearch')?.value;
+        if (status) params.set('status', status); if (date) params.set('date', date); if (search) params.set('q', search);
+        const data = await api('/api/admin/orders?' + params);
         if (!data) return;
         const tbody = document.getElementById('ordersTable');
+        ordersById = new Map((data.orders || []).map(order => [String(order._id), order]));
         tbody.innerHTML = '';
         (data.orders || []).forEach(o => {
           const tr = document.createElement('tr');
@@ -1961,11 +1986,20 @@ body.admin-body {
                 <option value="ready" ${o.status === 'ready' ? 'selected' : ''}>Ready</option>
                 <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
                 <option value="refunded" ${o.status === 'refunded' ? 'selected' : ''}>Refunded</option>
-              </select>
+              </select><button class="admin-action-btn" data-admin-action="print-ticket" data-id="${escapeHtml(o._id)}">Kitchen ticket</button>
             </td>
           `;
           tbody.appendChild(tr);
         });
+        document.getElementById('orderPagination').innerHTML = Array.from({ length: data.pages || 0 }, (_, index) => `<button class="admin-action-btn" data-admin-action="order-page" data-page="${index + 1}" aria-current="${orderPage === index + 1 ? 'page' : 'false'}">${index + 1}</button>`).join('');
+      }
+
+      function printKitchenTicket(id) {
+        const order = ordersById.get(id); if (!order) return;
+        const ticketWindow = window.open('', '_blank', 'width=440,height=650'); if (!ticketWindow) return showAdminToast('Allow pop-ups to print kitchen tickets.');
+        const items = order.items.map(item => `<li>${escapeHtml(item.qty)} × ${escapeHtml(item.name)}</li>`).join('');
+        ticketWindow.document.write(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Kitchen ticket ${escapeHtml(order.orderNumber)}</title><style>body{font:16px Arial;padding:24px}h1{font-size:22px}li{padding:8px 0;border-bottom:1px solid #ddd}</style><h1>LakeBite · Kitchen ticket</h1><p>Order ${escapeHtml(order.orderNumber)} · ${new Date(order.createdAt).toLocaleString()}</p><p>${escapeHtml(order.customerName)} · ${escapeHtml(order.type)} · ${escapeHtml(order.customerPhone)}</p><ul>${items}</ul><p>Notes: ${escapeHtml(order.notes || 'None')}</p><script>window.onload=()=>window.print()<\/script></html>`);
+        ticketWindow.document.close();
       }
 
       // ── Load Staff ──
@@ -1980,13 +2014,57 @@ body.admin-body {
           tr.innerHTML = `
             <td>${escapeHtml(u.name)}</td>
             <td>${escapeHtml(u.email)}</td>
-            <td>${escapeHtml(u.role)}</td>
+            <td><select class="admin-form-control" data-admin-action="staff-role" data-id="${escapeHtml(u._id)}" aria-label="Role for ${escapeHtml(u.name)}"><option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option><option value="manager" ${u.role === 'manager' ? 'selected' : ''}>Manager</option><option value="host" ${u.role === 'host' ? 'selected' : ''}>Host</option><option value="kitchen" ${u.role === 'kitchen' ? 'selected' : ''}>Kitchen</option></select></td>
             <td>${new Date(u.createdAt).toLocaleDateString()}</td>
-            <td><button class="admin-action-btn danger" data-admin-action="delete-user" data-id="${escapeHtml(u._id)}">Delete</button></td>
+            <td><button class="admin-action-btn" data-admin-action="toggle-staff" data-id="${escapeHtml(u._id)}" data-active="${u.active !== false}">${u.active === false ? 'Reactivate' : 'Deactivate'}</button><button class="admin-action-btn danger" data-admin-action="delete-user" data-id="${escapeHtml(u._id)}">Delete</button></td>
           `;
           tbody.appendChild(tr);
         });
+        document.getElementById('staffInvitations').innerHTML = (data.invitations || []).map(invite => `<p>Invitation for ${escapeHtml(invite.email)} · ${escapeHtml(invite.role)} · expires ${new Date(invite.expiresAt).toLocaleDateString()}</p>`).join('');
       }
+      async function updateStaff(id, updates) { const result = await api(`/api/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }); if (result) { showAdminToast('Staff record updated.'); loadStaff(); } }
+
+      async function loadTables() {
+        const data = await api('/api/admin/tables'); if (!data) return;
+        const container = document.getElementById('floorPlan');
+        if (!data.tables.length) { container.innerHTML = '<div class="admin-empty"><h3>No tables configured</h3><p>Add restaurant tables above.</p></div>'; return; }
+        container.innerHTML = `<div class="floor-grid">${data.tables.map(table => `<article class="floor-table-card" data-status="${escapeHtml(table.serviceStatus)}"><h3>Table ${escapeHtml(table.number)}</h3><p>${escapeHtml(table.section)} · ${escapeHtml(table.seats)} seats</p><strong>${escapeHtml(table.serviceStatus)}</strong>${table.blockReason ? `<p>${escapeHtml(table.blockReason)}</p>` : ''}${table.reservation ? `<p>${escapeHtml(table.reservation.guestName)} · ${escapeHtml(table.reservation.time)} · party ${escapeHtml(table.reservation.partySize)}</p>` : ''}<div class="floor-table-actions">${table.serviceStatus === 'available' ? `<button class="admin-action-btn" data-admin-action="seat-table" data-id="${escapeHtml(table._id)}">Seat guest</button><button class="admin-action-btn" data-admin-action="block-table-by-id" data-id="${escapeHtml(table._id)}">Block</button>` : `<button class="admin-action-btn" data-admin-action="free-table" data-id="${escapeHtml(table._id)}">Free</button>`}<button class="admin-action-btn danger" data-admin-action="delete-table" data-id="${escapeHtml(table._id)}">Remove</button></div></article>`).join('')}</div>`;
+      }
+      async function loadGuests(search = '') {
+        const data = await api(`/api/admin/guests${search ? `?q=${encodeURIComponent(search)}` : ''}`); if (!data) return;
+        const tbody = document.getElementById('guestsTable');
+        tbody.innerHTML = data.guests.map(guest => `<tr><td>${escapeHtml(guest.name || 'Guest')}</td><td>${escapeHtml(guest.email)}<br>${escapeHtml(guest.phone || '')}</td><td>${escapeHtml(guest.visits)}</td><td>KES ${Number(guest.spend).toLocaleString()}</td><td>${guest.lastVisit ? new Date(guest.lastVisit).toLocaleDateString() : '—'}</td><td>${escapeHtml((guest.dietary || []).join(', ') || '—')}</td><td><label class="report-sr-only" for="guestTag-${escapeHtml(guest._id || guest.email)}">Guest tag</label><select class="admin-form-control guest-tag" data-email="${escapeHtml(guest.email)}"><option value="">Tag</option><option value="Regular" ${(guest.tags || []).includes('Regular') ? 'selected' : ''}>Regular</option><option value="VIP" ${(guest.tags || []).includes('VIP') ? 'selected' : ''}>VIP</option></select><textarea class="admin-form-control guest-notes" data-email="${escapeHtml(guest.email)}" placeholder="Private staff notes">${escapeHtml(guest.staffNotes || '')}</textarea><button class="admin-action-btn" data-admin-action="save-guest" data-email="${escapeHtml(guest.email)}">Save</button></td></tr>`).join('') || '<tr><td colspan="7">No guest profiles found yet. Profiles are created from reservation and order details that include email addresses.</td></tr>';
+      }
+      async function loadEvents() {
+        const data = await api('/api/admin/events'); if (!data) return; const container = document.getElementById('eventsList');
+        container.innerHTML = data.events.map(event => `<article class="report-panel"><h3>${escapeHtml(event.title)}</h3><p>${escapeHtml(new Date(event.date).toLocaleString())} · ${escapeHtml(event.type)} · ${escapeHtml(event.bookedGuests || 0)}/${escapeHtml(event.capacity)} guests · KES ${Number(event.price || 0).toLocaleString()}</p><p>${escapeHtml(event.description || '')}</p><span>${event.published ? 'Published' : 'Draft'}</span></article>`).join('') || '<p>No events yet. Create one above.</p>';
+      }
+      async function loadInbox(search = '') {
+        const data = await api(`/api/admin/inbox${search ? `?q=${encodeURIComponent(search)}` : ''}`); if (!data) return;
+        document.getElementById('inboxList').innerHTML = data.messages.map(message => `<article class="report-panel"><h3>${escapeHtml(message.subject || 'Guest message')} · ${escapeHtml(message.status)}</h3><p>${escapeHtml(message.name)} · ${escapeHtml(message.email)} · ${escapeHtml(message.phone || '')}</p><p>${escapeHtml(message.message)}</p><small>${new Date(message.createdAt).toLocaleString()}</small><div class="floor-table-actions"><button class="admin-action-btn" data-admin-action="message-status" data-status="read" data-id="${escapeHtml(message._id)}">Mark read</button><button class="admin-action-btn" data-admin-action="message-status" data-status="archived" data-id="${escapeHtml(message._id)}">Archive</button><a class="admin-action-btn" href="mailto:${escapeHtml(message.email)}?subject=${encodeURIComponent('Re: ' + (message.subject || 'LakeBite enquiry'))}">Reply by email</a></div></article>`).join('') || '<p>No messages match this search.</p>';
+      }
+      async function loadReviews() {
+        const data = await api('/api/admin/reviews'); if (!data) return;
+        document.getElementById('reviewsList').innerHTML = data.reviews.map(review => `<article class="report-panel"><h3>${escapeHtml(review.rating)} / 5 · ${escapeHtml(review.status)}</h3><p>${escapeHtml(review.name || 'Guest')} · ${new Date(review.createdAt).toLocaleDateString()}</p><p>${escapeHtml(review.comment)}</p>${review.reply ? `<p>Reply: ${escapeHtml(review.reply)}</p>` : ''}<div class="floor-table-actions"><button class="admin-action-btn" data-admin-action="review-status" data-status="approved" data-id="${escapeHtml(review._id)}">Approve</button><button class="admin-action-btn danger" data-admin-action="review-status" data-status="hidden" data-id="${escapeHtml(review._id)}">Hide</button></div></article>`).join('') || '<p>No guest reviews submitted.</p>';
+      }
+      async function loadSettings() { const data = await api('/api/admin/settings'); if (!data) return; const form = document.getElementById('settingsForm'); for (const [key, value] of Object.entries(data.settings || {})) if (form.elements[key]) form.elements[key].value = value ?? ''; }
+      async function loadCms() { const data = await api('/api/admin/settings'); if (!data) return; const form = document.getElementById('cmsForm'); for (const key of ['heroTitle','heroSubtitle','aboutText']) form.elements[key].value = data.settings?.[key] || ''; form.elements.gallery.value = Array.isArray(data.settings?.gallery) ? data.settings.gallery.join('\n') : data.settings?.gallery || ''; }
+      async function loadIntegrationStatus() { const data = await api('/api/admin/integrations/status'); if (!data) return; document.getElementById('integrationStatus').innerHTML = `<p>M-Pesa: ${data.mpesa ? 'Environment keys detected' : 'Not configured'} · Email: ${data.email ? 'Environment keys detected' : 'Not configured'} · SMS: ${data.sms ? 'Environment keys detected' : 'Not configured'} · Analytics: ${data.analytics ? 'Connected ID configured' : 'Not configured'}</p>`; }
+
+      document.getElementById('tableForm').addEventListener('submit', async event => { event.preventDefault(); const body = Object.fromEntries(new FormData(event.currentTarget)); if (await api('/api/admin/tables', { method: 'POST', body: JSON.stringify(body) })) { event.currentTarget.reset(); showAdminToast('Table added.'); loadTables(); } });
+      document.getElementById('settingsForm').addEventListener('submit', async event => { event.preventDefault(); const body = Object.fromEntries(new FormData(event.currentTarget)); if (await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(body) })) showAdminToast('Restaurant settings saved.'); });
+      document.getElementById('cmsForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget, body = Object.fromEntries(new FormData(form)); body.gallery = body.gallery.split('\n').map(line => line.trim()).filter(Boolean).slice(0,50); if (await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(body) })) showAdminToast('Website content published.'); });
+      document.getElementById('eventForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget, body = Object.fromEntries(new FormData(form)); body.published = form.elements.published.checked; if (await api('/api/admin/events', { method: 'POST', body: JSON.stringify(body) })) { form.reset(); showAdminToast('Event created.'); loadEvents(); } });
+      document.getElementById('staffInviteForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget; const result = await api('/api/admin/staff-invites', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) }); if (!result) return; const paragraph = document.createElement('p'), link = document.createElement('a'); link.href = result.inviteUrl; link.textContent = `${location.origin}${result.inviteUrl}`; paragraph.textContent = 'Share this single-use invitation link with the teammate: '; paragraph.appendChild(link); document.getElementById('staffInvitations').prepend(paragraph); form.reset(); showAdminToast('Invitation link created. Email delivery is not configured.'); });
+      document.getElementById('staffInviteForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget; const result = await api('/api/admin/staff-invites', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) }); if (!result) return; const paragraph = document.createElement('p'), link = document.createElement('a'); link.href = result.inviteUrl; link.textContent = `${location.origin}${result.inviteUrl}`; paragraph.textContent = 'Share this single-use invitation link with the teammate: '; paragraph.appendChild(link); document.getElementById('staffInvitations').prepend(paragraph); form.reset(); showAdminToast('Invitation link created. Email delivery is not configured.'); });
+      document.getElementById('guestSearch').addEventListener('input', event => loadGuests(event.target.value));
+      document.getElementById('inboxSearch').addEventListener('input', event => loadInbox(event.target.value));
+      document.getElementById('adminSearch').addEventListener('input', event => {
+        const view = document.querySelector('.admin-nav-link.active')?.dataset.view;
+        if (view === 'reservations') loadReservations(); if (view === 'orders') loadOrders(); if (view === 'menu') loadMenu(); if (view === 'guests') loadGuests(event.target.value);
+      });
+      document.getElementById('guestsTable').addEventListener('click', async event => { const button = event.target.closest('[data-admin-action="save-guest"]'); if (!button) return; const email = button.dataset.email, tag = document.querySelector(`.guest-tag[data-email="${CSS.escape(email)}"]`).value, staffNotes = document.querySelector(`.guest-notes[data-email="${CSS.escape(email)}"]`).value; if (await api(`/api/admin/guests/${encodeURIComponent(email)}`, { method: 'PATCH', body: JSON.stringify({ tags: tag ? [tag] : [], staffNotes }) })) showAdminToast('Guest profile saved.'); });
+      document.getElementById('floorPlan').addEventListener('click', event => { const card = event.target.closest('.floor-table-card'); if (card) document.getElementById('floorReservations').textContent = card.querySelector('p:nth-of-type(2)')?.textContent || 'No reservation details for this table.'; });
 
       // ── Reservation Modal ──
       let editReservationId = null;
@@ -2114,10 +2192,10 @@ body.admin-body {
       }
 
       // ── Placeholder actions ──
-      function adminAddWalkIn() { alert('Walk-in flow: seat guest at an available table.'); }
-      function adminBlockTable() { alert('Table blocking coming soon.'); }
-      function adminPauseOrders() { alert('Pause online ordering coming soon.'); }
-      function adminMarkUnavailable() { alert('Mark item unavailable coming soon.'); }
+      function adminAddWalkIn() { openQuickDialog('walk-in'); }
+      function adminBlockTable() { openQuickDialog('block'); }
+      async function adminPauseOrders() { const data = await api('/api/admin/operations'); if (!data) return; const result = await api('/api/admin/operations', { method: 'PATCH', body: JSON.stringify({ ordersPaused: !data.ordersPaused }) }); if (result) { showAdminToast(result.ordersPaused ? 'Online ordering paused.' : 'Online ordering resumed.'); loadPublicMenuState(); } }
+      function adminMarkUnavailable() { openQuickDialog('unavailable'); }
 
       // ── Init: check auth ──
       (async () => {
@@ -2125,10 +2203,15 @@ body.admin-body {
         if (!me) return;
         profileName.textContent = me.user.name;
         avatar.textContent = (me.user.name || 'A').charAt(0).toUpperCase();
-        const reportCapabilities = await api('/api/admin/reports/capabilities');
+        document.querySelector('.admin-profile-role').textContent = me.user.role;
+        const role = me.user.role;
+        const allowedViews = role === 'admin' ? null : role === 'manager' ? ['dashboard','reservations','floor','orders','menu','guests','events','website','inbox','reports','integrations','settings'] : role === 'host' ? ['reservations','floor'] : ['orders'];
+        if (allowedViews) document.querySelectorAll('.admin-nav-link').forEach(link => { if (!allowedViews.includes(link.dataset.view)) link.closest('.admin-nav-item').hidden = true; });
+        if (allowedViews && allowedViews.length) document.querySelector(`.admin-nav-link[data-view="${allowedViews[0]}"]`)?.click();
+        const reportCapabilities = ['admin','manager'].includes(role) ? await api('/api/admin/reports/capabilities') : null;
         reportPreviewAllowed = Boolean(reportCapabilities?.previewAllowed);
         document.getElementById('reportPreview').hidden = !reportPreviewAllowed;
-        loadDashboard();
+        if (!allowedViews || allowedViews.includes('dashboard')) loadDashboard();
       })();
     })();
   </script>
