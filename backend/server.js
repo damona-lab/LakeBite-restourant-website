@@ -220,10 +220,15 @@ app.get('/api/admin/audit-logs', auth, adminOnly, async (req, res) => {
   res.json({ logs });
 });
 
-app.use(express.static(__dirname));
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend')));
 
-app.get('/admin', (req, res) => res.sendFile(__dirname + '/admin.html'));
-app.get('/login', (req, res) => res.sendFile(__dirname + '/login.html'));
+app.get('/admin', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../frontend/admin.html'), { dotfiles: 'allow' });
+});
+app.get('/login', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../frontend/login.html'), { dotfiles: 'allow' });
+});
 
 async function seedAdmin() {
   const email = process.env.ADMIN_EMAIL;
