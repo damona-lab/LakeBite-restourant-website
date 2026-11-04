@@ -37,15 +37,24 @@ const title=document.getElementById('title');
 toggle.onclick=e=>{e.preventDefault();mode=mode==='login'?'signup':'login';title.textContent=mode==='login'?'Login':'Sign Up';name.style.display=mode==='signup'?'block':'none';toggle.textContent=mode==='login'?'Need an account? Sign up':'Have an account? Login';};
 document.getElementById('form').onsubmit=async e=>{
   e.preventDefault();
+  const msg=document.getElementById('msg');
+  msg.textContent='';
   const email=document.getElementById('email').value;
   const password=document.getElementById('password').value;
   const url=mode==='login'?'/api/login':'/api/register';
   const body=mode==='login'?{email,password}:{name:name.value,email,password};
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
-  const d=await r.json();
-  if(!r.ok){document.getElementById('msg').textContent=d.error||'Error';return;}
-  if(d.user.role==='admin') location.href='/admin'; else location.href='/';
+  try {
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
+    const d=await r.json();
+    if(!r.ok){msg.textContent=d.error||'Error';return;}
+    if(d.token) localStorage.setItem('lb_token', d.token);
+    if(d.user.role==='admin') location.href='/admin'; else location.href='/';
+  } catch (err) {
+    msg.textContent='Could not reach the server. Make sure `npm start` is running and you are on http://localhost:3000/login.html';
+    console.error(err);
+  }
 };
 </script>
 </body>
 </html>
+

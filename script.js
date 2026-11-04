@@ -142,6 +142,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('.cart-btn')) openCart();
   if (e.target.closest('.cart-overlay') || e.target.closest('.cart-close-btn')) closeCart();
   if (e.target.closest('.add-to-cart-btn')) {
+    if (!localStorage.getItem('lb_token')) { window.location.href='/login.html'; return; }
     const btn = e.target.closest('.add-to-cart-btn');
     addToCart(
       btn.dataset.id,
@@ -151,6 +152,7 @@ document.addEventListener('click', e => {
     );
   }
   if (e.target.closest('.checkout-btn')) {
+    if (!localStorage.getItem('lb_token')) { window.location.href='/login.html'; return; }
     showToast('<i class="fa-solid fa-check"></i> Order placed! We\'ll contact you soon.');
     cart = [];
     saveCart();
@@ -168,6 +170,30 @@ function closeCart() {
   document.querySelector('.cart-drawer')?.classList.remove('open');
   document.querySelector('.cart-overlay')?.classList.remove('open');
   document.body.style.overflow = '';
+}
+
+// ── Auth ───────────────────────────────────────────────────
+const LOGIN_LINKS = document.querySelectorAll('#loginLink');
+
+function isLoggedIn() {
+  return !!localStorage.getItem('lb_token');
+}
+
+async function logout() {
+  try {
+    await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+  } catch {}
+  localStorage.removeItem('lb_token');
+  location.href = '/index.html';
+}
+
+function updateAuthUI() {
+  const loggedIn = isLoggedIn();
+  LOGIN_LINKS.forEach(link => {
+    link.textContent = loggedIn ? 'Logout' : 'Login';
+    link.href = loggedIn ? 'javascript:void(0)' : 'login.html';
+    link.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+  });
 }
 
 // ── Toast ──────────────────────────────────────────────────
@@ -210,6 +236,7 @@ function initHeaderScroll() {
 
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  updateAuthUI();
   updateCartUI();
   initReveal();
   initHeaderScroll();
