@@ -31,34 +31,54 @@ document.addEventListener('click', e => {
   }
 });
 
-// ── Mobile Menu ────────────────────────────────────────────
-const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-const mobileNav = document.querySelector('.mobile-nav');
+// ── Mobile Drawer ────────────────────────────────────────────
+const navToggle = document.getElementById('navToggle');
+const mobileDrawer = document.getElementById('mobileDrawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+const drawerClose = document.getElementById('drawerClose');
+const drawerLinks = document.querySelectorAll('.drawer-link');
 
-if (mobileMenuBtn && mobileNav) {
-  mobileMenuBtn.addEventListener('click', () => {
-    mobileNav.classList.toggle('open');
-    mobileMenuBtn.classList.toggle('active');
-  });
+const openDrawer = () => {
+  navToggle.classList.add('open');
+  navToggle.setAttribute('aria-expanded', 'true');
+  mobileDrawer.classList.add('open');
+  mobileDrawer.removeAttribute('hidden');
+  document.body.style.overflow = 'hidden';
+  drawerOverlay.focus();
+};
 
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-nav')) {
-      mobileNav.classList.remove('open');
-    }
+const closeDrawer = () => {
+  navToggle.classList.remove('open');
+  navToggle.setAttribute('aria-expanded', 'false');
+  mobileDrawer.classList.remove('open');
+  mobileDrawer.setAttribute('hidden', '');
+  document.body.style.overflow = '';
+};
+
+if (navToggle && mobileDrawer) {
+  navToggle.addEventListener('click', openDrawer);
+  drawerClose.addEventListener('click', closeDrawer);
+  drawerOverlay.addEventListener('click', closeDrawer);
+  drawerLinks.forEach(link => link.addEventListener('click', closeDrawer));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && mobileDrawer.classList.contains('open')) closeDrawer();
   });
 }
 
-// Mark active nav link
-(function setActiveNav() {
-  const page = location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-links a, .mobile-nav a').forEach(a => {
-    const href = a.getAttribute('href');
-    if (href && href.includes(page)) a.classList.add('active');
-    if (page === 'index.html' && (href === 'index.html' || href === './' || href === '#')) {
-      a.classList.add('active');
+// Scroll spy: mark active nav link based on visible section
+const observerOptions = { rootMargin: '-30% 0% -70% 0%', threshold: 0 };
+const scrollSpy = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('id');
+      document.querySelectorAll('.nav-link, .drawer-link').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === `#${id}`);
+      });
     }
   });
-})();
+}, observerOptions);
+
+document.querySelectorAll('[id]').forEach(el => scrollSpy.observe(el));
 
 // ── Cart System ────────────────────────────────────────────
 let cart = JSON.parse(localStorage.getItem('lb-cart') || '[]');
@@ -71,7 +91,7 @@ function updateCartUI() {
   const total = cart.reduce((s, i) => s + i.qty, 0);
   document.querySelectorAll('.cart-count').forEach(el => {
     el.textContent = total;
-    el.classList.toggle('show', total > 0);
+    el.parentElement.classList.toggle('has-items', total > 0);
   });
   renderCartDrawer();
 }
@@ -288,22 +308,10 @@ function initReveal() {
   els.forEach(el => observer.observe(el));
 }
 
-// ── Header scroll shadow ───────────────────────────────────
-function initHeaderScroll() {
-  const header = document.querySelector('.site-header');
-  if (!header) return;
-  window.addEventListener('scroll', () => {
-    header.style.boxShadow = window.scrollY > 10
-      ? '0 4px 24px rgba(0,0,0,0.10)'
-      : 'none';
-  }, { passive: true });
-}
-
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   updateAuthUI();
   await loadUser();
   updateCartUI();
   initReveal();
-  initHeaderScroll();
 });
