@@ -251,6 +251,15 @@ function reportDateKey(value) {
     timeZone: REPORT_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'
   }).format(new Date(value));
 }
+function reportClockKey(value) {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: REPORT_TIME_ZONE, weekday: 'short', hour: '2-digit', hourCycle: 'h23'
+  }).formatToParts(new Date(value));
+  return {
+    weekday: parts.find(part => part.type === 'weekday')?.value || 'Unknown',
+    hour: parts.find(part => part.type === 'hour')?.value || '00'
+  };
+}
 function reportDateBoundary(dateKey) {
   return new Date(`${dateKey}T00:00:00+03:00`);
 }
@@ -280,10 +289,21 @@ function reportOrderSales(order) {
 function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
   const days = new Map();
   const channels = new Map();
+  const channelOrders = new Map();
   const paymentMethods = new Map();
   const menuItems = new Map();
+  const orderStatuses = new Map();
+  const salesHeat = new Map();
   const reservationStatuses = new Map();
   const reservationHours = new Map();
+  const reservationHeat = new Map();
+  const leadTimes = new Map([['< 1 day', 0], ['1–3 days', 0], ['4–7 days', 0], ['8–14 days', 0], ['15+ days', 0], ['Not recorded', 0]]);
+  const partySizes = new Map();
+  const itemDayData = new Map();
+  const getDay = key => {
+    if (!days.has(key)) days.set(key, { sales: 0, orders: 0, paidOrders: 0, reservations: 0, covers: 0 });
+    return days.get(key);
+  };
   let grossSales = 0;
   let refunds = 0;
   let paidOrders = 0;
@@ -295,19 +315,26 @@ function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
     const orderDay = reportDateKey(order.createdAt);
     if (orderDay < fromKey || orderDay > toKey) continue;
     placedOrders += 1;
+    getDay(orderDay).orders += 1;
+    orderStatuses.set(order.status || 'unknown', (orderStatuses.get(order.status || 'unknown') || 0) + 1);
+    const orderClock = reportClockKey(order.createdAt);
     const orderGross = Number(order.total) || 0;
     const isRefunded = order.paymentStatus === 'refunded' || order.status === 'refunded';
     const isPaid = order.paymentStatus === 'paid' || isRefunded || order.status === 'completed';
+    const channel = order.type === 'delivery' ? 'Delivery' : order.type === 'pickup' ? 'Pickup' : 'Other';
+    if (order.type === 'delivery') deliveryOrders += 1;
+    else if (order.type === 'pickup') pickupOrders += 1;
+    channelOrders.set(channel, (channelOrders.get(channel) || 0) + 1);
     if (!isPaid) continue;
 
     grossSales += orderGross;
     if (isRefunded) refunds += orderGross;
-    else paidOrders += 1;
+    else {
+      paidOrders += 1;
+      getDay(orderDay).paidOrders += 1;
+    }
 
-    const channel = order.type === 'delivery' ? 'Delivery' : order.type === 'pickup' ? 'Pickup' : 'Other';
     channels.set(channel, (channels.get(channel) || 0) + (isRefunded ? 0 : orderGross));
-    if (order.type === 'delivery') deliveryOrders += 1;
-    else if (order.type === 'pickup') pickupOrders += 1;
     const method = order.paymentMethod || 'Not recorded';
     paymentMethods.set(method, (paymentMethods.get(method) || 0) + (isRefunded ? 0 : orderGross));
     if (!isRefunded) {
@@ -318,9 +345,18 @@ function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
         current.units += quantity;
         current.sales += (Number(item.price) || 0) * quantity;
         menuItems.set(name, current);
+        if (!itemDayData.has(name)) itemDayData.set(name, new Map());
+        const itemDay = itemDayData.get(name).get(orderDay) || { units: 0, sales: 0 };
+        itemDay.units += quantity;
+        itemDay.sales += (Number(item.price) || 0) * quantity;
+        itemDayData.get(name).set(orderDay, itemDay);
       }
     }
-    if (!isRefunded) days.set(orderDay, (days.get(orderDay) || 0) + orderGross);
+    if (!isRefunded) {
+      getDay(orderDay).sales += orderGross;
+      const heatKey = `${orderClock.weekday}|${orderClock.hour}`;
+      salesHeat.set(heatKey, (salesHeat.get(heatKey) || 0) + orderGross);
+    }
   }
 
   let bookedCovers = 0;
@@ -332,21 +368,39 @@ function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
     const reservationDay = reportDateKey(reservation.date);
     if (reservationDay < fromKey || reservationDay > toKey) continue;
     const status = reservation.status || 'pending';
+    const daily = getDay(reservationDay);
+    daily.reservations += 1;
     reservationStatuses.set(status, (reservationStatuses.get(status) || 0) + 1);
     if (['pending', 'confirmed', 'seated', 'completed'].includes(status)) {
       activeReservations += 1;
       bookedCovers += Number(reservation.partySize) || 0;
       partySizeTotal += Number(reservation.partySize) || 0;
       partySizeCount += 1;
+      daily.covers += Number(reservation.partySize) || 0;
     }
     if (status === 'seated' || status === 'completed') seatedCovers += Number(reservation.partySize) || 0;
     const hour = String(reservation.time || '').slice(0, 2);
-    if (/^\d{2}$/.test(hour)) reservationHours.set(hour, (reservationHours.get(hour) || 0) + 1);
+    if (/^\d{2}$/.test(hour)) {
+      reservationHours.set(hour, (reservationHours.get(hour) || 0) + 1);
+      const weekday = new Intl.DateTimeFormat('en-US', { timeZone: REPORT_TIME_ZONE, weekday: 'short' }).format(new Date(reservation.date));
+      const heatKey = `${weekday}|${hour}`;
+      reservationHeat.set(heatKey, (reservationHeat.get(heatKey) || 0) + 1);
+    }
+    const size = Number(reservation.partySize) || 0;
+    if (size > 0) {
+      const sizeGroup = size <= 2 ? '1–2' : size <= 4 ? '3–4' : size <= 6 ? '5–6' : '7+';
+      partySizes.set(sizeGroup, (partySizes.get(sizeGroup) || 0) + 1);
+    }
+    if (reservation.createdAt) {
+      const leadDays = Math.max(0, Math.round((Date.parse(`${reservationDay}T00:00:00Z`) - Date.parse(`${reportDateKey(reservation.createdAt)}T00:00:00Z`)) / 86400000));
+      const leadGroup = leadDays < 1 ? '< 1 day' : leadDays <= 3 ? '1–3 days' : leadDays <= 7 ? '4–7 days' : leadDays <= 14 ? '8–14 days' : '15+ days';
+      leadTimes.set(leadGroup, (leadTimes.get(leadGroup) || 0) + 1);
+    } else leadTimes.set('Not recorded', (leadTimes.get('Not recorded') || 0) + 1);
   }
 
   const daySeries = [];
   for (let day = fromKey; day <= toKey; day = reportShiftDate(day, 1)) {
-    daySeries.push({ date: day, sales: days.get(day) || 0 });
+    daySeries.push({ date: day, ...(days.get(day) || { sales: 0, orders: 0, paidOrders: 0, reservations: 0, covers: 0 }) });
   }
   const cancelled = reservationStatuses.get('cancelled') || 0;
   const noShows = reservationStatuses.get('no-show') || 0;
@@ -362,10 +416,20 @@ function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
     cancellationRate: bookingCount ? cancelled / bookingCount * 100 : 0,
     noShowRate: bookingCount ? noShows / bookingCount * 100 : 0,
     daySeries,
+    orderStatuses: [...orderStatuses].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
+    channelOrders: [...channelOrders].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
+    salesHeatmap: [...salesHeat].map(([key, sales]) => { const [weekday, hour] = key.split('|'); return { weekday, hour: `${hour}:00`, sales }; }),
+    reservationHeatmap: [...reservationHeat].map(([key, count]) => { const [weekday, hour] = key.split('|'); return { weekday, hour: `${hour}:00`, count }; }),
     channels: [...channels].map(([name, sales]) => ({ name, sales })).sort((a, b) => b.sales - a.sales),
     paymentMethods: [...paymentMethods].map(([name, sales]) => ({ name, sales })).sort((a, b) => b.sales - a.sales),
     reservationStatuses: [...reservationStatuses].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
     reservationHours: [...reservationHours].map(([hour, count]) => ({ hour: `${hour}:00`, count })).sort((a, b) => a.hour.localeCompare(b.hour)),
+    leadTimes: [...leadTimes].map(([name, count]) => ({ name, count })),
+    partySizes: [...partySizes].map(([name, count]) => ({ name, count })),
+    itemSeries: [...menuItems.values()].sort((a, b) => b.sales - a.sales).slice(0, 5).map(item => ({
+      name: item.name,
+      daySeries: [...(itemDayData.get(item.name) || new Map())].map(([date, values]) => ({ date, ...values }))
+    })),
     topItems: [...menuItems.values()].sort((a, b) => b.sales - a.sales).slice(0, 10)
   };
 }
@@ -380,6 +444,7 @@ app.get('/api/admin/reports/analytics', auth, adminOnly, async (req, res) => {
     const dayCount = reportDayCount(from, to);
     if (dayCount > 366) return res.status(400).json({ error: 'Choose a date range of 366 days or less.' });
     if (!['all', 'pickup', 'delivery'].includes(channel)) return res.status(400).json({ error: 'Choose a valid sales channel.' });
+    if (!['previous', 'year', 'none'].includes(comparison)) return res.status(400).json({ error: 'Choose a valid comparison period.' });
     const currentPeriod = reportPeriod(from, to);
     let comparisonFrom = null;
     let comparisonTo = null;
@@ -395,14 +460,15 @@ app.get('/api/admin/reports/analytics', auth, adminOnly, async (req, res) => {
     const channelFilter = channel === 'all' ? {} : { type: channel };
     const [orders, reservations, priorOrders, priorReservations] = await Promise.all([
       Order.find({ createdAt: currentFilter, ...channelFilter }).select('items total subtotal deliveryFee type paymentMethod paymentStatus status createdAt').lean(),
-      Reservation.find({ date: currentFilter }).select('date time partySize status').lean(),
+      Reservation.find({ date: currentFilter }).select('date time partySize status createdAt').lean(),
       comparisonPeriod ? Order.find({ createdAt: { $gte: comparisonPeriod.start, $lt: comparisonPeriod.end }, ...channelFilter }).select('items total subtotal deliveryFee type paymentMethod paymentStatus status createdAt').lean() : [],
-      comparisonPeriod ? Reservation.find({ date: { $gte: comparisonPeriod.start, $lt: comparisonPeriod.end } }).select('date time partySize status').lean() : []
+      comparisonPeriod ? Reservation.find({ date: { $gte: comparisonPeriod.start, $lt: comparisonPeriod.end } }).select('date time partySize status createdAt').lean() : []
     ]);
     const current = summarizeReportPeriod(orders, reservations, from, to);
     const prior = comparisonPeriod ? summarizeReportPeriod(priorOrders, priorReservations, comparisonFrom, comparisonTo) : null;
     res.json({
       period: { from, to, timeZone: REPORT_TIME_ZONE, channel },
+      source: { sales: 'MongoDB orders collection', reservations: 'MongoDB reservations collection', menuItems: 'Item name and unit-price snapshots on order lines' },
       comparison: { type: comparison, from: comparisonFrom, to: comparisonTo, metrics: prior },
       metrics: current,
       definitions: {
@@ -415,6 +481,7 @@ app.get('/api/admin/reports/analytics', auth, adminOnly, async (req, res) => {
       },
       unavailable: [
         { metric: 'Taxes, tips, discounts, voids, and refund reasons', reason: 'These fields are not stored on order records.' },
+        { metric: 'Average dine-in check and spend per guest', reason: 'Dine-in POS checks and unique seated guest counts are not recorded.' },
         { metric: 'Dine-in, events, and booking channels', reason: 'Order channel is recorded only as pickup or delivery; reservation source and service period are not recorded.' },
         { metric: 'Table occupancy, turn time, wait time, and service pacing', reason: 'Table capacity and seating/order timing data are not stored.' },
         { metric: 'Events, reviews, and website analytics', reason: 'No event, feedback, review, or consented website analytics data source is connected.' },
@@ -428,18 +495,122 @@ app.get('/api/admin/reports/analytics', auth, adminOnly, async (req, res) => {
   }
 });
 
+app.get('/api/admin/reports/capabilities', auth, adminOnly, (req, res) => {
+  res.json({ previewAllowed: process.env.NODE_ENV === 'development' });
+});
+
+app.get('/api/admin/reports/preview', auth, adminOnly, (req, res) => {
+  if (process.env.NODE_ENV !== 'development') return res.status(404).json({ error: 'Preview data is available only in development.' });
+  const { from, to, comparison = 'previous', channel = 'all' } = req.query;
+  const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+  if (!validDate(from) || !validDate(to) || from > to || reportDayCount(from, to) > 31) {
+    return res.status(400).json({ error: 'Preview data is limited to valid ranges of 31 days or less.' });
+  }
+  if (!['all', 'pickup', 'delivery'].includes(channel)) return res.status(400).json({ error: 'Choose a valid sales channel.' });
+  if (!['previous', 'year', 'none'].includes(comparison)) return res.status(400).json({ error: 'Choose a valid comparison period.' });
+  const sampleCatalog = [
+    { name: 'Nyama Choma Platter', price: 2400 }, { name: 'Whole Tilapia Fillet', price: 1850 },
+    { name: 'Swahili Pilau', price: 1200 }, { name: 'Lake Victoria Prawns', price: 2800 },
+    { name: 'Passion Fruit Cheesecake', price: 850 }, { name: 'Mango Masala Mocktail', price: 650 }
+  ];
+  function createPreviewRecords(startKey, endKey, scale = 1, orderChannel = 'all') {
+    const orders = [];
+    const reservations = [];
+    for (let day = startKey, dayIndex = 0; day <= endKey; day = reportShiftDate(day, 1), dayIndex += 1) {
+      const orderCount = 22 + ((dayIndex * 7 + 5) % 17);
+      for (let index = 0; index < orderCount; index += 1) {
+        const type = (index + dayIndex) % 3 === 0 ? 'delivery' : 'pickup';
+        if (orderChannel !== 'all' && type !== orderChannel) continue;
+        const first = sampleCatalog[(index + dayIndex) % sampleCatalog.length];
+        const second = sampleCatalog[(index * 2 + dayIndex + 2) % sampleCatalog.length];
+        const quantity = index % 5 === 0 ? 2 : 1;
+        const items = [{ name: first.name, price: Math.round(first.price * scale), qty: quantity }, ...(index % 4 === 0 ? [{ name: second.name, price: Math.round(second.price * scale), qty: 1 }] : [])];
+        const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+        const deliveryFee = type === 'delivery' ? 250 : 0;
+        const refunded = index % 43 === 0;
+        const hour = 10 + ((index * 3 + dayIndex * 2) % 12);
+        const createdAt = new Date(reportDateBoundary(day).getTime() + (hour * 60 + (index * 11) % 60) * 60000);
+        orders.push({
+          createdAt, items, subtotal, deliveryFee: Math.round(deliveryFee * scale), total: subtotal + Math.round(deliveryFee * scale),
+          type, paymentMethod: index % 3 === 0 ? 'mpesa' : 'pay-on-delivery',
+          paymentStatus: refunded ? 'refunded' : 'paid', status: refunded ? 'refunded' : (index % 4 === 0 ? 'completed' : 'preparing')
+        });
+      }
+      const bookingCount = 12 + ((dayIndex * 5 + 3) % 13);
+      for (let index = 0; index < bookingCount; index += 1) {
+        const statuses = ['confirmed', 'confirmed', 'seated', 'pending', 'completed', 'cancelled', 'no-show'];
+        const hour = 11 + ((index * 2 + dayIndex) % 11);
+        const serviceDate = new Date(reportDateBoundary(day).getTime() + (hour * 60 + (index * 7) % 60) * 60000);
+        const leadDays = (index * 3 + dayIndex) % 19;
+        reservations.push({
+          date: serviceDate, time: `${String(hour).padStart(2, '0')}:${String((index * 7) % 60).padStart(2, '0')}`,
+          createdAt: new Date(serviceDate.getTime() - leadDays * 86400000),
+          partySize: 1 + ((index + dayIndex) % 6), status: statuses[(index + dayIndex) % statuses.length]
+        });
+      }
+    }
+    return { orders, reservations };
+  }
+  const currentRecords = createPreviewRecords(from, to, 1, channel);
+  const metrics = summarizeReportPeriod(currentRecords.orders, currentRecords.reservations, from, to);
+  let comparisonFrom = null, comparisonTo = null, comparisonMetrics = null;
+  const countDays = reportDayCount(from, to);
+  if (comparison === 'previous') {
+    comparisonTo = reportShiftDate(from, -1);
+    comparisonFrom = reportShiftDate(comparisonTo, -(countDays - 1));
+  } else if (comparison === 'year') {
+    comparisonFrom = reportShiftYear(from, -1);
+    comparisonTo = reportShiftYear(to, -1);
+  }
+  if (comparisonFrom) {
+    const prior = createPreviewRecords(comparisonFrom, comparisonTo, .88, channel);
+    comparisonMetrics = summarizeReportPeriod(prior.orders, prior.reservations, comparisonFrom, comparisonTo);
+  }
+  res.json({
+    preview: true,
+    period: { from, to, timeZone: REPORT_TIME_ZONE, channel },
+    source: { sales: 'Illustrative development preview only', reservations: 'Illustrative development preview only', menuItems: 'Illustrative development preview only' },
+    comparison: { type: comparison, from: comparisonFrom, to: comparisonTo, metrics: comparisonMetrics },
+    metrics,
+    definitions: {
+      grossSales: 'Preview order totals before simulated full refunds; illustrative only.',
+      netSales: 'Preview gross sales less simulated full-order refunds; illustrative only.',
+      averageOrderValue: 'Preview net sales divided by non-refunded paid orders.',
+      seatedCovers: 'Preview party sizes on bookings marked seated or completed.',
+      reservations: 'Preview reservation records by service date.',
+      timeBasis: 'Preview dates grouped in Africa/Nairobi time.'
+    },
+    unavailable: [
+      { metric: 'Taxes, tips, discounts, voids, and refund reasons', reason: 'These fields are not represented in the preview data or production order records.' },
+      { metric: 'Average dine-in check and spend per guest', reason: 'Dine-in POS checks and unique seated guest counts are not recorded.' },
+      { metric: 'Table occupancy, turns, wait time, and service pacing', reason: 'Preview and production data do not include table capacity or actual seating/order timing.' },
+      { metric: 'Events, reviews, website analytics, and operations costs', reason: 'No corresponding connected data source is configured.' },
+      { metric: 'Scheduled report delivery', reason: 'No authorized recipient or email delivery integration is configured.' }
+    ]
+  });
+});
+
 app.get('/api/admin/dashboard-stats', auth, adminOnly, async (req, res) => {
   const today = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
   const reservations = await Reservation.find({ date: { $gte: today, $lt: tomorrow } });
   const orders = await Order.find({ createdAt: { $gte: today, $lt: tomorrow } });
-  const revenue = orders.reduce((s, o) => (o.paymentStatus === 'paid' || o.status === 'completed') ? s + (o.total || 0) : s, 0);
-  const paidOrdersToday = orders.filter(o => o.paymentStatus === 'paid' || o.status === 'completed').length;
+  const revenue = orders.reduce((sum, order) => {
+    const refunded = order.paymentStatus === 'refunded' || order.status === 'refunded';
+    return !refunded && (order.paymentStatus === 'paid' || order.status === 'completed') ? sum + (order.total || 0) : sum;
+  }, 0);
+  const paidOrdersToday = orders.filter(order => order.paymentStatus !== 'refunded' && order.status !== 'refunded' && (order.paymentStatus === 'paid' || order.status === 'completed')).length;
+  const activeOrdersToday = orders.filter(order => ['new', 'accepted', 'preparing', 'ready', 'out-for-delivery'].includes(order.status)).length;
+  const expectedArrivals = reservations.filter(reservation => ['pending', 'confirmed'].includes(reservation.status)).length;
+  const coversToday = reservations.filter(reservation => ['pending', 'confirmed', 'seated'].includes(reservation.status)).reduce((sum, reservation) => sum + (Number(reservation.partySize) || 0), 0);
   res.json({
     reservationsToday: reservations.length,
+    expectedArrivals,
+    coversToday,
     confirmedToday: reservations.filter(r => r.status === 'confirmed').length,
     seatedToday: reservations.filter(r => r.status === 'seated').length,
     ordersToday: orders.length,
+    activeOrdersToday,
     paidOrdersToday,
     revenueToday: revenue,
     totalUsers: await User.countDocuments(),

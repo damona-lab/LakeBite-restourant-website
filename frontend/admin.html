@@ -610,7 +610,56 @@ body.admin-body {
 .report-tooltip { cursor: help; border-bottom: 1px dotted currentColor; }
 .report-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .report-loading { display: flex; align-items: center; justify-content: center; min-height: 170px; color: var(--admin-text-sub); gap: .6rem; }
+.chart-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .85rem; margin-top: .85rem; }
+.chart-card { min-width: 0; background: var(--admin-card); border: 1px solid var(--admin-border); border-radius: var(--admin-radius); padding: 1rem; box-shadow: var(--admin-shadow); }
+.chart-card-wide { grid-column: 1 / -1; }
+.chart-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.chart-card h3 { margin: 0; color: var(--admin-text); font: 700 1.04rem var(--font-display); }
+.chart-card p { margin: .3rem 0 .7rem; color: var(--admin-text-sub); font-size: .76rem; line-height: 1.5; }
+.chart-tools { display: flex; flex-wrap: wrap; gap: .35rem; justify-content: flex-end; }
+.chart-mini-btn { border: 1px solid var(--admin-border); background: #fff; border-radius: 6px; padding: .35rem .55rem; color: var(--admin-text-sub); font: 600 .7rem var(--font-body); cursor: pointer; }
+.chart-mini-btn:hover, .chart-mini-btn:focus-visible { border-color: var(--admin-gold); color: var(--admin-sidebar); outline: 2px solid #c8973a55; }
+.chart-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart-svg text { fill: var(--admin-text-sub); font: 11px var(--font-body); }
+.chart-gridline { stroke: #e8e2d8; stroke-width: 1; }
+.chart-series-0 { stroke: #1a4c36; fill: #1a4c36; }
+.chart-series-1 { stroke: #b8842e; fill: #b8842e; }
+.chart-series-2 { stroke: #466f82; fill: #466f82; }
+.chart-series-3 { stroke: #8b5b55; fill: #8b5b55; }
+.chart-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chart-dashed { stroke-dasharray: 7 5; }
+.chart-mark { cursor: pointer; outline: none; }
+.chart-mark:focus-visible { stroke: #111 !important; stroke-width: 3 !important; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: .5rem .9rem; margin: .55rem 0; }
+.chart-legend-toggle { border: 0; background: transparent; display: inline-flex; align-items: center; gap: .35rem; padding: .2rem; color: var(--admin-text-sub); cursor: pointer; font: 600 .75rem var(--font-body); }
+.chart-legend-swatch { width: 12px; height: 4px; border-radius: 3px; background: var(--swatch); }
+.chart-legend-toggle[aria-pressed="false"] { opacity: .45; text-decoration: line-through; }
+.chart-data-details { margin-top: .55rem; color: var(--admin-text-sub); font-size: .75rem; }
+.chart-data-details summary { cursor: pointer; padding: .4rem 0; }
+.chart-data-table { border-collapse: collapse; width: 100%; font-size: .74rem; }
+.chart-data-table th, .chart-data-table td { border-bottom: 1px solid #eee9e0; padding: .45rem; text-align: left; }
+.chart-data-table th { color: var(--admin-text-sub); }
+.chart-state { background: #fbfaf7; border: 1px dashed var(--admin-border); color: var(--admin-text-sub); border-radius: 8px; text-align: center; padding: 2rem 1rem; font-size: .82rem; }
+.chart-state strong { color: var(--admin-text); display: block; margin-bottom: .25rem; }
+.report-preview-banner { grid-column: 1 / -1; padding: .7rem 1rem; border: 1px solid #d9bd82; border-radius: 8px; background: #fbf4e4; color: #614a20; font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-align: center; }
+.chart-heatmap { display: grid; grid-template-columns: 40px repeat(7,minmax(11px,1fr)); gap: 3px; align-items: center; overflow-x: auto; }
+.chart-heat-label { color: var(--admin-text-sub); font-size: .62rem; text-align: right; padding-right: .2rem; }
+.chart-heat-day { color: var(--admin-text-sub); font-size: .65rem; text-align: center; }
+.chart-heat-cell { height: 13px; min-width: 10px; background: #f2eee7; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+.chart-heat-cell:focus-visible { outline: 2px solid #132e21; }
+.chart-donut-wrap { display: flex; align-items: center; justify-content: center; }
+.chart-donut-svg { width: min(100%,210px); margin: auto; }
+.chart-donut-legend { display: grid; gap: .55rem; }
+.chart-donut-row { display: flex; justify-content: space-between; gap: .5rem; align-items: center; font-size: .76rem; }
+.chart-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: .35rem; background: var(--swatch); }
+.chart-donut-row strong { color: var(--admin-text); white-space: nowrap; }
+.dashboard-chart-grid { margin: 0 0 1.2rem; }
+.dashboard-issue-list { list-style: none; display: grid; gap: .55rem; padding: 0; margin: .25rem 0 0; }
+.dashboard-issue-list li { display: flex; gap: .55rem; align-items: flex-start; color: var(--admin-text-sub); font-size: .78rem; line-height: 1.45; }
+.dashboard-issue-list i { color: var(--admin-gold); margin-top: .12rem; }
 @media (max-width: 900px) { .report-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } .report-content-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .chart-grid { grid-template-columns: 1fr; } .chart-card-wide { grid-column: auto; } }
+@media (max-width: 480px) { .chart-card { padding: .78rem; } .chart-donut-wrap { grid-template-columns: 1fr; } .chart-donut-svg { max-height: 170px; } }
 @media (max-width: 560px) { .report-kpis { grid-template-columns: 1fr 1fr; gap: .55rem; } .report-kpi { padding: .8rem; } .report-kpi-value { font-size: 1.2rem; } .report-toolbar { align-items: stretch; } .report-filter { flex: 1 1 130px; } .report-actions { margin-left: 0; width: 100%; } .report-actions .admin-btn { flex: 1; justify-content: center; } .report-unavailable { grid-template-columns: 1fr; } }
 @media print { body.admin-body { overflow: visible; background: #fff; } .admin-sidebar, .admin-topbar, .admin-page-actions, .report-toolbar, .report-tabs { display: none !important; } .admin-main { height: auto; overflow: visible; margin: 0; padding: 0; } #view-reports { display: block !important; } .report-panel, .report-kpi { box-shadow: none; break-inside: avoid; } }
 
@@ -700,15 +749,13 @@ body.admin-body {
             <p class="stat-value" id="statReservations">0</p>
             <p class="stat-label">Reservations Today</p>
           </div>
-          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
         </div>
         <div class="admin-stat-card">
           <div class="admin-stat-icon"><i class="fa-solid fa-user-group"></i></div>
           <div class="admin-stat-info">
             <p class="stat-value" id="statCovers">0</p>
-            <p class="stat-label">Total Covers</p>
+            <p class="stat-label">Booked Covers Today</p>
           </div>
-          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +8%</span>
         </div>
         <div class="admin-stat-card">
           <div class="admin-stat-icon gold"><i class="fa-solid fa-clock"></i></div>
@@ -716,15 +763,13 @@ body.admin-body {
             <p class="stat-value" id="statArrivals">0</p>
             <p class="stat-label">Expected Arrivals</p>
           </div>
-          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +5%</span>
         </div>
         <div class="admin-stat-card">
           <div class="admin-stat-icon"><i class="fa-solid fa-chair"></i></div>
           <div class="admin-stat-info">
-            <p class="stat-value" id="statOccupancy">0%</p>
-            <p class="stat-label">Live Occupancy</p>
+            <p class="stat-value" id="statOccupancy">—</p>
+            <p class="stat-label">Occupancy not tracked</p>
           </div>
-          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +3%</span>
         </div>
         <div class="admin-stat-card">
           <div class="admin-stat-icon gold"><i class="fa-solid fa-bag-shopping"></i></div>
@@ -732,7 +777,6 @@ body.admin-body {
             <p class="stat-value" id="statOrders">0</p>
             <p class="stat-label">Active Orders</p>
           </div>
-          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +2%</span>
         </div>
         <div class="admin-stat-card">
           <div class="admin-stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
@@ -740,8 +784,11 @@ body.admin-body {
             <p class="stat-value" id="statRevenue">KES 0</p>
             <p class="stat-label">Daily Revenue</p>
           </div>
-          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +15%</span>
         </div>
+      </div>
+
+      <div id="dashboardCharts" class="chart-grid dashboard-chart-grid" aria-live="polite">
+        <div class="chart-state chart-card-wide"><strong>Loading dashboard charts</strong>Recorded sales and reservation data will appear here.</div>
       </div>
 
       <div style="display:grid;grid-template-columns: 1fr 1fr; gap: 1.5rem;">
@@ -919,6 +966,7 @@ body.admin-body {
           <div class="report-filter"><label for="reportInterval">Sales grouping</label><select id="reportInterval"><option value="auto">Automatic</option><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select></div>
           <div class="report-filter"><label for="reportChannel">Online channel</label><select id="reportChannel"><option value="all">All channels</option><option value="pickup">Pickup</option><option value="delivery">Delivery</option></select></div>
           <div class="report-actions">
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="reportPreview" hidden><i class="fa-regular fa-eye"></i> Preview charts</button>
             <select id="reportSavedViews" class="report-filter report-saved-select" aria-label="Saved report views"><option value="">Saved views</option></select>
             <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="reportSaveView"><i class="fa-regular fa-bookmark"></i> Save view</button>
             <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="reportExportCsv"><i class="fa-solid fa-file-csv"></i> CSV</button>
@@ -1183,6 +1231,8 @@ body.admin-body {
       // ── Analytics reports ──
       let analyticsReport = null;
       let activeReportTab = 'overview';
+      let reportPreviewMode = false;
+      let reportPreviewAllowed = false;
       const reportTabButtons = document.querySelectorAll('.report-tab');
       const reportContent = document.getElementById('reportContent');
       const reportRangeSelect = document.getElementById('reportRange');
@@ -1224,6 +1274,11 @@ body.admin-body {
       function reportMoney(value) {
         return 'KES ' + (Number(value) || 0).toLocaleString('en-KE', { maximumFractionDigits: 0 });
       }
+      function reportCsvCell(value) {
+        let text = String(value ?? '');
+        if (/^[\t\r\n ]*[=+\-@]/.test(text)) text = `'${text}`;
+        return `"${text.replace(/"/g, '""')}"`;
+      }
       function reportDelta(key, current, comparison, formatter = reportMoney) {
         if (!comparison || comparison[key] == null) return '<span class="report-kpi-detail">No comparison selected</span>';
         const prior = Number(comparison[key]) || 0;
@@ -1240,26 +1295,37 @@ body.admin-body {
         const formatted = typeof value === 'string' ? value : formatter(value);
         return `<article class="report-kpi"><div class="report-kpi-label"><span class="report-tooltip" title="${reportEscape(help)}">${reportEscape(label)} ⓘ</span></div><div class="report-kpi-value">${formatted}</div><div class="report-kpi-detail">${key ? reportDelta(key, metrics[key], comparison, formatter) : reportEscape(help)}</div></article>`;
       }
-      function reportSeries() {
-        const source = analyticsReport.metrics.daySeries || [];
-        const byMonth = new Map();
-        const byWeek = new Map();
+      function reportSeriesFor(metricSet, field = 'sales') {
+        const source = metricSet?.daySeries || [];
         const mode = reportIntervalSelect.value === 'auto' ? (source.length <= 35 ? 'day' : 'month') : reportIntervalSelect.value;
-        if (mode === 'day') return source.map(item => ({ label: item.date.slice(5), value: item.sales }));
+        const valueFor = item => field === 'averageOrderValue' ? (item.paidOrders ? item.sales / item.paidOrders : 0) : Number(item[field]) || 0;
+        if (mode === 'day') return source.map(item => ({ label: item.date.slice(5), value: valueFor(item) }));
+        const grouped = new Map();
         source.forEach(item => {
-          if (mode === 'month') {
-            const month = item.date.slice(0, 7);
-            byMonth.set(month, (byMonth.get(month) || 0) + item.sales);
-          } else {
+          let key;
+          if (mode === 'month') key = item.date.slice(0, 7);
+          else {
             const date = new Date(`${item.date}T12:00:00`);
             date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
-            const week = reportLocalDate(date);
-            byWeek.set(week, (byWeek.get(week) || 0) + item.sales);
+            key = `Week ${reportLocalDate(date).slice(5)}`;
           }
+          if (!grouped.has(key)) grouped.set(key, { sum: 0, sales: 0, paidOrders: 0 });
+          const group = grouped.get(key);
+          group.sum += valueFor(item);
+          group.sales += Number(item.sales) || 0;
+          group.paidOrders += Number(item.paidOrders) || 0;
         });
-        return mode === 'month'
-          ? [...byMonth].map(([label, value]) => ({ label, value }))
-          : [...byWeek].map(([label, value]) => ({ label: `Week ${label.slice(5)}`, value }));
+        return [...grouped].map(([label, value]) => ({ label, value: field === 'averageOrderValue' ? (value.paidOrders ? value.sales / value.paidOrders : 0) : value.sum }));
+      }
+      function reportTrendLine(title, description, field = 'sales', formatter = reportMoney) {
+        const current = reportSeriesFor(analyticsReport.metrics, field);
+        const series = [{ name: 'Selected period', values: current }];
+        const prior = analyticsReport.comparison.metrics;
+        if (prior) {
+          const priorValues = reportSeriesFor(prior, field);
+          series.push({ name: analyticsReport.comparison.type === 'year' ? 'Same period last year' : 'Previous period', values: priorValues.map((point, index) => ({ ...point, label: current[index]?.label || point.label })) });
+        }
+        return chartLine(title, description, series, formatter, field === 'sales' || field === 'averageOrderValue' ? 'orders' : 'reservations');
       }
       function reportBarChart(items, label, valueKey, formatter = reportMoney) {
         if (!items || !items.length || items.every(item => !Number(item[valueKey]))) {
@@ -1273,7 +1339,7 @@ body.admin-body {
           return `<div class="report-bar-col" title="${reportEscape(item.label)}: ${reportEscape(formatter(value))}"><div class="report-bar" style="height:${height}%" aria-hidden="true"></div><span class="report-bar-label">${showLabel ? reportEscape(item.label) : ''}</span></div>`;
         }).join('');
         const summary = items.map(item => `${item.label}: ${formatter(item[valueKey])}`).join('; ');
-        return `<p class="report-axis-note">Scale: 0–${reportEscape(formatter(maxValue))} · hover or focus a bar for its value</p><div class="report-chart" role="img" aria-label="${reportEscape(label)}. ${reportEscape(summary)}">${bars}</div><p class="report-sr-only">${reportEscape(label)}. ${reportEscape(summary)}</p>`;
+        return `<p class="report-axis-note">Scale: 0–${reportEscape(formatter(maxValue))} · hover bars for exact values</p><div class="report-chart" role="img" aria-label="${reportEscape(label)}. ${reportEscape(summary)}">${bars}</div><p class="report-sr-only">${reportEscape(label)}. ${reportEscape(summary)}</p>`;
       }
       function reportRows(items, nameKey, valueKey, formatter = reportMoney) {
         if (!items || !items.length) return '<div class="report-empty">No records in this date range.</div>';
@@ -1283,47 +1349,222 @@ body.admin-body {
         if (!items || !items.length) return '<div class="report-empty">No records in this date range.</div>';
         return `<div class="report-table-wrap"><table class="report-table"><thead><tr>${columns.map(column => `<th>${reportEscape(column.label)}</th>`).join('')}</tr></thead><tbody>${items.map(item => `<tr>${columns.map(column => `<td>${reportEscape(column.format ? column.format(item[column.key]) : item[column.key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
       }
+      const chartExportRegistry = new Map();
+      let chartSequence = 0;
+      const chartPalette = ['#1a4c36', '#b8842e', '#466f82', '#8b5b55', '#62754d', '#765e88'];
+      function chartDataTable(rows, columns) {
+        if (!rows || !rows.length) return '';
+        return `<details class="chart-data-details"><summary>Accessible data table</summary><div class="report-table-wrap"><table class="chart-data-table"><thead><tr>${columns.map(column => `<th scope="col">${reportEscape(column.label)}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${columns.map(column => `<td>${reportEscape(column.format ? column.format(row[column.key]) : row[column.key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+      }
+      function chartCard(title, description, svg, rows, columns, options = {}) {
+        const id = `lakebite-chart-${++chartSequence}`;
+        if (rows?.length) chartExportRegistry.set(id, { title, rows, columns });
+        const legends = (options.legend || []).map((item, index) => {
+          const name = typeof item === 'string' ? item : item.name;
+          const value = typeof item === 'string' ? '' : ` <strong>${reportEscape(item.value)}</strong>`;
+          return `<button type="button" class="chart-legend-toggle" data-chart-legend="${id}" data-series="${index}" aria-controls="${id}" aria-pressed="true"><span class="chart-legend-swatch" style="--swatch:${chartPalette[index % chartPalette.length]}"></span>${reportEscape(name)}${value}</button>`;
+        }).join('');
+        return `<article id="${id}" class="chart-card${options.wide ? ' chart-card-wide' : ''}" data-chart-id="${id}"><div class="chart-card-head"><div><h3>${reportEscape(title)}</h3><p>${reportEscape(description)}</p></div><div class="chart-tools">${rows?.length ? `<button type="button" class="chart-mini-btn" data-chart-export="${id}" aria-label="Export ${reportEscape(title)} chart data as CSV">Export CSV</button>` : ''}</div></div>${rows?.length ? `${legends ? `<div class="chart-legend" aria-label="Chart legend">${legends}</div>` : ''}${svg}<div class="report-sr-only">${reportEscape(title)}. ${rows.length} data points. Values are included in the accessible data table.</div>${chartDataTable(rows, columns)}` : `<div class="chart-state"><strong>No recorded data for this chart.</strong>It will appear when the required records are available for the selected dates.</div>`}</article>`;
+      }
+      function chartLine(title, description, series, formatter = reportMoney, drillView = 'orders') {
+        const lengths = series.map(item => item.values.length);
+        const count = Math.max(0, ...lengths);
+        const hasData = series.some(item => item.values.some(point => Number(point.value) > 0));
+        if (!count || !hasData) return chartCard(title, description, '', [], [], { wide: true });
+        const width = 720, height = 285, left = 68, right = 16, top = 18, bottom = 46;
+        const plotWidth = width - left - right, plotHeight = height - top - bottom;
+        const maxValue = Math.max(1, ...series.flatMap(item => item.values.map(point => Number(point.value) || 0)));
+        const x = index => left + (count <= 1 ? 0 : index * plotWidth / (count - 1));
+        const y = value => top + plotHeight - (Number(value) || 0) / maxValue * plotHeight;
+        const grid = [0, .25, .5, .75, 1].map(step => {
+          const value = maxValue * step, yy = y(value);
+          return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" class="chart-gridline"/><text x="${left-8}" y="${yy+4}" text-anchor="end">${reportEscape(formatter(value))}</text>`;
+        }).join('');
+        const seriesMarkup = series.map((item, seriesIndex) => {
+          const points = item.values.map((point, index) => `${x(index)},${y(point.value)}`).join(' ');
+          const markers = item.values.map((point, index) => {
+            const comparisons = series.map(candidate => `${candidate.name}: ${formatter(candidate.values[index]?.value ?? 0)}`).join('; ');
+            return `<circle class="chart-mark chart-series-${seriesIndex} series-${seriesIndex}" cx="${x(index)}" cy="${y(point.value)}" r="4" tabindex="0" role="button" data-open-view="${drillView}" aria-label="${reportEscape(point.label)}. ${reportEscape(comparisons)}. Open detail records."><title>${reportEscape(point.label)} — ${reportEscape(comparisons)}</title></circle>`;
+          }).join('');
+          return `<g class="series-${seriesIndex}"><polyline points="${points}" class="chart-line chart-series-${seriesIndex}${seriesIndex === 1 ? ' chart-dashed' : ''}"/>${markers}</g>`;
+        }).join('');
+        const labels = series[0].values.map((point, index) => {
+          const show = count <= 9 || index % Math.ceil(count / 8) === 0 || index === count - 1;
+          return show ? `<text x="${x(index)}" y="${height-15}" text-anchor="middle">${reportEscape(point.label)}</text>` : '';
+        }).join('');
+        const svg = `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${reportEscape(title)}. ${series.map(item => reportEscape(item.name)).join(' compared with ')}. Units: ${reportEscape(formatter(maxValue))}."><title>${reportEscape(title)}</title><desc>${reportEscape(description)}</desc>${grid}${seriesMarkup}${labels}</svg>`;
+        const rows = series[0].values.map((point, index) => ({ label: point.label, ...Object.fromEntries(series.map((item, seriesIndex) => [item.name, item.values[index]?.value ?? null])) }));
+        const columns = [{ key: 'label', label: 'Date' }, ...series.map(item => ({ key: item.name, label: item.name, format: value => value == null ? '—' : formatter(value) }))];
+        return chartCard(title, description, svg, rows, columns, { wide: true, legend: series.map(item => item.name) });
+      }
+      function chartGroupedBars(title, description, labels, series, formatter = value => String(value), drillView = 'reservations') {
+        const count = labels.length;
+        if (!count || !series.some(item => item.values.some(value => Number(value) > 0))) return chartCard(title, description, '', [], [], { wide: true });
+        const width = 720, height = 285, left = 66, right = 16, top = 18, bottom = 46;
+        const plotWidth = width - left - right, plotHeight = height - top - bottom;
+        const maxValue = Math.max(1, ...series.flatMap(item => item.values.map(value => Number(value) || 0)));
+        const groupWidth = plotWidth / count, barWidth = Math.max(3, Math.min(18, groupWidth / (series.length + 1)));
+        const grid = [0, .25, .5, .75, 1].map(step => {
+          const value = maxValue * step, yy = top + plotHeight - step * plotHeight;
+          return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" class="chart-gridline"/><text x="${left-8}" y="${yy+4}" text-anchor="end">${reportEscape(formatter(value))}</text>`;
+        }).join('');
+        const bars = labels.map((label, index) => series.map((item, s) => {
+          const value = Number(item.values[index]) || 0;
+          const x = left + index * groupWidth + groupWidth / 2 + (s - (series.length - 1) / 2) * barWidth - barWidth / 2;
+          const h = value / maxValue * plotHeight;
+          const y = top + plotHeight - h;
+          return `<rect class="chart-mark chart-series-${s} series-${s}" x="${x}" y="${y}" width="${barWidth}" height="${Math.max(1,h)}" rx="2" tabindex="0" role="button" data-open-view="${drillView}" aria-label="${reportEscape(label)}, ${reportEscape(item.name)}: ${reportEscape(formatter(value))}"><title>${reportEscape(label)} — ${reportEscape(item.name)}: ${reportEscape(formatter(value))}</title></rect>`;
+        }).join('') + (count <= 10 || index % Math.ceil(count / 8) === 0 || index === count - 1 ? `<text x="${left+index*groupWidth+groupWidth/2}" y="${height-15}" text-anchor="middle">${reportEscape(label)}</text>` : '')).join('');
+        const svg = `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${reportEscape(title)}. ${reportEscape(description)}"><title>${reportEscape(title)}</title><desc>${reportEscape(description)}</desc>${grid}${bars}</svg>`;
+        const rows = labels.map((label, index) => ({ label, ...Object.fromEntries(series.map(item => [item.name, item.values[index] ?? 0])) }));
+        const columns = [{ key: 'label', label: 'Date' }, ...series.map(item => ({ key: item.name, label: item.name, format: formatter }))];
+        return chartCard(title, description, svg, rows, columns, { wide: true, legend: series.map(item => item.name) });
+      }
+      function chartHorizontal(title, description, rows, key, formatter = reportMoney, drillView = 'menu') {
+        if (!rows?.length || !rows.some(row => Number(row[key]) > 0)) return chartCard(title, description, '', [], [], { wide: true });
+        const width = 720, left = 190, right = 70, rowHeight = 36, height = Math.max(145, 42 + rows.length * rowHeight);
+        const plotWidth = width - left - right;
+        const max = Math.max(1, ...rows.map(row => Number(row[key]) || 0));
+        const bars = rows.map((row, index) => {
+          const y = 20 + index * rowHeight;
+          const value = Number(row[key]) || 0;
+          const barWidth = Math.max(1, value / max * plotWidth);
+          return `<text x="${left-9}" y="${y+15}" text-anchor="end" title="${reportEscape(row.name)}">${reportEscape(String(row.name).length > 25 ? `${String(row.name).slice(0,22)}…` : row.name)}</text><rect class="chart-mark chart-series-${index % chartPalette.length}" x="${left}" y="${y}" width="${barWidth}" height="19" rx="3" tabindex="0" role="button" data-open-view="${drillView}" aria-label="${reportEscape(row.name)}: ${reportEscape(formatter(value))}"><title>${reportEscape(row.name)}: ${reportEscape(formatter(value))}</title></rect><text x="${Math.min(width-right+4,left+barWidth+5)}" y="${y+14}">${reportEscape(formatter(value))}</text>`;
+        }).join('');
+        const svg = `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${reportEscape(title)}. ${reportEscape(description)}"><title>${reportEscape(title)}</title><desc>${reportEscape(description)}</desc>${bars}</svg>`;
+        const columns = [{ key: 'name', label: 'Item' }, { key, label: 'Value', format: formatter }];
+        return chartCard(title, description, svg, rows, columns);
+      }
+      function chartDonut(title, description, rows, valueKey, formatter = value => String(value), drillView = 'orders') {
+        if (!rows?.length || !rows.some(row => Number(row[valueKey]) > 0)) return chartCard(title, description, '', [], [], { wide: false });
+        const total = rows.reduce((sum, row) => sum + (Number(row[valueKey]) || 0), 0);
+        const radius = 58, circumference = 2 * Math.PI * radius;
+        let offset = 0;
+        const circles = rows.map((row, index) => {
+          const value = Number(row[valueKey]) || 0;
+          const arc = value / total * circumference;
+          const circle = `<circle class="chart-mark chart-series-${index % chartPalette.length} series-${index}" cx="100" cy="88" r="${radius}" fill="none" stroke="${chartPalette[index % chartPalette.length]}" stroke-width="26" stroke-dasharray="${arc} ${circumference-arc}" stroke-dashoffset="${-offset}" transform="rotate(-90 100 88)" tabindex="0" role="button" data-open-view="${drillView}" aria-label="${reportEscape(row.name)} ${reportEscape(formatter(value))}, ${((value/total)*100).toFixed(1)} percent"><title>${reportEscape(row.name)}: ${reportEscape(formatter(value))} (${((value/total)*100).toFixed(1)}%)</title></circle>`;
+          offset += arc;
+          return circle;
+        }).join('');
+        const svg = `<div class="chart-donut-wrap"><svg class="chart-donut-svg" viewBox="0 0 200 180" role="img" aria-label="${reportEscape(title)}. ${rows.map(row => `${reportEscape(row.name)} ${reportEscape(formatter(row[valueKey]))} (${((Number(row[valueKey])/total)*100).toFixed(1)} percent)`).join(', ')}"><title>${reportEscape(title)}</title><desc>${reportEscape(description)}</desc>${circles}<text x="100" y="91" text-anchor="middle" style="fill:#2c2a24;font-size:15px;font-weight:700">${reportEscape(formatter(total))}</text></svg></div>`;
+        const columns = [{ key: 'name', label: 'Category' }, { key: valueKey, label: 'Value', format: formatter }];
+        return chartCard(title, description, svg, rows, columns, { legend: rows.map(row => ({ name: row.name, value: `${formatter(row[valueKey])} · ${((Number(row[valueKey])/total)*100).toFixed(1)}%` })) });
+      }
+      function chartHeatmap(title, description, rows, valueKey, formatter = reportMoney, drillView = 'reservations') {
+        if (!rows?.length || !rows.some(row => Number(row[valueKey]) > 0)) return chartCard(title, description, '', [], [], { wide: true });
+        const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
+        const values = new Map(rows.map(row => [`${row.weekday}|${String(row.hour).slice(0,2)}`, Number(row[valueKey]) || 0]));
+        const max = Math.max(1, ...values.values());
+        const cells = hours.map(hour => `<span class="chart-heat-label">${hour}:00</span>` + weekdays.map(day => {
+          const value = values.get(`${day}|${hour}`) || 0;
+          const alpha = value ? .12 + value / max * .78 : 0;
+          return value ? `<button type="button" class="chart-heat-cell" style="background-color:rgba(26,76,54,${alpha.toFixed(2)})" title="${day} ${hour}:00 — ${reportEscape(formatter(value))}" aria-label="${day} ${hour}:00, ${reportEscape(formatter(value))}. Open detail records." data-open-view="${drillView}"></button>` : `<span class="chart-heat-cell" style="background-color:rgba(26,76,54,0)" aria-hidden="true"></span>`;
+        }).join('')).join('');
+        const grid = `<div class="chart-heatmap" role="group" aria-label="${reportEscape(title)} by weekday and hour"><span></span>${weekdays.map(day => `<span class="chart-heat-day">${day}</span>`).join('')}${cells}</div>`;
+        const dataRows = hours.flatMap(hour => weekdays.map(weekday => ({ weekday, hour: `${hour}:00`, [valueKey]: values.get(`${weekday}|${hour}`) || 0 })));
+        const columns = [{ key: 'weekday', label: 'Day' }, { key: 'hour', label: 'Hour' }, { key: valueKey, label: 'Value', format: formatter }];
+        return chartCard(title, description, grid, dataRows, columns, { wide: true });
+      }
+      function chartScatter(title, description, rows, drillView = 'menu') {
+        if (!rows?.length || !rows.some(row => Number(row.units) > 0 && Number(row.sales) > 0)) return chartCard(title, description, '', [], [], { wide: true });
+        const width = 720, height = 300, left = 75, right = 25, top = 20, bottom = 48;
+        const maxX = Math.max(1, ...rows.map(row => Number(row.units) || 0));
+        const maxY = Math.max(1, ...rows.map(row => Number(row.sales) || 0));
+        const plotW = width-left-right, plotH = height-top-bottom;
+        const marks = rows.map((row, index) => {
+          const x = left + (Number(row.units)||0)/maxX*plotW;
+          const y = top + plotH - (Number(row.sales)||0)/maxY*plotH;
+          return `<circle class="chart-mark chart-series-${index%chartPalette.length}" cx="${x}" cy="${y}" r="6" fill="${chartPalette[index%chartPalette.length]}" tabindex="0" role="button" data-open-view="${drillView}" aria-label="${reportEscape(row.name)}: ${row.units} units sold, ${reportEscape(reportMoney(row.sales))} item sales"><title>${reportEscape(row.name)}: ${row.units} units · ${reportEscape(reportMoney(row.sales))}</title></circle>`;
+        }).join('');
+        const svg = `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${reportEscape(title)}. Horizontal axis is units sold. Vertical axis is recorded item sales in Kenyan shillings."><title>${reportEscape(title)}</title><desc>${reportEscape(description)}</desc><line x1="${left}" y1="${height-bottom}" x2="${width-right}" y2="${height-bottom}" class="chart-gridline"/><line x1="${left}" y1="${top}" x2="${left}" y2="${height-bottom}" class="chart-gridline"/><text x="${left+plotW/2}" y="${height-8}" text-anchor="middle">Units sold</text><text x="16" y="${top+plotH/2}" transform="rotate(-90 16 ${top+plotH/2})" text-anchor="middle">Item sales (KES)</text>${marks}</svg>`;
+        const columns = [{ key: 'name', label: 'Item' }, { key: 'units', label: 'Units sold' }, { key: 'sales', label: 'Item sales (KES)', format: reportMoney }];
+        return chartCard(title, description, svg, rows, columns);
+      }
       function reportUnavailable(items) {
         return `<div class="report-unavailable">${items.map(item => `<div class="report-unavailable-item"><strong>${reportEscape(item.metric)}</strong><span>${reportEscape(item.reason)}</span></div>`).join('')}</div>`;
       }
       function renderReportContent() {
         if (!analyticsReport) return;
+        chartExportRegistry.clear();
+        chartSequence = 0;
         const { metrics, comparison, unavailable, definitions } = analyticsReport;
-        const currency = value => reportMoney(value);
-        const dateSeries = reportSeries();
-        const revenueChart = (title = 'Recorded net sales by day') => `<article class="report-panel"><h3>${title}</h3><p class="report-panel-sub">Paid order totals after recorded full refunds; grouped in Nairobi time.</p>${reportBarChart(dateSeries.map(item => ({ label: item.label, value: item.value })), title, 'value')}</article>`;
-        const topItemsTable = reportTable(metrics.topItems, [
-          { key: 'name', label: 'Menu item' },
-          { key: 'units', label: 'Units sold', format: value => Number(value).toLocaleString('en-KE') },
-          { key: 'sales', label: 'Recorded item sales', format: currency }
-        ]);
-        const reservationStatusPanel = `<article class="report-panel"><h3>Reservation status</h3><p class="report-panel-sub">Bookings by service date, including cancelled and no-show records.</p>${reportRows(metrics.reservationStatuses, 'name', 'count', value => Number(value).toLocaleString('en-KE'))}</article>`;
-        const channelPanel = `<article class="report-panel"><h3>Online sales by channel</h3><p class="report-panel-sub">Current order records distinguish pickup and delivery.</p>${reportRows(metrics.channels, 'name', 'sales')}</article>`;
-        const itemPanel = `<article class="report-panel"><h3>Top menu items</h3><p class="report-panel-sub">Item names and unit prices copied to order records; menu category history is not captured.</p>${topItemsTable}</article>`;
+        const wholeNumber = value => Number(value || 0).toLocaleString('en-KE');
+        const currentSales = reportSeriesFor(metrics, 'sales');
+        const priorSales = comparison.metrics ? reportSeriesFor(comparison.metrics, 'sales').map((point, index) => ({ ...point, label: currentSales[index]?.label || point.label })) : [];
+        const salesTrend = chartLine('Revenue over time', 'Net recorded online order sales by selected date grouping. The dashed brass line compares the selected comparison period.', [
+          { name: 'Selected period', values: currentSales },
+          ...(comparison.metrics ? [{ name: comparison.type === 'year' ? 'Same period last year' : 'Previous period', values: priorSales }] : [])
+        ], reportMoney, 'orders');
+        const reservationSeries = reportSeriesFor(metrics, 'reservations');
+        const coverSeries = reportSeriesFor(metrics, 'covers');
+        const reservationCoversChart = chartGroupedBars('Reservations and booked covers', 'Reservations include cancelled and no-show records; covers sum active and completed booking party sizes.', reservationSeries.map(item => item.label), [
+          { name: 'Reservation records', values: reservationSeries.map(item => item.value) },
+          { name: 'Booked covers', values: coverSeries.map(item => item.value) }
+        ], wholeNumber, 'reservations');
+        const reservationStatusChart = chartDonut('Reservation status', 'Share of reservation records in each recorded status.', metrics.reservationStatuses, 'count', wholeNumber, 'reservations');
+        const channelChart = chartDonut('Net sales by online channel', 'Paid, non-refunded order totals grouped by recorded pickup or delivery type.', metrics.channels, 'sales', reportMoney, 'orders');
+        const channelOrdersChart = chartDonut('Paid orders by fulfilment', 'Paid non-refunded order count by recorded pickup or delivery type.', metrics.channelOrders, 'count', wholeNumber, 'orders');
+        const paymentChart = chartDonut('Sales by payment method', 'Net collected order totals grouped by payment method recorded on the order.', metrics.paymentMethods, 'sales', reportMoney, 'orders');
+        const topItemsBySales = chartHorizontal('Top-selling dishes by sales', 'Item-level sales from paid, non-refunded order line snapshots. This does not include current catalog prices.', metrics.topItems, 'sales', reportMoney, 'menu');
+        const topItemsByUnits = chartHorizontal('Top-selling dishes by units', 'Units from paid, non-refunded order line snapshots.', metrics.topItems, 'units', wholeNumber, 'menu');
+        const itemScatter = chartScatter('Item popularity versus sales', 'Each point is a recorded menu item; horizontal axis is units sold and vertical axis is recorded item sales in KES.', metrics.topItems, 'menu');
+        const itemTrendSeries = (metrics.itemSeries || []).map(item => {
+          const byDate = new Map(item.daySeries.map(day => [day.date, day.sales]));
+          const fullDays = metrics.daySeries.map(day => ({ ...day, sales: byDate.get(day.date) || 0 }));
+          return { name: item.name, values: reportSeriesFor({ daySeries: fullDays }, 'sales') };
+        });
+        const itemTrends = chartLine('Top item sales over time', 'Daily, weekly, or monthly line items from paid non-refunded orders. Historical names are order snapshots.', itemTrendSeries, reportMoney, 'menu');
+        const leadTimeChart = chartHorizontal('Reservation booking lead time', 'Calendar days between reservation creation and booked service date.', metrics.leadTimes, 'count', wholeNumber, 'reservations');
+        const partySizeChart = chartHorizontal('Party-size distribution', 'Reservation record count by guest party size.', metrics.partySizes, 'count', wholeNumber, 'reservations');
+        const reservationHeatmap = chartHeatmap('Reservation demand by day and time', 'Booked reservation count by service weekday and requested hour; not live seating occupancy.', metrics.reservationHeatmap, 'count', wholeNumber, 'reservations');
+        const salesHeatmap = chartHeatmap('Sales by weekday and hour', 'Paid non-refunded order totals by order creation weekday and hour in Nairobi time.', metrics.salesHeatmap, 'sales', reportMoney, 'orders');
+        const orderStatusChart = chartDonut('Orders by status', 'Order counts by the status currently recorded on each order.', metrics.orderStatuses, 'count', wholeNumber, 'orders');
+        const aovTrend = reportTrendLine('Average online order value over time', 'Net recorded order sales divided by non-refunded paid orders, grouped by order creation time.', 'averageOrderValue', reportMoney);
+        const revenueComponents = chartGroupedBars('Recorded sales and refunds', 'Gross is order total before recorded full refunds; net subtracts full-order refunds. Taxes, tips, discounts, and void amounts are not stored.', ['Selected period'], [
+          { name: 'Gross sales', values: [metrics.grossSales] },
+          { name: 'Net sales', values: [metrics.netSales] },
+          { name: 'Refunds', values: [metrics.refunds] }
+        ], reportMoney, 'orders');
         const availability = reportUnavailable(unavailable);
         const compareNote = comparison.metrics ? `Compared with ${comparison.from} to ${comparison.to}.` : 'Period comparison is turned off.';
         const summaryKpis = `<div class="report-kpis">${reportKpi('Gross sales', metrics.grossSales, 'grossSales', definitions.grossSales)}${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on pending, confirmed, seated, and completed bookings.', value => Number(value).toLocaleString('en-KE'))}</div>`;
 
         if (activeReportTab === 'overview') {
-          reportContent.innerHTML = `${summaryKpis}<div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reservations">Open reservations</button><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="orders">Open orders</button><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="menu">Open menu</button></div><div class="report-content-grid">${revenueChart()}${reservationStatusPanel}${channelPanel}${itemPanel}</div><p class="report-note">${compareNote} Gross and net sales follow the definitions below. Only recorded order and reservation data is shown.</p><article class="report-panel"><h3>Data coverage and unavailable metrics</h3><p class="report-panel-sub">Missing integrations and fields are listed instead of estimated.</p>${availability}</article>`;
+          reportContent.innerHTML = `${summaryKpis}<div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reports">Open report filters</button></div><div class="chart-grid">${salesTrend}${reservationCoversChart}${reservationStatusChart}${channelChart}${topItemsBySales}<article class="chart-card"><h3>Live table status</h3><p>Floor-plan occupancy cannot be calculated because table capacity and live seating state are not recorded.</p><div class="chart-state"><strong>Occupancy unavailable</strong>Connect table sections, seat counts, and seating status to show a live floor chart.</div></article><article class="chart-card"><h3>Operational alerts</h3><p>Recorded issues for the selected period; no threshold-based alerts are configured.</p><ul class="dashboard-issue-list">${metrics.refunds ? `<li><i class="fa-solid fa-circle-exclamation"></i>${wholeNumber(metrics.refunds > 0 ? metrics.orderStatuses.filter(row => row.name === 'refunded').reduce((sum,row)=>sum+row.count,0) : 0)} order(s) currently marked refunded. Full amounts only.</li>` : '<li><i class="fa-solid fa-circle-check"></i>No order refunds are recorded in this period.</li>'}${metrics.cancelled ? `<li><i class="fa-solid fa-circle-exclamation"></i>${wholeNumber(metrics.cancelled)} reservations are marked cancelled.</li>` : '<li><i class="fa-solid fa-circle-check"></i>No cancelled reservations are recorded in this period.</li>'}<li><i class="fa-solid fa-circle-info"></i>Budget, staffing, inventory, and table-alert feeds are not connected.</li></ul></article></div><p class="report-note">${compareNote} Dashboard charts use the same date, grouping, and online-channel filters as Reports. Location is currently LakeBite Nairobi.</p>`;
         } else if (activeReportTab === 'revenue') {
-          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Gross sales', metrics.grossSales, 'grossSales', definitions.grossSales)}${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals with refunded payment status; partial refund amounts are not stored.')}${reportKpi('Average order value', metrics.averageOrderValue, 'averageOrderValue', definitions.averageOrderValue)}</div><div class="report-content-grid">${revenueChart()}${channelPanel}<article class="report-panel"><h3>Payment method</h3><p class="report-panel-sub">Net collected order totals by recorded payment method.</p>${reportRows(metrics.paymentMethods, 'name', 'sales')}</article>${itemPanel}</div><article class="report-panel"><h3>Not available in current order data</h3><p class="report-panel-sub">No estimates are included for missing finance fields.</p>${reportUnavailable(unavailable.filter(item => /taxes|cost|events|website/i.test(item.metric)))}</article>`;
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Gross sales', metrics.grossSales, 'grossSales', definitions.grossSales)}${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals with refunded payment status; partial refund amounts are not stored.')}${reportKpi('Average order value', metrics.averageOrderValue, 'averageOrderValue', definitions.averageOrderValue)}</div><div class="chart-grid">${revenueComponents}${salesTrend}${aovTrend}${channelChart}${paymentChart}${salesHeatmap}</div><article class="report-panel"><h3>Not available in current order data</h3><p class="report-panel-sub">No estimates are included for missing finance fields.</p>${reportUnavailable(unavailable.filter(item => /taxes|cost|events|website|Average dine-in/i.test(item.metric)))}</article>`;
         } else if (activeReportTab === 'reservations') {
-          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on pending, confirmed, seated, and completed bookings.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Cancellation rate', `${metrics.cancellationRate.toFixed(1)}%`, null, 'Cancelled reservation records divided by all reservation records.')}${reportKpi('No-show rate', `${metrics.noShowRate.toFixed(1)}%`, null, 'No-show reservation records divided by all reservation records.')}</div><div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reservations">Open reservation records</button></div><div class="report-content-grid">${reservationStatusPanel}<article class="report-panel"><h3>Demand by requested time</h3><p class="report-panel-sub">Reservation count grouped by time entered; no seating or service duration data is stored.</p>${reportRows(metrics.reservationHours, 'hour', 'count', value => `${value} bookings`)}</article></div><article class="report-panel"><h3>Guest and conversion coverage</h3><p class="report-panel-sub">Booking source, website conversion, walk-ins, waitlists, guest retention and VIP flags are not currently captured.</p>${reportUnavailable(unavailable.filter(item => /dine-in|occupancy|events|reviews|website/i.test(item.metric)))}</article>`;
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, wholeNumber)}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on pending, confirmed, seated, and completed bookings.', wholeNumber)}${reportKpi('Cancellation rate', `${metrics.cancellationRate.toFixed(1)}%`, null, 'Cancelled reservation records divided by all reservation records.')}${reportKpi('No-show rate', `${metrics.noShowRate.toFixed(1)}%`, null, 'No-show reservation records divided by all reservation records.')}</div><div class="chart-grid">${reservationCoversChart}${reservationStatusChart}${leadTimeChart}${partySizeChart}${reservationHeatmap}<article class="chart-card"><h3>Booking source & guest retention</h3><p>Source, web conversion, walk-ins, waitlists, repeat-visit identity, and VIP flags are not captured.</p>${reportUnavailable(unavailable.filter(item => /booking channel|Dine-in|Events, reviews/i.test(item.metric)))}</article></div><div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reservations">Open reservation records</button></div>`;
         } else if (activeReportTab === 'service') {
-          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on active and completed bookings.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Seated covers', metrics.seatedCovers, 'seatedCovers', definitions.seatedCovers, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Average party size', metrics.averagePartySize.toFixed(1), null, 'Average party size for pending, confirmed, seated, and completed bookings.')}</div><div class="report-content-grid"><article class="report-panel"><h3>Reservation demand by time</h3><p class="report-panel-sub">Requested reservation time, not actual seating time.</p>${reportRows(metrics.reservationHours, 'hour', 'count', value => `${value} bookings`)}</article><article class="report-panel"><h3>Capacity and service measures</h3><p class="report-panel-sub">Unavailable until table sections, seat counts, wait times and service timestamps are recorded.</p>${reportUnavailable(unavailable.filter(item => /Table occupancy/i.test(item.metric)))}</article></div>`;
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, wholeNumber)}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on active and completed bookings.', wholeNumber)}${reportKpi('Seated covers', metrics.seatedCovers, 'seatedCovers', definitions.seatedCovers, wholeNumber)}${reportKpi('Average party size', metrics.averagePartySize.toFixed(1), null, 'Average party size for pending, confirmed, seated, and completed bookings.')}</div><div class="chart-grid">${reservationHeatmap}${chartHorizontal('Reservation demand by time', 'Requested time on the booking; this is not actual seating or wait time.', metrics.reservationHours.map(item => ({ name: item.hour, count: item.count })), 'count', wholeNumber)}<article class="chart-card chart-card-wide"><h3>Capacity and service measures</h3><p>Occupancy, covers per seat, revenue per available seat, turns, waits, section utilization, and course timing require table capacity and service timestamps.</p>${reportUnavailable(unavailable.filter(item => /Table occupancy/i.test(item.metric)))}</article></div>`;
         } else if (activeReportTab === 'menu') {
-          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Items in top 10', metrics.topItems.length, null, 'Items from paid, non-refunded order lines.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Pickup orders', metrics.pickupOrders, null, 'Orders marked pickup.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Delivery orders', metrics.deliveryOrders, null, 'Orders marked delivery.', value => Number(value).toLocaleString('en-KE'))}</div><article class="report-panel"><h3>Item performance</h3><p class="report-panel-sub">Ranked by recorded item sales for paid, non-refunded orders. Historical item names are order snapshots.</p>${topItemsTable}</article><article class="report-panel"><h3>Cost and category coverage</h3><p class="report-panel-sub">Category snapshots, ingredients, add-ons, pairings, unavailability history and reliable costs are not recorded on order lines.</p>${reportUnavailable(unavailable.filter(item => /cost|inventory|taxes/i.test(item.metric)))}</article>`;
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Top items shown', metrics.topItems.length, null, 'Items from paid, non-refunded order lines.', wholeNumber)}${reportKpi('Pickup orders', metrics.pickupOrders, null, 'Orders marked pickup.', wholeNumber)}${reportKpi('Delivery orders', metrics.deliveryOrders, null, 'Orders marked delivery.', wholeNumber)}</div><div class="chart-grid">${topItemsByUnits}${topItemsBySales}${itemScatter}${itemTrends}<article class="chart-card chart-card-wide"><h3>Category, margin, and add-on coverage</h3><p>Categories, ingredient costs, add-ons, pairings, menu availability history, and reliable gross margin are not snapshotted to order lines.</p>${reportUnavailable(unavailable.filter(item => /cost|inventory|taxes/i.test(item.metric)))}</article></div>`;
         } else if (activeReportTab === 'orders') {
-          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Orders placed', metrics.placedOrders, null, 'Orders created in the selected date range.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Paid orders', metrics.paidOrders, 'paidOrders', 'Non-refunded paid or completed orders.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Average order value', metrics.averageOrderValue, 'averageOrderValue', definitions.averageOrderValue)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals marked refunded.')}</div><div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="orders">Open order records</button></div><div class="report-content-grid">${revenueChart('Online order sales over time')}${channelPanel}</div><p class="report-note">Preparation time, on-time completion, failed payment reasons and cancellation reasons are not stored yet. This report covers online pickup and delivery records only.</p>`;
+          const orderTrendSeries = reportSeriesFor(metrics, 'orders');
+          const paidTrendSeries = reportSeriesFor(metrics, 'paidOrders');
+          const ordersTrend = chartLine('Orders and paid-order volume', 'Orders created and non-refunded paid orders grouped by order creation date.', [{ name: 'Orders placed', values: orderTrendSeries }, { name: 'Paid orders', values: paidTrendSeries }], wholeNumber, 'orders');
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Orders placed', metrics.placedOrders, null, 'Orders created in the selected date range.', wholeNumber)}${reportKpi('Paid orders', metrics.paidOrders, 'paidOrders', 'Non-refunded paid or completed orders.', wholeNumber)}${reportKpi('Average order value', metrics.averageOrderValue, 'averageOrderValue', definitions.averageOrderValue)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals marked refunded.')}</div><div class="chart-grid">${ordersTrend}${salesTrend}${aovTrend}${channelOrdersChart}${orderStatusChart}${channelChart}<article class="chart-card chart-card-wide"><h3>Preparation and fulfilment timing</h3><p>Started, ready, pickup, and delivery timestamps are not recorded, so duration and on-time completion charts are unavailable. Cancellation and failed-payment reasons are also not captured.</p></article></div>`;
         } else if (activeReportTab === 'operations') {
-          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals marked refunded.')}${reportKpi('Paid orders', metrics.paidOrders, 'paidOrders', 'Paid or completed, non-refunded orders.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}</div><article class="report-panel"><h3>Connected financial and operations data</h3><p class="report-panel-sub">Only recorded order and reservation totals appear above. No costs are estimated.</p>${availability}</article>`;
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals marked refunded.')}${reportKpi('Paid orders', metrics.paidOrders, 'paidOrders', 'Paid or completed, non-refunded orders.', wholeNumber)}${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, wholeNumber)}</div><div class="chart-grid">${revenueComponents}${salesTrend}<article class="chart-card chart-card-wide"><h3>Budget, labor, cost, and inventory</h3><p>Only stored sales, refunds, orders, and reservation records are reported. No operating costs or budgets are estimated.</p>${availability}</article></div>`;
         } else {
           const labels = { events: 'Events and private dining', feedback: 'Guest feedback and reviews', website: 'Website analytics' };
           const relevant = activeReportTab === 'events' ? unavailable.filter(item => /Events/i.test(item.metric)) : activeReportTab === 'feedback' ? unavailable.filter(item => /reviews/i.test(item.metric)) : unavailable.filter(item => /website/i.test(item.metric));
           reportContent.innerHTML = `<div class="report-empty"><i class="fa-solid fa-circle-info"></i><h3>${labels[activeReportTab] || 'This report'} data is not connected</h3><p>There are no event, review, or consented website analytics records available for this period. Nothing is estimated or shown as actual.</p></div><article class="report-panel"><h3>What is needed</h3>${reportUnavailable(relevant)}</article>`;
         }
         document.getElementById('reportLastUpdated').textContent = `Last updated ${new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' })} EAT`;
+        const sourceNote = document.createElement('p');
+        sourceNote.className = 'report-note';
+        sourceNote.textContent = `Data source: ${analyticsReport.source?.sales || 'order records'}; ${analyticsReport.source?.reservations || 'reservation records'}; ${analyticsReport.source?.menuItems || 'order line snapshots'}. Metric definitions are available by hovering or focusing the ⓘ labels.`;
+        reportContent.appendChild(sourceNote);
+        if (analyticsReport.preview) {
+          const banner = document.createElement('div');
+          banner.className = 'report-preview-banner';
+          banner.setAttribute('role', 'status');
+          banner.textContent = 'DESIGN PREVIEW · Illustrative data only · Not restaurant results';
+          reportContent.prepend(banner);
+        }
       }
       async function loadReports() {
         const range = getReportRange();
@@ -1333,7 +1574,8 @@ body.admin-body {
         }
         reportContent.innerHTML = '<div class="report-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading recorded analytics…</div>';
         const params = new URLSearchParams({ from: range.from, to: range.to, comparison: reportCompareSelect.value, channel: reportChannelSelect.value });
-        analyticsReport = await api(`/api/admin/reports/analytics?${params}`);
+        const route = reportPreviewMode ? '/api/admin/reports/preview' : '/api/admin/reports/analytics';
+        analyticsReport = await api(`${route}?${params}`);
         if (!analyticsReport) {
           reportContent.innerHTML = '<div class="report-error"><h3>Report could not load</h3><p>Check the database connection, then use Refresh to try again.</p></div>';
           return;
@@ -1354,7 +1596,7 @@ body.admin-body {
         metrics.reservationHours.forEach(item => rows.push([`Reservations requested at ${item.hour}`, item.count]));
         metrics.topItems.forEach(item => rows.push([`Item units: ${item.name}`, item.units], [`Item sales (KES): ${item.name}`, item.sales]));
         metrics.daySeries.forEach(item => rows.push([`Net sales ${item.date} (KES)`, item.sales]));
-        const csv = rows.map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        const csv = rows.map(row => row.map(reportCsvCell).join(',')).join('\r\n');
         const link = document.createElement('a');
         link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
         link.download = `lakebite-${activeReportTab}-${analyticsReport.period.from}-to-${analyticsReport.period.to}.csv`;
@@ -1367,6 +1609,14 @@ body.admin-body {
         try { saved = JSON.parse(localStorage.getItem('lakebiteReportViews') || '[]'); } catch {}
         select.innerHTML = '<option value="">Saved views</option>' + saved.map((item, index) => `<option value="${index}">${reportEscape(item.name)}</option>`).join('');
       }
+      document.getElementById('reportPreview').addEventListener('click', () => {
+        reportPreviewMode = !reportPreviewMode;
+        const button = document.getElementById('reportPreview');
+        button.innerHTML = reportPreviewMode ? '<i class="fa-solid fa-database"></i> Use live data' : '<i class="fa-regular fa-eye"></i> Preview charts';
+        button.setAttribute('aria-pressed', String(reportPreviewMode));
+        const activeView = document.querySelector('.admin-nav-link.active')?.dataset.view;
+        if (activeView === 'dashboard') loadDashboardCharts(); else loadReports();
+      });
       reportRangeSelect.addEventListener('change', () => { reportCustomRange.hidden = reportRangeSelect.value !== 'custom'; });
       document.getElementById('reportApply').addEventListener('click', loadReports);
       reportIntervalSelect.addEventListener('change', () => { if (analyticsReport) renderReportContent(); });
@@ -1404,21 +1654,132 @@ body.admin-body {
         reportTabButtons.forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
         if (analyticsReport) renderReportContent(); else loadReports();
       }));
-      reportContent.addEventListener('click', event => {
-        const target = event.target.closest('[data-open-view]');
-        if (target) document.querySelector(`.admin-nav-link[data-view="${target.dataset.openView}"]`)?.click();
+      function openAdminDataView(view) {
+        document.querySelector(`.admin-nav-link[data-view="${view}"]`)?.click();
+      }
+      document.addEventListener('click', event => {
+        if (event.target.closest('#dashboardChartApply')) {
+          reportRangeSelect.value = document.getElementById('dashboardChartRange').value;
+          reportFromInput.value = document.getElementById('dashboardChartFrom')?.value || '';
+          reportToInput.value = document.getElementById('dashboardChartTo')?.value || '';
+          reportCustomRange.hidden = reportRangeSelect.value !== 'custom';
+          reportCompareSelect.value = document.getElementById('dashboardChartCompare').value;
+          reportIntervalSelect.value = document.getElementById('dashboardChartInterval').value;
+          reportChannelSelect.value = document.getElementById('dashboardChartChannel').value;
+          loadDashboardCharts();
+          return;
+        }
+        const legend = event.target.closest('[data-chart-legend]');
+        if (legend) {
+          const pressed = legend.getAttribute('aria-pressed') === 'true';
+          legend.setAttribute('aria-pressed', String(!pressed));
+          const card = legend.closest('.chart-card');
+          card?.querySelectorAll(`.series-${legend.dataset.series}`).forEach(series => { series.style.display = pressed ? 'none' : ''; });
+          return;
+        }
+        const exportButton = event.target.closest('[data-chart-export]');
+        if (exportButton) {
+          const chart = chartExportRegistry.get(exportButton.dataset.chartExport);
+          if (!chart) return;
+          const rows = [chart.columns.map(column => column.label), ...chart.rows.map(row => chart.columns.map(column => row[column.key] ?? ''))];
+          const csv = rows.map(row => row.map(reportCsvCell).join(',')).join('\r\n');
+          const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${chart.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv`;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          return;
+        }
+        const detail = event.target.closest('[data-open-view]');
+        if (detail) openAdminDataView(detail.dataset.openView);
+      });
+      document.addEventListener('change', event => {
+        if (event.target.id === 'dashboardChartRange') {
+          const custom = document.getElementById('dashboardCustomRange');
+          if (custom) custom.hidden = event.target.value !== 'custom';
+        }
+      });
+      document.addEventListener('keydown', event => {
+        if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.chart-mark[data-open-view]')) {
+          event.preventDefault();
+          openAdminDataView(event.target.dataset.openView);
+        }
       });
       refreshSavedReportViews();
+
+      async function loadDashboardCharts() {
+        const container = document.getElementById('dashboardCharts');
+        const range = getReportRange();
+        const params = new URLSearchParams({ from: range.from, to: range.to, comparison: reportCompareSelect.value, channel: reportChannelSelect.value });
+        const route = reportPreviewMode ? '/api/admin/reports/preview' : '/api/admin/reports/analytics';
+        const data = await api(`${route}?${params}`);
+        if (!data) {
+          container.innerHTML = '<div class="chart-state chart-card-wide"><strong>Dashboard charts unavailable</strong>Check database connectivity and refresh to retry.</div>';
+          return;
+        }
+        analyticsReport = data;
+        renderDashboardCharts();
+      }
+      function dashboardFiltersMarkup() {
+        const selectedRange = reportRangeSelect.value;
+        const range = getReportRange();
+        return `<div class="report-toolbar dashboard-chart-toolbar" aria-label="Dashboard chart filters">
+          <div class="report-filter"><label for="dashboardChartRange">Date range</label><select id="dashboardChartRange">
+            ${[['today','Today'],['yesterday','Yesterday'],['week','This week'],['month','This month'],['year','This year'],['custom','Custom range']].map(([value,label]) => `<option value="${value}" ${selectedRange===value?'selected':''}>${label}</option>`).join('')}
+          </select></div>
+          <div class="report-custom-range" id="dashboardCustomRange" ${selectedRange==='custom'?'':'hidden'}>
+            <div class="report-filter"><label for="dashboardChartFrom">From</label><input type="date" id="dashboardChartFrom" value="${reportEscape(reportFromInput.value || range.from)}"></div>
+            <div class="report-filter"><label for="dashboardChartTo">To</label><input type="date" id="dashboardChartTo" value="${reportEscape(reportToInput.value || range.to)}"></div>
+          </div>
+          <div class="report-filter"><label for="dashboardChartCompare">Compare with</label><select id="dashboardChartCompare"><option value="previous" ${reportCompareSelect.value==='previous'?'selected':''}>Previous period</option><option value="year" ${reportCompareSelect.value==='year'?'selected':''}>Same period last year</option><option value="none" ${reportCompareSelect.value==='none'?'selected':''}>No comparison</option></select></div>
+          <div class="report-filter"><label for="dashboardChartInterval">Sales grouping</label><select id="dashboardChartInterval"><option value="auto" ${reportIntervalSelect.value==='auto'?'selected':''}>Automatic</option><option value="day" ${reportIntervalSelect.value==='day'?'selected':''}>Day</option><option value="week" ${reportIntervalSelect.value==='week'?'selected':''}>Week</option><option value="month" ${reportIntervalSelect.value==='month'?'selected':''}>Month</option></select></div>
+          <div class="report-filter"><label for="dashboardChartChannel">Online channel</label><select id="dashboardChartChannel"><option value="all" ${reportChannelSelect.value==='all'?'selected':''}>All channels</option><option value="pickup" ${reportChannelSelect.value==='pickup'?'selected':''}>Pickup</option><option value="delivery" ${reportChannelSelect.value==='delivery'?'selected':''}>Delivery</option></select></div>
+          <div class="report-actions"><button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="dashboardChartApply">Apply filters</button></div>
+        </div>`;
+      }
+      function renderDashboardCharts() {
+        if (!analyticsReport) return;
+        chartExportRegistry.clear();
+        chartSequence = 0;
+        const metrics = analyticsReport.metrics;
+        const currentRevenue = reportSeriesFor(metrics, 'sales');
+        const priorRevenue = analyticsReport.comparison.metrics ? reportSeriesFor(analyticsReport.comparison.metrics, 'sales').map((point, index) => ({ ...point, label: currentRevenue[index]?.label || point.label })) : [];
+        const revenueSeries = [{ name: 'Selected period', values: currentRevenue }];
+        if (analyticsReport.comparison.metrics) revenueSeries.push({ name: analyticsReport.comparison.type === 'year' ? 'Same period last year' : 'Previous period', values: priorRevenue });
+        const reservations = reportSeriesFor(metrics, 'reservations');
+        const covers = reportSeriesFor(metrics, 'covers');
+        const issues = [
+          metrics.refunds ? `<li><i class="fa-solid fa-circle-exclamation"></i>Refunds recorded: ${reportEscape(reportMoney(metrics.refunds))}. Full-order amounts only.</li>` : '<li><i class="fa-solid fa-circle-check"></i>No refunded amounts recorded for this range.</li>',
+          metrics.cancelled ? `<li><i class="fa-solid fa-circle-exclamation"></i>${reportEscape(String(metrics.cancelled))} reservations are marked cancelled.</li>` : '<li><i class="fa-solid fa-circle-check"></i>No cancelled reservations recorded for this range.</li>',
+          '<li><i class="fa-solid fa-circle-info"></i>Table, staffing, inventory, and budget alerts are not connected.</li>'
+        ].join('');
+        const occupancyCard = `<article class="chart-card"><h3>Live table status</h3><p>Live occupancy is not calculated without table capacity and seating-state records.</p><div class="chart-state"><strong>Occupancy unavailable</strong>Connect table sections, seat counts, and live seating records to enable this chart.</div></article>`;
+        const alertsCard = `<article class="chart-card"><h3>Operational alerts</h3><p>Recorded issues for ${reportEscape(analyticsReport.period.from)} to ${reportEscape(analyticsReport.period.to)}. No thresholds or causes are inferred.</p><ul class="dashboard-issue-list">${issues}</ul></article>`;
+        document.getElementById('dashboardCharts').innerHTML = `<div class="chart-card chart-card-wide"><div class="chart-card-head"><div><h3>Performance charts</h3><p>Using the same date, comparison, grouping, and online-channel filters as Reports. Location: LakeBite Nairobi.</p></div><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reports">Filters and all reports</button></div></div><div class="chart-grid chart-card-wide">${chartLine('Revenue over time', 'Net online sales in KES compared with the selected comparison period.', revenueSeries, reportMoney, 'orders')}${chartGroupedBars('Reservations and covers by day', 'Reservation records and active-booking covers by service date.', reservations.map(item => item.label), [{ name: 'Reservations', values: reservations.map(item => item.value) }, { name: 'Booked covers', values: covers.map(item => item.value) }], value => Number(value).toLocaleString('en-KE'), 'reservations')}${chartDonut('Sales by channel', 'Net paid sales by recorded pickup or delivery fulfilment.', metrics.channels, 'sales', reportMoney, 'orders')}${chartHorizontal('Top-selling dishes', 'Recorded item sales from paid, non-refunded order lines.', metrics.topItems, 'sales', reportMoney, 'menu')}${occupancyCard}${alertsCard}</div>`;
+        document.getElementById('dashboardCharts').insertAdjacentHTML('afterbegin', dashboardFiltersMarkup());
+        const updatedAt = document.createElement('p');
+        updatedAt.className = 'report-note report-last-updated';
+        updatedAt.textContent = `Charts updated ${new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' })} EAT · ${analyticsReport.period.from} to ${analyticsReport.period.to}`;
+        document.getElementById('dashboardCharts').appendChild(updatedAt);
+        if (analyticsReport.preview) {
+          const banner = document.createElement('div');
+          banner.className = 'report-preview-banner';
+          banner.setAttribute('role', 'status');
+          banner.textContent = 'DESIGN PREVIEW · Illustrative data only · Not restaurant results';
+          document.getElementById('dashboardCharts').prepend(banner);
+        }
+      }
 
       // ── Load Dashboard ──
       async function loadDashboard() {
         const data = await api('/api/admin/dashboard-stats');
         if (!data) return;
         document.getElementById('statReservations').textContent = data.reservationsToday;
-        document.getElementById('statCovers').textContent = data.confirmedToday + data.seatedToday;
-        document.getElementById('statArrivals').textContent = data.reservationsToday;
-        document.getElementById('statOccupancy').textContent = '60%';
-        document.getElementById('statOrders').textContent = data.ordersToday;
+        document.getElementById('statCovers').textContent = data.coversToday;
+        document.getElementById('statArrivals').textContent = data.expectedArrivals;
+        document.getElementById('statOccupancy').textContent = '—';
+        document.getElementById('statOrders').textContent = data.activeOrdersToday;
         document.getElementById('statRevenue').textContent = 'KES ' + data.revenueToday.toLocaleString();
 
         // upcoming reservations
@@ -1438,6 +1799,7 @@ body.admin-body {
           `;
           tbody.appendChild(tr);
         });
+        loadDashboardCharts();
       }
 
       // ── Load Reservations ──
@@ -1683,6 +2045,9 @@ body.admin-body {
         if (!me) return;
         profileName.textContent = me.user.name;
         avatar.textContent = (me.user.name || 'A').charAt(0).toUpperCase();
+        const reportCapabilities = await api('/api/admin/reports/capabilities');
+        reportPreviewAllowed = Boolean(reportCapabilities?.previewAllowed);
+        document.getElementById('reportPreview').hidden = !reportPreviewAllowed;
         loadDashboard();
       })();
     })();

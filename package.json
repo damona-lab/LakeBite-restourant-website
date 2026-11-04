@@ -2,6 +2,7 @@
   "name": "lakebite-website-launcher",
   "private": true,
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "dev": "node -e \"process.env.NODE_ENV='development'; require('./backend/server.js')\""
   }
 }
