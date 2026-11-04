@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — LakeBite</title>
+<link rel="stylesheet" href="global.css">
+<style>
+.admin-wrap{padding:2rem;max-width:1100px;margin:0 auto}
+table{width:100%;border-collapse:collapse;margin-top:1.5rem}
+th,td{padding:.75rem;border-bottom:1px solid var(--clr-border);text-align:left}
+button.del{background:#e74c3c;color:#fff;border:none;padding:.4rem .8rem;border-radius:4px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <h1>Admin Panel</h1>
+  <p id="who"></p>
+  <table id="tbl"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Created</th><th></th></tr></thead><tbody></tbody></table>
+  <button id="logout" style="margin-top:1rem">Logout</button>
+</div>
+<script>
+async function load(){
+  const r=await fetch('/api/me',{credentials:'include'});
+  const d=await r.json();
+  if(!r.ok||d.user.role!=='admin'){location.href='/login';return;}
+  document.getElementById('who').textContent='Logged in as '+d.user.email;
+  const r2=await fetch('/api/admin/users',{credentials:'include'});
+  const d2=await r2.json();
+  const tb=document.querySelector('#tbl tbody');
+  tb.innerHTML='';
+  d2.users.forEach(u=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${new Date(u.createdAt).toLocaleString()}</td><td>${u.role!=='admin'?`<button class="del" data-id="${u._id}">Delete</button>`:''}</td>`;
+    tb.appendChild(tr);
+  });
+  document.querySelectorAll('.del').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Delete user?'))return;
+    await fetch('/api/admin/users/'+b.dataset.id,{method:'DELETE',credentials:'include'});
+    load();
+  });
+}
+document.getElementById('logout').onclick=async()=>{await fetch('/api/logout',{method:'POST',credentials:'include'});location.href='/login';};
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — LakeBite</title>
+<link rel="stylesheet" href="global.css">
+<style>
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-card{width:100%;max-width:420px;background:var(--clr-card);border:1px solid var(--clr-border);border-radius:12px;padding:2.5rem}
+.auth-card h1{font-family:var(--font-display);margin-bottom:1.5rem}
+.auth-card input{width:100%;padding:.75rem;margin:.5rem 0;border:1px solid var(--clr-border);border-radius:6px;background:transparent;color:inherit}
+.auth-card button{width:100%;margin-top:1rem;padding:.85rem;border:none;border-radius:6px;background:var(--clr-primary);color:#fff;cursor:pointer}
+.auth-card .toggle{margin-top:1rem;text-align:center;font-size:.9rem}
+.auth-card .msg{margin-top:1rem;color:#e74c3c;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1 id="title">Login</h1>
+    <form id="form">
+      <input id="name" type="text" placeholder="Name (signup only)" style="display:none">
+      <input id="email" type="email" placeholder="Email" required>
+      <input id="password" type="password" placeholder="Password" required>
+      <button type="submit">Submit</button>
+    </form>
+    <div class="toggle"><a href="#" id="toggle">Need an account? Sign up</a></div>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+<script>
+let mode='login';
+const toggle=document.getElementById('toggle');
+const name=document.getElementById('name');
+const title=document.getElementById('title');
+toggle.onclick=e=>{e.preventDefault();mode=mode==='login'?'signup':'login';title.textContent=mode==='login'?'Login':'Sign Up';name.style.display=mode==='signup'?'block':'none';toggle.textContent=mode==='login'?'Need an account? Sign up':'Have an account? Login';};
+document.getElementById('form').onsubmit=async e=>{
+  e.preventDefault();
+  const email=document.getElementById('email').value;
+  const password=document.getElementById('password').value;
+  const url=mode==='login'?'/api/login':'/api/register';
+  const body=mode==='login'?{email,password}:{name:name.value,email,password};
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
+  const d=await r.json();
+  if(!r.ok){document.getElementById('msg').textContent=d.error||'Error';return;}
+  if(d.user.role==='admin') location.href='/admin'; else location.href='/';
+};
+</script>
+</body>
+</html>
