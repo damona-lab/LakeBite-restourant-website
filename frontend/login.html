@@ -1,60 +1,134 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login — LakeBite</title>
-<link rel="stylesheet" href="global.css">
-<style>
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
-.auth-card{width:100%;max-width:420px;background:var(--clr-card);border:1px solid var(--clr-border);border-radius:12px;padding:2.5rem}
-.auth-card h1{font-family:var(--font-display);margin-bottom:1.5rem}
-.auth-card input{width:100%;padding:.75rem;margin:.5rem 0;border:1px solid var(--clr-border);border-radius:6px;background:transparent;color:inherit}
-.auth-card button{width:100%;margin-top:1rem;padding:.85rem;border:none;border-radius:6px;background:var(--clr-primary);color:#fff;cursor:pointer}
-.auth-card .toggle{margin-top:1rem;text-align:center;font-size:.9rem}
-.auth-card .msg{margin-top:1rem;color:#e74c3c;font-size:.9rem}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — LakeBite</title>
+  <meta name="description" content="Sign in or create an account at LakeBite.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Marcellus&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(1200px 600px at 20% 10%, rgba(200,151,58,.08), transparent), var(--clr-bg)}
+    .auth-card{width:100%;max-width:440px;background:var(--clr-card);border:1px solid var(--clr-border);border-radius:14px;padding:2.75rem;box-shadow:var(--shadow-lg)}
+    .auth-card-header{text-align:center;margin-bottom:2rem}
+    .auth-card-header .logo{justify-content:center;font-size:1.6rem}
+    .auth-card-header p{margin-top:.5rem;color:var(--clr-text-sub);font-size:.9rem}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;margin-bottom:.5rem;font-size:.9rem;font-weight:500}
+    .input-wrap{position:relative}
+    .input-wrap input{width:100%;padding:.85rem 2.8rem .85rem .9rem;border:1px solid var(--clr-border);border-radius:10px;background:transparent;color:inherit;font-size:.95rem}
+    .input-wrap input:focus-visible{outline:2px solid var(--clr-gold);outline-offset:2px}
+    .toggle-pass{position:absolute;right:.6rem;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--clr-text-sub);cursor:pointer}
+    .auth-card button[type="submit"]{width:100%;margin-top:.5rem;padding:.95rem;border:none;border-radius:10px;background:linear-gradient(135deg,var(--clr-gold),#b8943f);color:#fff;cursor:pointer;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;display:flex;align-items:center;justify-content:center;gap:.6rem}
+    .auth-card button[disabled]{opacity:.7;cursor:not-allowed}
+    .toggle{text-align:center;margin-top:1.25rem;font-size:.9rem;color:var(--clr-text-sub)}
+    .toggle a{color:var(--clr-gold);text-decoration:none}
+    .msg{margin-top:1rem;text-align:center;color:#e74c3c;font-size:.9rem;min-height:1.2rem}
+    .theme-row{display:flex;justify-content:flex-end;margin-bottom:1rem}
+    .theme-btn{border:1px solid var(--clr-border);background:transparent;color:inherit;border-radius:50px;padding:.4rem .7rem;cursor:pointer}
+  </style>
 </head>
 <body>
-<div class="auth-wrap">
-  <div class="auth-card">
-    <h1 id="title">Login</h1>
-    <form id="form">
-      <input id="name" type="text" placeholder="Name (signup only)" style="display:none">
-      <input id="email" type="email" placeholder="Email" required>
-      <input id="password" type="password" placeholder="Password" required>
-      <button type="submit">Submit</button>
-    </form>
-    <div class="toggle"><a href="#" id="toggle">Need an account? Sign up</a></div>
-    <div class="msg" id="msg"></div>
+  <div class="auth-wrap">
+    <div class="auth-card" role="main">
+      <div class="theme-row">
+        <button class="theme-btn" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      </div>
+      <div class="auth-card-header">
+        <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
+        <p id="subtitle">Welcome back — sign in to continue</p>
+      </div>
+      <h1 id="title" style="font-family:var(--font-display);font-size:1.8rem;margin-bottom:1.25rem;text-align:center">Login</h1>
+      <form id="form" novalidate>
+        <div class="form-group" id="nameGroup" style="display:none">
+          <label for="name">Full name</label>
+          <div class="input-wrap">
+            <input id="name" type="text" autocomplete="name" placeholder="e.g. Amara Ochieng">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <div class="input-wrap">
+            <input id="email" type="email" autocomplete="email" required placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input id="password" type="password" autocomplete="current-password" required minlength="8" placeholder="Enter your password">
+            <button type="button" class="toggle-pass" id="togglePass" aria-label="Show password"><i class="fa-regular fa-eye"></i></button>
+          </div>
+          <small style="display:block;margin-top:.4rem;color:var(--clr-text-sub);font-size:.82rem">Minimum 8 characters</small>
+        </div>
+        <button type="submit" id="submitBtn"><span id="submitText">Sign In</span><i class="fa-solid fa-arrow-right"></i></button>
+      </form>
+      <div class="toggle"><span id="toggleText">Need an account?</span> <a href="#" id="toggle">Sign up</a></div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+    </div>
   </div>
-</div>
-<script>
-let mode='login';
-const toggle=document.getElementById('toggle');
-const name=document.getElementById('name');
-const title=document.getElementById('title');
-toggle.onclick=e=>{e.preventDefault();mode=mode==='login'?'signup':'login';title.textContent=mode==='login'?'Login':'Sign Up';name.style.display=mode==='signup'?'block':'none';toggle.textContent=mode==='login'?'Need an account? Sign up':'Have an account? Login';};
-document.getElementById('form').onsubmit=async e=>{
-  e.preventDefault();
-  const msg=document.getElementById('msg');
-  msg.textContent='';
-  const email=document.getElementById('email').value;
-  const password=document.getElementById('password').value;
-  const url=mode==='login'?'/api/login':'/api/register';
-  const body=mode==='login'?{email,password}:{name:name.value,email,password};
-  try {
-    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
-    const d=await r.json();
-    if(!r.ok){msg.textContent=d.error||'Error';return;}
-    if(d.token) localStorage.setItem('lb_token', d.token);
-    if(d.user.role==='admin') location.href='/admin'; else location.href='/';
-  } catch (err) {
-    msg.textContent='Could not reach the server. Make sure `npm start` is running and you are on http://localhost:3000/login.html';
-    console.error(err);
-  }
-};
-</script>
+  <script src="script.js"></script>
+  <script>
+    let mode='login';
+    const toggle=document.getElementById('toggle');
+    const toggleText=document.getElementById('toggleText');
+    const nameGroup=document.getElementById('nameGroup');
+    const nameInput=document.getElementById('name');
+    const titleEl=document.getElementById('title');
+    const subtitle=document.getElementById('subtitle');
+    const form=document.getElementById('form');
+    const msg=document.getElementById('msg');
+    const submitBtn=document.getElementById('submitBtn');
+    const submitText=document.getElementById('submitText');
+    const passwordInput=document.getElementById('password');
+    const togglePass=document.getElementById('togglePass');
+
+    togglePass.onclick=()=>{
+      const showing = passwordInput.type === 'text';
+      passwordInput.type = showing ? 'password' : 'text';
+      togglePass.innerHTML = showing ? '<i class="fa-regular fa-eye"></i>' : '<i class="fa-regular fa-eye-slash"></i>';
+      togglePass.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    };
+
+    toggle.onclick=e=>{
+      e.preventDefault();
+      mode=mode==='login'?'signup':'login';
+      titleEl.textContent=mode==='login'?'Login':'Create Account';
+      subtitle.textContent=mode==='login'?'Welcome back — sign in to continue':'Join LakeBite for reservations and faster checkout';
+      nameGroup.style.display=mode==='signup'?'block':'none';
+      nameInput.required = mode==='signup';
+      toggleText.textContent=mode==='login'?'Need an account?':'Already have an account?';
+      toggle.textContent=mode==='login'?'Sign up':'Log in';
+      passwordInput.setAttribute('autocomplete', mode==='login'?'current-password':'new-password');
+      msg.textContent='';
+    };
+
+    form.onsubmit=async e=>{
+      e.preventDefault();
+      msg.textContent='';
+      msg.style.color='#e74c3c';
+      const email=document.getElementById('email').value.trim();
+      const password=passwordInput.value;
+      if(password.length < 8){ msg.textContent='Password must be at least 8 characters.'; return; }
+      const url=mode==='login'?'/api/login':'/api/register';
+      const body=mode==='login'?{email,password}:{name:nameInput.value.trim(),email,password};
+      if(mode==='signup' && !body.name){ msg.textContent='Please enter your full name.'; return; }
+      submitBtn.disabled=true;
+      submitText.textContent='Please wait...';
+      try {
+        const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
+        const d=await r.json();
+        if(!r.ok){ msg.textContent=d.error||'Unable to sign in.'; submitBtn.disabled=false; submitText.textContent=mode==='login'?'Sign In':'Create Account'; return; }
+        if(d.user && d.user.role==='admin') location.href='/admin'; else location.href='/';
+      } catch (err) {
+        msg.textContent='Network error. Please try again.';
+        submitBtn.disabled=false;
+        submitText.textContent=mode==='login'?'Sign In':'Create Account';
+      }
+    };
+  </script>
 </body>
 </html>
 

@@ -1068,16 +1068,23 @@ body.admin-body {
 
       // ── API Helpers ──
       async function api(path, opts = {}) {
-        const res = await fetch(path, {
-          ...opts,
-          headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-          credentials: 'include'
-        });
-        if (res.status === 401 || res.status === 403) {
-          window.location.href = '/login.html';
+        try {
+          const res = await fetch(path, {
+            ...opts,
+            headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+            credentials: 'include'
+          });
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = '/login.html';
+            return null;
+          }
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'The request failed. Please try again.');
+          return data;
+        } catch (error) {
+          alert(error.message || 'Could not reach the server. Check that it is running and try again.');
           return null;
         }
-        return res.json();
       }
 
       // ── Load Dashboard ──
@@ -1209,7 +1216,7 @@ body.admin-body {
 
       // ── Reservation Modal ──
       let editReservationId = null;
-      function adminOpenReservationModal(id = null) {
+      async function adminOpenReservationModal(id = null) {
         editReservationId = id;
         document.getElementById('resModalTitle').textContent = id ? 'Edit Reservation' : 'New Reservation';
         document.getElementById('adminReservationForm').reset();
@@ -1234,6 +1241,8 @@ body.admin-body {
         editReservationId = null;
       }
       async function adminSaveReservation() {
+        const form = document.getElementById('adminReservationForm');
+        if (!form.reportValidity()) return;
         const body = {
           guestName: document.getElementById('resGuestName').value,
           tableNumber: parseInt(document.getElementById('resTableNumber').value),
@@ -1244,18 +1253,20 @@ body.admin-body {
           occasion: document.getElementById('resOccasion').value,
           dietary: document.getElementById('resDietary').value
         };
+        let result;
         if (editReservationId) {
-          await api('/api/admin/reservations/' + editReservationId, { method: 'PATCH', body: JSON.stringify(body) });
+          result = await api('/api/admin/reservations/' + editReservationId, { method: 'PATCH', body: JSON.stringify(body) });
         } else {
-          await api('/api/admin/reservations', { method: 'POST', body: JSON.stringify(body) });
+          result = await api('/api/admin/reservations', { method: 'POST', body: JSON.stringify(body) });
         }
+        if (!result) return;
         adminCloseReservationModal();
         loadReservations();
         loadDashboard();
       }
       async function adminDeleteReservation(id) {
         if (!confirm('Delete this reservation?')) return;
-        await api('/api/admin/reservations/' + id, { method: 'DELETE' });
+        if (!await api('/api/admin/reservations/' + id, { method: 'DELETE' })) return;
         loadReservations();
         loadDashboard();
       }
@@ -1282,7 +1293,12 @@ body.admin-body {
         document.getElementById('adminMenuModalOverlay').classList.remove('open');
         editMenuId = null;
       }
+      function adminEditMenuItem(id, name, price, category, available, allergens, dietary, spice) {
+        adminOpenMenuModal(id, name, price, category, available, allergens, dietary, spice);
+      }
       async function adminSaveMenuItem() {
+        const form = document.getElementById('adminMenuForm');
+        if (!form.reportValidity()) return;
         const body = {
           name: document.getElementById('menuName').value,
           category: document.getElementById('menuCategory').value,
@@ -1293,31 +1309,33 @@ body.admin-body {
           dietary: document.getElementById('menuDietary').value.split(',').map(s => s.trim()).filter(Boolean),
           spiceLevel: parseInt(document.getElementById('menuSpice').value) || 0
         };
+        let result;
         if (editMenuId) {
-          await api('/api/admin/menu/' + editMenuId, { method: 'PATCH', body: JSON.stringify(body) });
+          result = await api('/api/admin/menu/' + editMenuId, { method: 'PATCH', body: JSON.stringify(body) });
         } else {
-          await api('/api/admin/menu', { method: 'POST', body: JSON.stringify(body) });
+          result = await api('/api/admin/menu', { method: 'POST', body: JSON.stringify(body) });
         }
+        if (!result) return;
         adminCloseMenuModal();
         loadMenu();
         loadDashboard();
       }
       async function adminDeleteMenuItem(id) {
         if (!confirm('Delete this menu item?')) return;
-        await api('/api/admin/menu/' + id, { method: 'DELETE' });
+        if (!await api('/api/admin/menu/' + id, { method: 'DELETE' })) return;
         loadMenu();
       }
 
       // ── Order Status ──
       async function adminUpdateOrderStatus(id, status) {
-        await api('/api/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+        if (!await api('/api/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) })) return;
         loadOrders();
       }
 
       // ── Staff Delete ──
       async function adminDeleteUser(id) {
         if (!confirm('Remove this staff member?')) return;
-        await api('/api/admin/users/' + id, { method: 'DELETE' });
+        if (!await api('/api/admin/users/' + id, { method: 'DELETE' })) return;
         loadStaff();
       }
 
@@ -1326,6 +1344,15 @@ body.admin-body {
       function adminBlockTable() { alert('Table blocking coming soon.'); }
       function adminPauseOrders() { alert('Pause online ordering coming soon.'); }
       function adminMarkUnavailable() { alert('Mark item unavailable coming soon.'); }
+
+      // These functions are called from the page's inline button handlers.
+      Object.assign(window, {
+        adminOpenReservationModal, adminCloseReservationModal, adminSaveReservation,
+        adminEditReservation, adminDeleteReservation, adminOpenMenuModal, adminEditMenuItem,
+        adminCloseMenuModal, adminSaveMenuItem, adminDeleteMenuItem,
+        adminUpdateOrderStatus, adminDeleteUser, adminAddWalkIn,
+        adminBlockTable, adminPauseOrders, adminMarkUnavailable
+      });
 
       // ── Init: check auth ──
       (async () => {

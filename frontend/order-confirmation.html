@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation — LakeBite</title>
+  <meta name="description" content="Your LakeBite order confirmation and tracking details.">
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .confirm-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+    .confirm-card{max-width:560px;width:100%;background:var(--clr-card);border:1px solid var(--clr-border);border-radius:14px;padding:2.5rem;text-align:center;box-shadow:var(--shadow-lg)}
+    .confirm-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;background:rgba(46,204,113,.12);color:#2ecc71;font-size:1.8rem}
+    .confirm-card h1{font-family:var(--font-display);font-size:2rem;margin-bottom:.5rem}
+    .confirm-card p{color:var(--clr-text-sub);margin-bottom:1.5rem}
+    .order-box{border:1px solid var(--clr-border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;text-align:left}
+    .order-row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.95rem}
+    .order-row.muted{color:var(--clr-text-sub)}
+    .actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
+      <div class="header-actions">
+        <a href="menu.html" class="btn btn-outline">Back to Menu</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="confirm-wrap">
+      <div class="confirm-card">
+        <div class="confirm-icon"><i class="fa-solid fa-check"></i></div>
+        <h1>Order Received</h1>
+        <p>Thank you for your order. We'll start preparing it right away.</p>
+        <div class="order-box">
+          <div class="order-row"><span>Order Number</span><strong id="orderNum">—</strong></div>
+          <div class="order-row muted"><span>Status</span><span id="orderStatus">new</span></div>
+          <div class="order-row muted"><span>Payment</span><span id="paymentStatus">pending</span></div>
+          <div class="order-row"><span>Total</span><strong id="orderTotal">KES 0</strong></div>
+        </div>
+        <div class="actions">
+          <a href="menu.html" class="btn btn-primary"><i class="fa-solid fa-utensils"></i> Order More</a>
+          <a href="index.html" class="btn btn-outline">Home</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const num = params.get('order');
+    document.getElementById('orderNum').textContent = num || '—';
+    if(num){
+      fetch('/api/orders/track/' + encodeURIComponent(num)).then(r=>r.json()).then(d=>{
+        if(d.order){
+          document.getElementById('orderStatus').textContent = d.order.status;
+          document.getElementById('paymentStatus').textContent = d.order.paymentStatus;
+          document.getElementById('orderTotal').textContent = 'KES ' + Number(d.order.total||0).toLocaleString();
+        }
+      }).catch(()=>{});
+    }
+  </script>
+</body>
+</html>

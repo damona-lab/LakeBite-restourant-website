@@ -82,11 +82,9 @@ document.querySelectorAll('[id]').forEach(el => scrollSpy.observe(el));
 
 // ── Cart System ────────────────────────────────────────────
 let cart = JSON.parse(localStorage.getItem('lb-cart') || '[]');
-
 function saveCart() {
-  localStorage.setItem('lb-cart', JSON.stringify(cart));
+  try { localStorage.setItem('lb-cart', JSON.stringify(cart)); } catch {}
 }
-
 function updateCartUI() {
   const total = cart.reduce((s, i) => s + i.qty, 0);
   document.querySelectorAll('.cart-count').forEach(el => {
@@ -162,22 +160,27 @@ document.addEventListener('click', e => {
   if (e.target.closest('.cart-btn')) openCart();
   if (e.target.closest('.cart-overlay') || e.target.closest('.cart-close-btn')) closeCart();
   if (e.target.closest('.add-to-cart-btn')) {
-    if (!localStorage.getItem('lb_token')) { window.location.href='/login.html'; return; }
+    e.preventDefault();
     const btn = e.target.closest('.add-to-cart-btn');
     addToCart(
-      btn.dataset.id,
-      btn.dataset.name,
-      btn.dataset.price,
-      btn.dataset.img || ''
+      btn.dataset.id || btn.dataset.name,
+      btn.dataset.name || 'Item',
+      btn.dataset.price || 0,
+      btn.dataset.img || btn.querySelector('img')?.getAttribute('src') || ''
     );
   }
+  if (e.target.closest('.qty-btn')) {
+    const btn = e.target.closest('.qty-btn');
+    changeQty(btn.dataset.id, btn.dataset.act === 'inc' ? 1 : -1);
+  }
+  if (e.target.closest('.remove-item-btn')) {
+    const btn = e.target.closest('.remove-item-btn');
+    removeFromCart(btn.dataset.id);
+  }
   if (e.target.closest('.checkout-btn')) {
-    if (!localStorage.getItem('lb_token')) { window.location.href='/login.html'; return; }
-    showToast('<i class="fa-solid fa-check"></i> Order placed! We\'ll contact you soon.');
-    cart = [];
-    saveCart();
-    updateCartUI();
-    closeCart();
+    const total = cart.reduce((s, i) => s + (Number(i.price)||0) * (Number(i.qty)||0), 0);
+    if (cart.length === 0) { showToast('Your cart is empty'); return; }
+    openCheckoutModal(total);
   }
 });
 

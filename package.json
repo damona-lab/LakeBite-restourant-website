@@ -1,0 +1,7 @@
+{
+  "name": "lakebite-website-launcher",
+  "private": true,
+  "scripts": {
+    "start": "node backend/server.js"
+  }
+}
