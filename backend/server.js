@@ -9,6 +9,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
+const { body, param, query, validationResult } = require('express-validator');
 
 const app = express();
 
@@ -20,8 +22,21 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
-const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o=>o.trim()) : true;
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+app.use((req, res, next) => {
+  if (!writeMethods.has(req.method) || !req.cookies.token || req.path === '/api/payments/mpesa/callback') return next();
+  const origin = req.get('origin');
+  if (origin && new URL(origin).host !== req.get('host')) return res.status(403).json({ error: 'Cross-site request rejected' });
+  if (!origin && req.get('sec-fetch-site') === 'cross-site') return res.status(403).json({ error: 'Cross-site request rejected' });
+  next();
+});
+
+const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o=>o.trim()) : [];
+app.use(cors({ origin(origin, callback) {
+  if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+  if (!allowedOrigins.length) return callback(null, false);
+  return callback(new Error('Origin is not allowed'));
+}, credentials: true }));
 
 // Basic security headers
 app.use((req, res, next) => {
@@ -32,7 +47,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/admin/test-ping', (req, res) => { res.json({ ok: true, time: Date.now() }); });
+app.get('/api/admin/test-ping', auth, adminOnly, (req, res) => { res.json({ ok: true, time: Date.now() }); });
 
 const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 30, standardHeaders: true, legacyHeaders: false });
 const apiLimiter = rateLimit({ windowMs: 1*60*1000, max: 60, standardHeaders: true, legacyHeaders: false });
@@ -42,7 +57,8 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 8 },
-  role: { type: String, enum: ['user','admin'], default: 'user' },
+  role: { type: String, enum: ['user','admin','manager','host','kitchen'], default: 'user' },
+  active: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
@@ -64,6 +80,7 @@ const reservationSchema = new mongoose.Schema({
 const Reservation = mongoose.model('Reservation', reservationSchema);
 
 const menuItemSchema = new mongoose.Schema({
+  catalogId: { type: String, trim: true, sparse: true, unique: true },
   name: { type: String, required: true, trim: true },
   description: { type: String, trim: true },
   price: { type: Number, required: true, min: 0 },
@@ -94,6 +111,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, enum: ['mpesa','pay-on-delivery'], default: 'pay-on-delivery' },
   paymentStatus: { type: String, enum: ['pending','paid','failed','refunded'], default: 'pending' },
   mpesaReceipt: { type: String, trim: true },
+  acceptedAt: Date, preparingAt: Date, readyAt: Date, completedAt: Date,
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -108,18 +126,52 @@ const auditLogSchema = new mongoose.Schema({
 });
 const AuditLog = mongoose.model('AuditLog', auditLogSchema);
 
+const tableSchema = new mongoose.Schema({
+  number: { type: Number, required: true, min: 1, unique: true }, section: { type: String, required: true, trim: true, maxlength: 60 },
+  seats: { type: Number, required: true, min: 1, max: 50 }, status: { type: String, enum: ['available','reserved','seated','blocked'], default: 'available' },
+  blockReason: { type: String, trim: true, maxlength: 240, default: '' }, updatedAt: { type: Date, default: Date.now }
+});
+const Table = mongoose.model('Table', tableSchema);
+const settingSchema = new mongoose.Schema({ key: { type: String, unique: true }, value: { type: mongoose.Schema.Types.Mixed, default: {} }, updatedAt: { type: Date, default: Date.now } });
+const Setting = mongoose.model('Setting', settingSchema);
+const contactSchema = new mongoose.Schema({ name: { type: String, required: true, trim: true }, email: { type: String, required: true, lowercase: true, trim: true }, phone: { type: String, trim: true }, subject: { type: String, trim: true }, message: { type: String, required: true, trim: true }, status: { type: String, enum: ['unread','read','archived'], default: 'unread' }, createdAt: { type: Date, default: Date.now } });
+const ContactMessage = mongoose.model('ContactMessage', contactSchema);
+const reviewSchema = new mongoose.Schema({ name: { type: String, trim: true }, rating: { type: Number, min: 1, max: 5, required: true }, comment: { type: String, trim: true, maxlength: 2000 }, reference: { type: String, trim: true }, status: { type: String, enum: ['pending','approved','hidden'], default: 'pending' }, reply: { type: String, trim: true }, createdAt: { type: Date, default: Date.now } });
+const Review = mongoose.model('Review', reviewSchema);
+const eventSchema = new mongoose.Schema({ title: { type: String, required: true, trim: true }, date: { type: Date, required: true }, description: { type: String, trim: true }, image: { type: String, trim: true }, capacity: { type: Number, min: 1, required: true }, price: { type: Number, min: 0, default: 0 }, type: { type: String, enum: ['private dining','tasting','live music'], required: true }, published: { type: Boolean, default: false } });
+const Event = mongoose.model('Event', eventSchema);
+const eventBookingSchema = new mongoose.Schema({ eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true }, name: { type: String, trim: true }, email: { type: String, lowercase: true, trim: true }, phone: { type: String, trim: true }, guests: { type: Number, min: 1, required: true }, createdAt: { type: Date, default: Date.now } });
+const EventBooking = mongoose.model('EventBooking', eventBookingSchema);
+const guestNoteSchema = new mongoose.Schema({ email: { type: String, unique: true, lowercase: true, trim: true }, tags: { type: [String], default: [] }, staffNotes: { type: String, trim: true, maxlength: 2000 } });
+const GuestNote = mongoose.model('GuestNote', guestNoteSchema);
+
+function validateRequest(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ error: 'Invalid request', details: errors.array().map(error => ({ field: error.path, message: error.msg })) });
+  next();
+}
+
 function signToken(user) {
   return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 function auth(req, res, next) {
   const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try { req.user = jwt.verify(token, process.env.JWT_SECRET); next(); }
+  try { req.user = jwt.verify(token, process.env.JWT_SECRET); }
   catch { return res.status(401).json({ error: 'Invalid token' }); }
+  User.findById(req.user.id).select('name email role active').then(user => {
+    if (!user || user.active === false) return res.status(401).json({ error: 'Session is no longer valid' });
+    req.user.name = user.name; req.user.email = user.email; req.user.role = user.role;
+    next();
+  }).catch(next);
 }
-function adminOnly(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') return res.status(403).json({ error: 'Admins only' });
+const authorize = (...roles) => (req, res, next) => {
+  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+  if (!roles.includes(req.user.role)) return res.status(403).json({ error: 'Insufficient permissions' });
   next();
+};
+function adminOnly(req, res, next) {
+  return authorize('admin')(req, res, next);
 }
 
 function setAuthCookie(res, token) {
@@ -161,6 +213,40 @@ app.post('/api/logout', (req, res) => {
   res.json({ ok: true }); 
 });
 
+app.get('/api/public/status', async (req, res, next) => {
+  try {
+    const operations = await Setting.findOne({ key: 'operations' });
+    res.json({ ordersPaused: Boolean(operations?.value?.ordersPaused) });
+  } catch (error) { next(error); }
+});
+
+app.get('/api/menu', async (req, res, next) => {
+  try { res.json({ menu: await MenuItem.find().sort({ category: 1, name: 1 }).lean() }); }
+  catch (error) { next(error); }
+});
+
+app.post('/api/reservations', authLimiter, async (req, res, next) => {
+  try {
+    const body = req.body || {};
+    const guestName = String(body.guestName || '').trim().slice(0, 100);
+    const guestEmail = String(body.guestEmail || '').trim().toLowerCase().slice(0, 254);
+    const guestPhone = String(body.guestPhone || '').trim().slice(0, 40);
+    const tableNumber = Number(body.tableNumber); const partySize = Number(body.partySize);
+    const date = new Date(body.date);
+    const time = String(body.time || '');
+    if (!guestName || !guestPhone || !Number.isInteger(tableNumber) || !Number.isInteger(partySize) || partySize < 1 || !Number.isFinite(+date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return res.status(400).json({ error: 'Complete all required reservation details.' });
+    const table = await Table.findOne({ number: tableNumber });
+    if (!table) return res.status(400).json({ error: 'Choose an available table from the restaurant.' });
+    if (table.seats < partySize) return res.status(400).json({ error: `Table ${table.number} seats up to ${table.seats}.` });
+    const rangeStart = new Date(date); rangeStart.setHours(0,0,0,0);
+    const rangeEnd = new Date(rangeStart); rangeEnd.setDate(rangeEnd.getDate() + 1);
+    const duplicate = await Reservation.findOne({ tableNumber, date: { $gte: rangeStart, $lt: rangeEnd }, time, status: { $nin: ['cancelled','no-show'] } });
+    if (duplicate) return res.status(409).json({ error: 'That table is already reserved for this time. Please choose another table or time.' });
+    const reservation = await Reservation.create({ tableNumber, guestName, guestEmail, guestPhone, partySize, date, time, occasion: String(body.occasion || '').slice(0,120), dietary: String(body.dietary || '').slice(0,300), notes: String(body.notes || '').slice(0,500), status: 'pending' });
+    res.status(201).json({ ok: true, reservation: { id: reservation.id, status: reservation.status } });
+  } catch (error) { next(error); }
+});
+
 app.get('/api/me', auth, async (req, res) => {
   const user = await User.findById(req.user.id).select('-password');
   res.json({ user });
@@ -173,7 +259,14 @@ app.get('/api/admin/users', auth, adminOnly, async (req, res) => {
 
 app.delete('/api/admin/users/:id', auth, adminOnly, async (req, res) => {
   if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot delete self' });
-  await User.findByIdAndDelete(req.params.id);
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ error: 'Invalid user id' });
+  const target = await User.findById(req.params.id);
+  if (!target) return res.status(404).json({ error: 'User not found' });
+  if (target.role === 'admin') {
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (adminCount <= 1) return res.status(409).json({ error: 'Cannot remove the last administrator' });
+  }
+  await target.deleteOne();
   res.json({ ok: true });
 });
 
@@ -184,33 +277,33 @@ async function logAudit(actor, action, endpoint, details) {
 // ── Orders (public create, auth/admin manage) ──
 app.post('/api/orders', async (req, res) => {
   try {
+    const operations = await Setting.findOne({ key: 'operations' });
+    if (operations?.value?.ordersPaused) return res.status(503).json({ error: 'Online ordering is paused. Please try again later.' });
     const { items = [], customerName, customerEmail, customerPhone, type = 'pickup', deliveryAddress = '', notes = '', paymentMethod = 'pay-on-delivery' } = req.body;
     if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Cart is empty' });
     if (!customerName || !customerPhone) return res.status(400).json({ error: 'Name and phone are required' });
     if (!['pickup','delivery'].includes(type)) return res.status(400).json({ error: 'Invalid order type' });
     if (type === 'delivery' && !deliveryAddress) return res.status(400).json({ error: 'Delivery address required' });
     if (!['mpesa','pay-on-delivery'].includes(paymentMethod)) return res.status(400).json({ error: 'Invalid payment method' });
+    if (paymentMethod === 'mpesa') return res.status(503).json({ error: 'M-Pesa checkout is not configured. Please choose pay on delivery.' });
+    if (items.length > 30) return res.status(400).json({ error: 'An order can contain at most 30 line items' });
 
     // Validate against menu/prices server-side where possible
     const validated = [];
     for (const it of items) {
-      const qty = Math.max(1, Math.min(20, parseInt(it.qty) || 1));
-      if (it.id) {
-        const mi = await MenuItem.findOne({ _id: it.id });
-        if (mi && mi.available === false) return res.status(400).json({ error: `${mi.name} is currently unavailable` });
-        if (mi) {
-          validated.push({ id: String(mi._id), name: mi.name, price: mi.price, qty, img: mi.image || it.img || '' });
-          continue;
-        }
-      }
-      // fallback to client price but cap; better to trust menu
-      const price = Number(it.price);
-      if (isNaN(price) || price < 0) return res.status(400).json({ error: 'Invalid item price' });
-      validated.push({ id: it.id || '', name: String(it.name||'Item').slice(0,80), price, qty, img: it.img || '' });
+      if (!it || typeof it !== 'object') return res.status(400).json({ error: 'Invalid cart item' });
+      const qty = Number(it.qty);
+      if (!Number.isInteger(qty) || qty < 1 || qty > 20) return res.status(400).json({ error: 'Item quantity must be between 1 and 20' });
+      const catalogId = String(it.id || '').slice(0, 100);
+      const mi = await MenuItem.findOne({ catalogId });
+      if (!mi) return res.status(400).json({ error: 'An item is no longer on the menu. Refresh the menu and try again.' });
+      if (mi.available === false) return res.status(400).json({ error: `${mi.name} is currently unavailable` });
+      validated.push({ id: mi.catalogId || String(mi._id), name: mi.name, price: mi.price, qty, img: mi.image || '' });
     }
 
     const subtotal = validated.reduce((s,i)=> s + i.price * i.qty, 0);
-    const deliveryFee = type === 'delivery' ? 150 : 0;
+    const settings = await Setting.findOne({ key: 'restaurant' });
+    const deliveryFee = type === 'delivery' ? Number(settings?.value?.deliveryFee ?? 150) : 0;
     const total = subtotal + deliveryFee;
     const orderNumber = 'LB-' + Date.now().toString().slice(-8) + '-' + crypto.randomBytes(2).toString('hex').toUpperCase();
     const order = await Order.create({
@@ -227,9 +320,10 @@ app.post('/api/orders', async (req, res) => {
       deliveryAddress: String(deliveryAddress).trim(),
       notes: String(notes).trim().slice(0, 500),
       paymentMethod,
-      paymentStatus: paymentMethod === 'mpesa' ? 'pending' : 'pending'
+      paymentStatus: 'pending'
     });
-    res.json({ ok: true, orderNumber: order.orderNumber, total: order.total, status: order.status });
+    await logAudit(req.user?.id || 'guest', 'create_order', '/api/orders', order.orderNumber);
+    res.status(201).json({ ok: true, orderNumber: order.orderNumber, total: order.total, status: order.status });
   } catch (e) {
     res.status(500).json({ error: 'Failed to create order' });
   }
@@ -684,6 +778,77 @@ app.get('/api/admin/audit-logs', auth, adminOnly, async (req, res) => {
   res.json({ logs });
 });
 
+// Restaurant operations, floor management, guest CRM, events, inbox and settings.
+app.get('/api/tables', async (req, res, next) => {
+  try { res.json({ tables: await Table.find({ status: 'available' }).sort({ number: 1 }).lean() }); }
+  catch (error) { next(error); }
+});
+app.get('/api/admin/tables', auth, authorize('admin','manager','host'), async (req, res, next) => {
+  try {
+    const tables = await Table.find().sort({ section: 1, number: 1 }).lean();
+    const date = req.query.date ? new Date(req.query.date) : new Date();
+    const start = new Date(date); start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate()+1);
+    const filter = { date: { $gte: start, $lt: end }, status: { $nin: ['cancelled','no-show'] } };
+    if (req.query.time) filter.time = String(req.query.time).slice(0,5);
+    const reservations = await Reservation.find(filter).sort({ time: 1 }).lean();
+    res.json({ tables: tables.map(table => ({ ...table, serviceStatus: table.status === 'blocked' ? 'blocked' : reservations.some(r => r.tableNumber === table.number && r.status === 'seated') ? 'seated' : reservations.some(r => r.tableNumber === table.number) ? 'reserved' : table.status, reservation: reservations.find(r => r.tableNumber === table.number) || null })) });
+  } catch (error) { next(error); }
+});
+app.post('/api/admin/tables', auth, authorize('admin','manager'), [body('number').isInt({ min: 1 }), body('section').trim().isLength({ min: 1, max: 60 }), body('seats').isInt({ min: 1, max: 50 }), validateRequest], async (req, res, next) => {
+  try { const table = await Table.create({ number: Number(req.body.number), section: req.body.section, seats: Number(req.body.seats) }); await logAudit(req.user.id, 'create_table', '/api/admin/tables', `Table ${table.number}`); res.status(201).json({ table }); }
+  catch (error) { next(error); }
+});
+app.patch('/api/admin/tables/:id', auth, authorize('admin','manager'), async (req, res, next) => {
+  try { const { section, seats, number } = req.body; const updates = {}; if (section !== undefined) updates.section = String(section).trim().slice(0,60); if (Number.isInteger(Number(seats)) && seats > 0) updates.seats = Number(seats); if (Number.isInteger(Number(number)) && number > 0) updates.number = Number(number); const table = await Table.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }); if (!table) return res.status(404).json({ error: 'Table not found' }); await logAudit(req.user.id, 'update_table', req.path, `Table ${table.number}`); res.json({ table }); }
+  catch (error) { next(error); }
+});
+app.patch('/api/admin/tables/:id/status', auth, authorize('admin','manager','host'), async (req, res, next) => {
+  try { const { status, reason = '' } = req.body; if (!['available','blocked','seated'].includes(status)) return res.status(400).json({ error: 'Invalid table status' }); const table = await Table.findByIdAndUpdate(req.params.id, { status, blockReason: status === 'blocked' ? String(reason).slice(0,240) : '', updatedAt: new Date() }, { new: true, runValidators: true }); if (!table) return res.status(404).json({ error: 'Table not found' }); await logAudit(req.user.id, 'set_table_status', req.path, `Table ${table.number}: ${status}`); res.json({ table }); }
+  catch (error) { next(error); }
+});
+app.delete('/api/admin/tables/:id', auth, authorize('admin','manager'), async (req, res, next) => {
+  try { const table = await Table.findById(req.params.id); if (!table) return res.status(404).json({ error: 'Table not found' }); if (await Reservation.exists({ tableNumber: table.number, status: { $nin: ['cancelled','no-show'] }, date: { $gte: new Date() } })) return res.status(409).json({ error: 'This table has upcoming reservations and cannot be removed.' }); await table.deleteOne(); res.json({ ok: true }); }
+  catch (error) { next(error); }
+});
+
+app.post('/api/admin/walkins', auth, authorize('admin','manager','host'), async (req, res, next) => {
+  try { const tableNumber = Number(req.body.tableNumber), partySize = Number(req.body.partySize), guestName = String(req.body.guestName || '').trim().slice(0,100); const table = await Table.findOne({ number: tableNumber }); if (!table || table.status !== 'available') return res.status(409).json({ error: 'Choose an available table.' }); if (!guestName || !Number.isInteger(partySize) || partySize < 1 || partySize > table.seats) return res.status(400).json({ error: 'Enter a guest name and a party size within table capacity.' }); const now = new Date(); const reservation = await Reservation.create({ tableNumber, partySize, guestName, date: now, time: now.toTimeString().slice(0,5), status: 'seated', occasion: 'Walk-in' }); table.status = 'seated'; await table.save(); await logAudit(req.user.id, 'seat_walk_in', req.path, `${guestName} at table ${tableNumber}`); res.status(201).json({ reservation }); }
+  catch (error) { next(error); }
+});
+
+app.get('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'operations' }); res.json(entry?.value || { ordersPaused: false }); } catch (error) { next(error); } });
+app.patch('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, new: true }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
+app.patch('/api/admin/menu/:id/availability', auth, authorize('admin','manager','kitchen'), async (req, res, next) => { try { if (typeof req.body.available !== 'boolean') return res.status(400).json({ error: 'Availability must be true or false.' }); const item = await MenuItem.findByIdAndUpdate(req.params.id, { available: req.body.available }, { new: true }); if (!item) return res.status(404).json({ error: 'Menu item not found' }); await logAudit(req.user.id, 'toggle_menu_availability', req.path, `${item.name}: ${item.available ? 'available' : 'sold out'}`); res.json({ item }); } catch (error) { next(error); } });
+
+app.post('/api/contact', authLimiter, [body('name').trim().isLength({ min: 1, max: 100 }), body('email').isEmail().normalizeEmail(), body('message').trim().isLength({ min: 1, max: 3000 }), validateRequest], async (req, res, next) => { try { const message = await ContactMessage.create({ name: req.body.name, email: req.body.email, phone: String(req.body.phone || '').slice(0,40), subject: String(req.body.subject || '').slice(0,120), message: req.body.message }); res.status(201).json({ ok: true, id: message.id }); } catch (error) { next(error); } });
+app.get('/api/admin/inbox', auth, authorize('admin','manager'), async (req, res, next) => { try { const filter = {}; if (req.query.q) { const q = String(req.query.q).slice(0,100); filter.$or = ['name','email','subject','message'].map(key => ({ [key]: { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } })); } res.json({ messages: await ContactMessage.find(filter).sort({ createdAt: -1 }).limit(200).lean() }); } catch (error) { next(error); } });
+app.patch('/api/admin/inbox/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { if (!['unread','read','archived'].includes(req.body.status)) return res.status(400).json({ error: 'Invalid message status' }); const message = await ContactMessage.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true }); if (!message) return res.status(404).json({ error: 'Message not found' }); res.json({ message }); } catch (error) { next(error); } });
+
+app.get('/api/events', async (req, res, next) => { try { res.json({ events: await Event.find({ published: true, date: { $gte: new Date() } }).sort({ date: 1 }).lean() }); } catch (error) { next(error); } });
+app.get('/api/admin/events', auth, authorize('admin','manager'), async (req, res, next) => { try { const events = await Event.find().sort({ date: 1 }).lean(); const bookings = await EventBooking.aggregate([{ $group: { _id: '$eventId', guests: { $sum: '$guests' }, bookings: { $sum: 1 } } }]); res.json({ events: events.map(event => ({ ...event, bookings: bookings.find(item => String(item._id) === String(event._id))?.bookings || 0, bookedGuests: bookings.find(item => String(item._id) === String(event._id))?.guests || 0 })) }); } catch (error) { next(error); } });
+app.post('/api/admin/events', auth, authorize('admin','manager'), async (req, res, next) => { try { const { title, date, description, image, capacity, price, type, published } = req.body; if (!String(title || '').trim() || !Number.isFinite(Date.parse(date)) || !Number.isInteger(Number(capacity)) || Number(capacity) < 1 || !['private dining','tasting','live music'].includes(type)) return res.status(400).json({ error: 'Complete valid event details.' }); const event = await Event.create({ title: String(title).trim().slice(0,120), date, description: String(description || '').slice(0,2000), image: String(image || '').slice(0,500), capacity: Number(capacity), price: Math.max(0, Number(price) || 0), type, published: Boolean(published) }); await logAudit(req.user.id, 'create_event', req.path, event.title); res.status(201).json({ event }); } catch (error) { next(error); } });
+app.post('/api/events/:id/bookings', authLimiter, async (req, res, next) => { try { const event = await Event.findOne({ _id: req.params.id, published: true }); if (!event) return res.status(404).json({ error: 'Event not found' }); const guests = Number(req.body.guests); if (!String(req.body.name || '').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(req.body.email || '')) || !Number.isInteger(guests) || guests < 1) return res.status(400).json({ error: 'Enter your contact details and guest count.' }); const booked = await EventBooking.aggregate([{ $match: { eventId: event._id } }, { $group: { _id: null, guests: { $sum: '$guests' } } }]); if ((booked[0]?.guests || 0) + guests > event.capacity) return res.status(409).json({ error: 'This event is at capacity.' }); const booking = await EventBooking.create({ eventId: event._id, name: req.body.name, email: req.body.email, phone: req.body.phone, guests }); res.status(201).json({ ok: true, bookingId: booking.id }); } catch (error) { next(error); } });
+
+app.get('/api/admin/guests', auth, authorize('admin','manager','host'), async (req, res, next) => { try { const reservations = await Reservation.find({ guestEmail: { $ne: '' } }).lean(); const orders = await Order.find({ customerEmail: { $ne: '' } }).lean(); const map = new Map(); for (const row of reservations) { const key = row.guestEmail.toLowerCase(); const guest = map.get(key) || { email: key, name: row.guestName, phone: row.guestPhone, visits: 0, spend: 0, lastVisit: row.date, dietary: new Set() }; if (['confirmed','seated','completed'].includes(row.status)) guest.visits++; if (row.dietary) guest.dietary.add(row.dietary); if (new Date(row.date) > new Date(guest.lastVisit)) guest.lastVisit = row.date; map.set(key, guest); } for (const row of orders) { const key = row.customerEmail.toLowerCase(); const guest = map.get(key) || { email: key, name: row.customerName, phone: row.customerPhone, visits: 0, spend: 0, lastVisit: row.createdAt, dietary: new Set() }; if (row.paymentStatus === 'paid' && row.status !== 'refunded') guest.spend += row.total; guest.visits++; if (new Date(row.createdAt) > new Date(guest.lastVisit)) guest.lastVisit = row.createdAt; map.set(key, guest); } let guests = [...map.values()].map(g => ({ ...g, dietary: [...g.dietary] })); if (req.query.q) { const q = String(req.query.q).toLowerCase(); guests = guests.filter(g => `${g.name} ${g.email} ${g.phone}`.toLowerCase().includes(q)); } const notes = await GuestNote.find({ email: { $in: guests.map(g => g.email) } }).lean(); guests = guests.map(g => ({ ...g, ...(notes.find(n => n.email === g.email) || {}), visits: g.visits, spend: g.spend, dietary: g.dietary })); res.json({ guests }); } catch (error) { next(error); } });
+app.patch('/api/admin/guests/:email', auth, authorize('admin','manager'), async (req, res, next) => { try { const email = decodeURIComponent(req.params.email).toLowerCase(); const tags = Array.isArray(req.body.tags) ? req.body.tags.filter(tag => ['VIP','Regular'].includes(tag)) : []; const staffNotes = String(req.body.staffNotes || '').slice(0,2000); const note = await GuestNote.findOneAndUpdate({ email }, { email, tags, staffNotes }, { new: true, upsert: true, runValidators: true }); res.json({ guest: note }); } catch (error) { next(error); } });
+
+app.get('/api/admin/reviews', auth, authorize('admin','manager'), async (req, res, next) => { try { res.json({ reviews: await Review.find().sort({ createdAt: -1 }).limit(200).lean() }); } catch (error) { next(error); } });
+app.post('/api/reviews', authLimiter, async (req, res, next) => { try { const rating = Number(req.body.rating); if (!Number.isInteger(rating) || rating < 1 || rating > 5 || String(req.body.comment || '').trim().length < 3) return res.status(400).json({ error: 'Review must include a rating from 1 to 5 and a comment.' }); const review = await Review.create({ name: String(req.body.name || 'Guest').slice(0,100), rating, comment: String(req.body.comment).slice(0,2000), reference: String(req.body.reference || '').slice(0,100) }); res.status(201).json({ ok: true, reviewId: review.id }); } catch (error) { next(error); } });
+app.patch('/api/admin/reviews/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { const updates = {}; if (['approved','hidden','pending'].includes(req.body.status)) updates.status = req.body.status; if (typeof req.body.reply === 'string') updates.reply = req.body.reply.slice(0,2000); const review = await Review.findByIdAndUpdate(req.params.id, updates, { new: true }); if (!review) return res.status(404).json({ error: 'Review not found' }); res.json({ review }); } catch (error) { next(error); } });
+app.get('/api/reviews', async (req, res, next) => { try { const reviews = await Review.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(100).lean(); const average = reviews.length ? reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length : null; res.json({ reviews, count: reviews.length, average }); } catch (error) { next(error); } });
+
+app.get('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }); res.json({ settings: entry?.value || {} }); } catch (error) { next(error); } });
+app.patch('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const allowed = ['name','address','phone','whatsapp','deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','openingHours','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours','heroTitle','heroSubtitle','aboutText','socialLinks','gallery']; const settings = {}; for (const key of allowed) if (req.body[key] !== undefined) settings[key] = typeof req.body[key] === 'string' ? req.body[key].trim().slice(0,5000) : req.body[key]; for (const field of ['deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours']) if (settings[field] !== undefined && (!Number.isFinite(Number(settings[field])) || Number(settings[field]) < 0)) return res.status(400).json({ error: `Invalid ${field}` }); const entry = await Setting.findOneAndUpdate({ key: 'restaurant' }, { $set: { value: settings, updatedAt: new Date() } }, { upsert: true, new: true }); await logAudit(req.user.id, 'update_restaurant_settings', req.path, 'Restaurant settings updated'); res.json({ settings: entry.value }); } catch (error) { next(error); } });
+
+app.get('/api/admin/notifications', auth, authorize('admin','manager','host','kitchen'), async (req, res, next) => { try { const since = new Date(Date.now() - 24*60*60*1000); const [orders,reservations,messages,unavailable] = await Promise.all([Order.countDocuments({ status: 'new', createdAt: { $gte: since } }), Reservation.countDocuments({ status: 'pending', createdAt: { $gte: since } }), ContactMessage.countDocuments({ status: 'unread' }), MenuItem.countDocuments({ available: false })]); res.json({ alerts: [{ type: 'orders', count: orders, label: 'New orders' },{ type: 'reservations', count: reservations, label: 'New reservations' },{ type: 'messages', count: messages, label: 'Unread messages' },{ type: 'menu', count: unavailable, label: 'Unavailable menu items' }].filter(item => item.count) }); } catch (error) { next(error); } });
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  const status = error.status || (error.name === 'ValidationError' || error.name === 'CastError' ? 400 : error.code === 11000 ? 409 : 500);
+  if (status >= 500) console.error('Request failed:', error.message);
+  res.status(status).json({ error: status >= 500 ? 'The server could not complete the request.' : error.message || 'Invalid request' });
+});
+
 app.use(express.static(path.join(__dirname, '../frontend'), { maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0 }));
 
 app.get('/admin', auth, adminOnly, (req, res) => {
@@ -721,6 +886,24 @@ async function seedAdmin() {
     ]);
     console.log('Menu seeded');
   }
+
+  const menuHtml = fs.readFileSync(path.join(__dirname, '../frontend/menu.html'), 'utf8');
+  for (const match of menuHtml.matchAll(/<button\b[^>]*class="btn btn-primary add-to-cart-btn"[^>]*>/g)) {
+    const tag = match[0];
+    const attr = name => tag.match(new RegExp(`${name}="([^"]*)"`))?.[1];
+    const catalogId = attr('data-id'); const name = attr('data-name'); const price = Number(attr('data-price'));
+    if (!catalogId || !name || !Number.isFinite(price)) continue;
+    const before = menuHtml.slice(Math.max(0, match.index - 2500), match.index);
+    const category = before.match(/data-cat="([^"]+)"/g)?.at(-1)?.match(/"([^"]+)"/)?.[1] || 'menu';
+    const image = before.match(/<img[^>]+src="([^"]*)"/)?.[1] || '';
+    await MenuItem.findOneAndUpdate({ $or: [{ catalogId }, { name }] }, { $setOnInsert: { name, price, category, available: true }, $set: { catalogId, image } }, { upsert: true, new: true, setDefaultsOnInsert: true });
+  }
+
+  if (!(await Table.countDocuments())) {
+    await Table.create(Array.from({ length: 12 }, (_, index) => ({ number: index + 1, section: index < 6 ? 'Indoor' : index < 10 ? 'Patio' : 'Lakeside', seats: index % 3 === 0 ? 6 : 4 })));
+  }
+  if (!(await Setting.exists({ key: 'restaurant' }))) await Setting.create({ key: 'restaurant', value: { name: 'LakeBite', address: 'Waiyaki Way, Westlands, Nairobi', phone: '+254700000000', whatsapp: '+254700000000', deliveryFee: 150, deliveryRadiusKm: 10, taxPercent: 0, serviceChargePercent: 0, openingHours: 'Mon–Thu 11:00–22:00; Fri–Sat 11:00–00:00; Sun 10:00–21:00', reservationSlotMinutes: 90, maximumPartySize: 12, leadTimeHours: 1, cutoffHours: 2 } });
+  if (!(await Setting.exists({ key: 'operations' }))) await Setting.create({ key: 'operations', value: { ordersPaused: false } });
 
   const resCount = await Reservation.countDocuments();
   if (resCount === 0) {

@@ -102,7 +102,7 @@
               <p>Fill in the form below and we'll confirm your booking within 2 hours via phone or email.</p>
             </div>
 
-            <form class="res-form" id="resForm" onsubmit="handleReservation(event)">
+            <form class="res-form" id="resForm">
               <div class="res-form-grid">
                 <div class="form-group">
                   <label for="res-fname">First Name</label>
@@ -128,46 +128,22 @@
                   <label for="res-time">Preferred Time</label>
                   <select id="res-time" class="form-control" required>
                     <option value="">Select time...</option>
-                    <option>11:00 AM</option>
-                    <option>11:30 AM</option>
-                    <option>12:00 PM</option>
-                    <option>12:30 PM</option>
-                    <option>1:00 PM</option>
-                    <option>1:30 PM</option>
-                    <option>2:00 PM</option>
-                    <option>2:30 PM</option>
-                    <option>6:00 PM</option>
-                    <option>6:30 PM</option>
-                    <option>7:00 PM</option>
-                    <option>7:30 PM</option>
-                    <option>8:00 PM</option>
-                    <option>8:30 PM</option>
-                    <option>9:00 PM</option>
+                    <option value="11:00">11:00 AM</option><option value="11:30">11:30 AM</option><option value="12:00">12:00 PM</option><option value="12:30">12:30 PM</option>
+                    <option value="13:00">1:00 PM</option><option value="13:30">1:30 PM</option><option value="14:00">2:00 PM</option><option value="14:30">2:30 PM</option>
+                    <option value="18:00">6:00 PM</option><option value="18:30">6:30 PM</option><option value="19:00">7:00 PM</option><option value="19:30">7:30 PM</option><option value="20:00">8:00 PM</option><option value="20:30">8:30 PM</option><option value="21:00">9:00 PM</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label for="res-guests">Number of Guests</label>
                   <select id="res-guests" class="form-control" required>
                     <option value="">Select guests...</option>
-                    <option>1 Guest</option>
-                    <option>2 Guests</option>
-                    <option>3 Guests</option>
-                    <option>4 Guests</option>
-                    <option>5 Guests</option>
-                    <option>6 Guests</option>
-                    <option>7–10 Guests</option>
-                    <option>10+ Guests (Event)</option>
+                    <option value="1">1 Guest</option><option value="2">2 Guests</option><option value="3">3 Guests</option><option value="4">4 Guests</option><option value="5">5 Guests</option><option value="6">6 Guests</option><option value="7">7 Guests</option><option value="8">8 Guests</option><option value="9">9 Guests</option><option value="10">10 Guests</option><option value="11">11 Guests</option><option value="12">12 Guests</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label for="res-room">Preferred Room</label>
                   <select id="res-room" class="form-control">
-                    <option>No preference</option>
-                    <option>Main Dining Hall</option>
-                    <option>VIP Conservatory</option>
-                    <option>Open-Air Terrace</option>
-                    <option>Family Dining Room</option>
-                    <option>Private Event Room</option>
+                    <option value="">Choose a table</option>
                   </select>
                 </div>
                 <div class="form-group" style="grid-column: span 2">
@@ -181,6 +157,7 @@
                     placeholder="Dietary requirements, seating preferences, decorations..."></textarea>
                 </div>
               </div>
+              <p id="reservationError" role="alert" hidden></p>
               <button type="submit" class="btn btn-primary res-submit-btn">
                 <i class="fa-regular fa-calendar-check"></i> Confirm Reservation
               </button>
@@ -364,13 +341,24 @@
   <div class="toast"></div>
   <script src="script.js"></script>
   <script>
-    function handleReservation(e) {
-      e.preventDefault();
-      document.getElementById('resForm').style.display = 'none';
-      document.getElementById('resSuccess').style.display = 'flex';
-    }
-    // Set min date to today
+    const reservationForm = document.getElementById('resForm');
+    const tableSelect = document.getElementById('res-room');
     document.getElementById('res-date').min = new Date().toISOString().split('T')[0];
+    fetch('/api/tables').then(response => response.json()).then(({ tables = [] }) => {
+      for (const table of tables) { const option = document.createElement('option'); option.value = table.number; option.textContent = `Table ${table.number} · ${table.section} · ${table.seats} seats`; tableSelect.appendChild(option); }
+    }).catch(() => {});
+    reservationForm.addEventListener('submit', async event => {
+      event.preventDefault(); if (!reservationForm.reportValidity()) return;
+      const error = document.getElementById('reservationError'), submit = reservationForm.querySelector('[type="submit"]');
+      error.hidden = true; submit.disabled = true;
+      const value = id => document.getElementById(id).value;
+      const party = Number(value('res-guests'));
+      try {
+        const response = await fetch('/api/reservations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guestName: `${value('res-fname')} ${value('res-lname')}`, guestEmail: value('res-email'), guestPhone: value('res-phone'), date: value('res-date'), time: value('res-time'), partySize: party, tableNumber: Number(value('res-room')), occasion: value('res-occasion'), notes: value('res-notes') }) });
+        const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not save reservation.');
+        reservationForm.style.display = 'none'; document.getElementById('resSuccess').style.display = 'flex';
+      } catch (failure) { error.textContent = failure.message; error.hidden = false; submit.disabled = false; }
+    });
   </script>
 
   <style>

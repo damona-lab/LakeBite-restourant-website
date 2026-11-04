@@ -5,8 +5,14 @@
  ============================================================ */
 
 // ── Theme Toggle ──────────────────────────────────────────
-const themeBtn = document.querySelectorAll('.theme-btn');
 const root = document.documentElement;
+window.escapeHtml = function (value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+};
+function safeImageUrl(value) {
+  const url = String(value || '').trim();
+  return /^(https:\/\/|\/|\.\/|imege\/)/i.test(url) && !/^\/\//.test(url) ? url : '';
+}
 
 function applyTheme(theme) {
   root.setAttribute('data-theme', theme);
@@ -66,6 +72,9 @@ if (navToggle && mobileDrawer) {
 }
 
 // Scroll spy: mark active nav link based on visible section
+const scrollSections = document.querySelectorAll('main [id], section[id]');
+const inPageNavigation = document.querySelectorAll('.nav-link[href^="#"], .drawer-link[href^="#"]');
+if ('IntersectionObserver' in window && scrollSections.length && inPageNavigation.length) {
 const observerOptions = { rootMargin: '-30% 0% -70% 0%', threshold: 0 };
 const scrollSpy = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -78,7 +87,8 @@ const scrollSpy = new IntersectionObserver((entries) => {
   });
 }, observerOptions);
 
-document.querySelectorAll('[id]').forEach(el => scrollSpy.observe(el));
+scrollSections.forEach(el => scrollSpy.observe(el));
+}
 
 // ── Cart System ────────────────────────────────────────────
 let cart = JSON.parse(localStorage.getItem('lb-cart') || '[]');
@@ -95,6 +105,8 @@ function updateCartUI() {
 }
 
 function addToCart(id, name, price, img) {
+  const button = [...document.querySelectorAll('.add-to-cart-btn')].find(candidate => candidate.dataset.id === id);
+  if (button?.disabled) { showToast('This dish is sold out'); return; }
   const existing = cart.find(i => i.id === id);
   if (existing) {
     existing.qty++;
@@ -104,6 +116,90 @@ function addToCart(id, name, price, img) {
   saveCart();
   updateCartUI();
   showToast(`<i class="fa-solid fa-circle-check"></i> Added to cart`);
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkoutOverlay')?.remove();
+  document.body.style.overflow = '';
+}
+
+function openCheckoutModal(total) {
+  if (document.getElementById('checkoutOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'checkoutOverlay';
+  overlay.className = 'admin-modal-overlay open';
+  overlay.style.zIndex = '2200';
+  overlay.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" class="admin-modal" style="font-family:inherit;color:#28271f">
+    <header class="admin-modal-header"><h2 id="checkoutTitle" class="admin-modal-title">Complete your order</h2><button type="button" class="admin-modal-close" data-checkout-close aria-label="Close checkout">×</button></header>
+    <form id="checkoutForm"><div class="admin-modal-body">
+      <p class="checkout-pause-message" hidden role="status">Online ordering is paused. Please try again later.</p>
+      <p>Cart subtotal: <strong>KES ${Number(total).toLocaleString('en-KE')}</strong></p>
+      <div class="admin-form-group"><label class="admin-form-label" for="checkoutName">Name</label><input class="admin-form-control" id="checkoutName" name="name" autocomplete="name" required maxlength="100"></div>
+      <div class="admin-form-group"><label class="admin-form-label" for="checkoutPhone">Phone</label><input class="admin-form-control" id="checkoutPhone" name="phone" type="tel" autocomplete="tel" required maxlength="40"></div>
+      <div class="admin-form-group"><label class="admin-form-label" for="checkoutEmail">Email (optional)</label><input class="admin-form-control" id="checkoutEmail" name="email" type="email" autocomplete="email" maxlength="254"></div>
+      <div class="admin-form-group"><label class="admin-form-label" for="checkoutType">Fulfilment</label><select class="admin-form-control" id="checkoutType" name="type"><option value="pickup">Pickup</option><option value="delivery">Delivery</option></select></div>
+      <div class="admin-form-group" id="checkoutAddressGroup" hidden><label class="admin-form-label" for="checkoutAddress">Delivery address</label><textarea class="admin-form-control" id="checkoutAddress" name="address" maxlength="300"></textarea></div>
+      <div class="admin-form-group"><label class="admin-form-label" for="checkoutNotes">Order notes (optional)</label><textarea class="admin-form-control" id="checkoutNotes" name="notes" maxlength="500"></textarea></div>
+      <div class="admin-form-group"><label class="admin-form-label" for="checkoutPayment">Payment</label><select class="admin-form-control" id="checkoutPayment" name="paymentMethod"><option value="pay-on-delivery">Pay on delivery / collection</option><option value="mpesa">M-Pesa (not configured)</option></select></div>
+      <p id="checkoutError" role="alert" hidden></p>
+    </div><footer class="admin-modal-footer"><button type="button" class="btn btn-outline" data-checkout-close>Cancel</button><button type="submit" class="btn btn-primary" id="checkoutSubmit">Place order</button></footer></form></section>`;
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+  overlay.querySelector('#checkoutName').focus();
+  overlay.addEventListener('click', event => { if (event.target === overlay || event.target.closest('[data-checkout-close]')) closeCheckoutModal(); });
+  overlay.querySelector('#checkoutType').addEventListener('change', event => {
+    const isDelivery = event.target.value === 'delivery';
+    overlay.querySelector('#checkoutAddressGroup').hidden = !isDelivery;
+    overlay.querySelector('#checkoutAddress').required = isDelivery;
+  });
+  document.addEventListener('keydown', function esc(event) { if (event.key === 'Escape' && document.getElementById('checkoutOverlay')) { closeCheckoutModal(); document.removeEventListener('keydown', esc); } });
+  fetch('/api/public/status').then(response => response.json()).then(status => {
+    if (status.ordersPaused) { overlay.querySelector('.checkout-pause-message').hidden = false; overlay.querySelector('#checkoutSubmit').disabled = true; }
+  }).catch(() => {});
+  overlay.querySelector('#checkoutForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget; if (!form.reportValidity()) return;
+    const submit = overlay.querySelector('#checkoutSubmit'), error = overlay.querySelector('#checkoutError');
+    submit.disabled = true; submit.textContent = 'Placing order…'; error.hidden = true;
+    const data = new FormData(form);
+    try {
+      const response = await fetch('/api/orders', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerName: data.get('name'), customerPhone: data.get('phone'), customerEmail: data.get('email'), type: data.get('type'), deliveryAddress: data.get('address'), notes: data.get('notes'), paymentMethod: data.get('paymentMethod'), items: cart.map(item => ({ id: item.id, qty: item.qty })) }) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Could not place order.');
+      cart = []; saveCart(); updateCartUI();
+      location.href = `order-confirmation.html?order=${encodeURIComponent(result.orderNumber)}`;
+    } catch (failure) {
+      error.textContent = failure.message; error.hidden = false; submit.disabled = false; submit.textContent = 'Place order';
+    }
+  });
+}
+
+async function loadPublicMenuState() {
+  if (!document.querySelector('.menu-grid')) return;
+  try {
+    const [menuResponse, statusResponse] = await Promise.all([fetch('/api/menu'), fetch('/api/public/status')]);
+    if (menuResponse.ok) {
+      const { menu = [] } = await menuResponse.json();
+      for (const item of menu) {
+        const card = document.querySelector(`.menu-card .add-to-cart-btn[data-id="${CSS.escape(item.catalogId || '')}"]`)?.closest('.menu-card');
+        if (!card) continue;
+        const button = card.querySelector('.add-to-cart-btn');
+        button.disabled = !item.available;
+        button.setAttribute('aria-label', item.available ? `Add ${item.name} to cart` : `${item.name} sold out`);
+        button.title = item.available ? 'Add to cart' : 'Sold out';
+        card.classList.toggle('is-sold-out', !item.available);
+        let badge = card.querySelector('.availability-badge');
+        if (!item.available && !badge) { badge = document.createElement('span'); badge.className = 'availability-badge'; badge.textContent = 'Sold out'; card.querySelector('.mc-img')?.appendChild(badge); }
+        if (item.available) badge?.remove();
+      }
+    }
+    const status = await statusResponse.json();
+    if (status.ordersPaused) {
+      let banner = document.getElementById('onlineOrderPauseBanner');
+      if (!banner) { banner = document.createElement('p'); banner.id = 'onlineOrderPauseBanner'; banner.className = 'admin-alert admin-alert-info'; banner.setAttribute('role', 'status'); banner.textContent = 'Online ordering is paused. Please try again later.'; document.querySelector('.menu-grid')?.before(banner); }
+      document.querySelectorAll('.add-to-cart-btn').forEach(button => { button.disabled = true; });
+    }
+  } catch { /* Static menu remains usable if the menu API is offline. */ }
 }
 
 function removeFromCart(id) {
@@ -135,17 +231,17 @@ function renderCartDrawer() {
   } else {
     itemsEl.innerHTML = cart.map(item => `
       <div class="cart-item">
-        <div class="cart-item-img"><img src="${item.img || ''}" alt="${item.name}"></div>
+        <div class="cart-item-img"><img src="${window.escapeHtml(safeImageUrl(item.img))}" alt="${window.escapeHtml(item.name)}"></div>
         <div class="cart-item-info">
-          <h4>${item.name}</h4>
-          <div class="price">KES ${(item.price * item.qty).toLocaleString()}</div>
+          <h4>${window.escapeHtml(item.name)}</h4>
+          <div class="price">KES ${(Number(item.price || 0) * Number(item.qty || 0)).toLocaleString()}</div>
           <div class="cart-item-qty">
-            <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
-            <span class="qty-val">${item.qty}</span>
-            <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+            <button class="qty-btn" data-id="${window.escapeHtml(item.id)}" data-act="dec" aria-label="Decrease ${window.escapeHtml(item.name)} quantity">−</button>
+            <span class="qty-val">${Math.max(0, Number(item.qty) || 0)}</span>
+            <button class="qty-btn" data-id="${window.escapeHtml(item.id)}" data-act="inc" aria-label="Increase ${window.escapeHtml(item.name)} quantity">+</button>
           </div>
         </div>
-        <button class="remove-item-btn" onclick="removeFromCart('${item.id}')">
+        <button class="remove-item-btn" data-id="${window.escapeHtml(item.id)}" aria-label="Remove ${window.escapeHtml(item.name)} from cart">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>`).join('');
@@ -206,9 +302,8 @@ const accountLogoutItem = document.getElementById('accountLogoutItem');
 const userDisplayName = document.querySelector('.user-display-name');
 const userDisplayEmail = document.querySelector('.user-display-email');
 
-function isLoggedIn() {
-  return !!localStorage.getItem('lb_token');
-}
+let currentUser = null;
+function isLoggedIn() { return !!currentUser; }
 
 async function loadUser() {
   try {
@@ -216,6 +311,7 @@ async function loadUser() {
     if (r.ok) {
       const d = await r.json();
       if (d.user) {
+        currentUser = d.user;
         const name = d.user.name || d.user.email.split('@')[0];
         if (userNameEl) userNameEl.textContent = name;
         if (userDisplayName) userDisplayName.textContent = name;
@@ -224,6 +320,7 @@ async function loadUser() {
       return d.user;
     }
   } catch {}
+  currentUser = null;
   return null;
 }
 
@@ -231,46 +328,53 @@ async function logout() {
   try {
     await fetch('/api/logout', { method: 'POST', credentials: 'include' });
   } catch {}
-  try { localStorage.removeItem('lb_token'); } catch {}
+  currentUser = null;
   updateAuthUI();
   location.href = '/index.html';
 }
 function updateAuthUI() {
-  const loggedIn = !!localStorage.getItem('lb_token');
+  const loggedIn = isLoggedIn();
 
   LOGIN_LINKS.forEach(link => {
     link.textContent = loggedIn ? 'Logout' : 'Login';
-    link.href = loggedIn ? 'javascript:void(0)' : 'login.html';
-    link.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+    link.href = loggedIn ? '#' : 'login.html';
+    link.dataset.authAction = loggedIn ? 'logout' : '';
   });
 
   const footerLink = document.getElementById('footerLoginLink');
   if (footerLink) {
     footerLink.textContent = loggedIn ? 'Logout' : 'Login';
-    footerLink.href = loggedIn ? 'javascript:void(0)' : 'login.html';
-    footerLink.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+    footerLink.href = loggedIn ? '#' : 'login.html';
+    footerLink.dataset.authAction = loggedIn ? 'logout' : '';
   }
 
   const mobileLink = document.getElementById('mobileLoginLink');
   if (mobileLink) {
     mobileLink.textContent = loggedIn ? 'Logout' : 'Login';
-    mobileLink.href = loggedIn ? 'javascript:void(0)' : 'login.html';
-    mobileLink.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+    mobileLink.href = loggedIn ? '#' : 'login.html';
+    mobileLink.dataset.authAction = loggedIn ? 'logout' : '';
   }
 
   if (accountLoginItem) accountLoginItem.style.display = loggedIn ? 'none' : 'block';
   if (accountLogoutItem) accountLogoutItem.style.display = loggedIn ? 'block' : 'none';
 
   if (accountLogoutItem) {
-    accountLogoutItem.onclick = e => { e.preventDefault(); logout(); };
+    accountLogoutItem.dataset.authAction = 'logout';
   }
 
   if (accountLoginItem) {
-    accountLoginItem.onclick = e => { e.preventDefault(); location.href = 'login.html'; };
+    accountLoginItem.dataset.authAction = 'login';
   }
 
   if (userAccountBtn) userAccountBtn.blur();
 }
+
+document.addEventListener('click', e => {
+  const authLink = e.target.closest('[data-auth-action]');
+  if (!authLink) return;
+  if (authLink.dataset.authAction === 'logout') { e.preventDefault(); logout(); }
+  if (authLink.dataset.authAction === 'login') { e.preventDefault(); location.href = 'login.html'; }
+});
 
 if (userAccountBtn && accountDropdown) {
   userAccountBtn.addEventListener('click', e => {
@@ -289,7 +393,7 @@ if (userAccountBtn && accountDropdown) {
 function showToast(msg) {
   const toast = document.querySelector('.toast');
   if (!toast) return;
-  toast.innerHTML = msg;
+  toast.textContent = String(msg ?? '');
   toast.classList.add('show');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => toast.classList.remove('show'), 2600);
@@ -314,8 +418,9 @@ function initReveal() {
 
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  updateAuthUI();
   await loadUser();
+  updateAuthUI();
   updateCartUI();
+  loadPublicMenuState();
   initReveal();
 });

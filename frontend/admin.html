@@ -526,6 +526,12 @@ body.admin-body {
   outline: none; border-color: var(--admin-gold);
 }
 .admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.admin-toast { position: fixed; right: 1rem; bottom: 1rem; z-index: 3000; padding: .85rem 1.1rem; border-radius: 8px; background: var(--admin-sidebar); color: #fff; box-shadow: var(--admin-shadow); opacity: 0; transform: translateY(1rem); pointer-events: none; transition: .2s; }
+.admin-toast.show { opacity: 1; transform: none; }
+.floor-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: .8rem; margin-top: 1rem; }
+.floor-table-card { border: 1px solid var(--admin-border); border-radius: 10px; padding: 1rem; background: var(--admin-card); }
+.floor-table-card[data-status="seated"] { border-color: #47775a; }.floor-table-card[data-status="blocked"] { border-color: #a4382c; opacity: .8; }
+.floor-table-card h3 { margin: 0 0 .4rem; }.floor-table-actions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .7rem; }
 
 /* ── Alerts ── */
 .admin-alert {
@@ -829,11 +835,11 @@ body.admin-body {
           </div>
           <div class="admin-section-body">
             <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-              <button class="admin-btn admin-btn-primary admin-btn-sm" onclick="adminOpenReservationModal()"><i class="fa-solid fa-plus"></i> Add Reservation</button>
-              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminAddWalkIn()"><i class="fa-solid fa-person-walking"></i> Walk-in</button>
-              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminBlockTable()"><i class="fa-solid fa-ban"></i> Block Table</button>
-              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminPauseOrders()"><i class="fa-solid fa-pause"></i> Pause Orders</button>
-              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminMarkUnavailable()"><i class="fa-solid fa-exclamation-triangle"></i> Mark Item Unavailable</button>
+              <button class="admin-btn admin-btn-primary admin-btn-sm" data-admin-action="new-reservation"><i class="fa-solid fa-plus"></i> Add Reservation</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="walk-in"><i class="fa-solid fa-person-walking"></i> Walk-in</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="block-table"><i class="fa-solid fa-ban"></i> Block Table</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="pause-orders"><i class="fa-solid fa-pause"></i> Pause Orders</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="mark-unavailable"><i class="fa-solid fa-exclamation-triangle"></i> Mark Item Unavailable</button>
             </div>
           </div>
         </div>
@@ -845,7 +851,7 @@ body.admin-body {
       <div class="admin-section">
         <div class="admin-section-header">
           <h2 class="admin-section-title">All Reservations</h2>
-          <button class="admin-btn admin-btn-primary admin-btn-sm" onclick="adminOpenReservationModal()"><i class="fa-solid fa-plus"></i> New Reservation</button>
+          <button class="admin-btn admin-btn-primary admin-btn-sm" data-admin-action="new-reservation"><i class="fa-solid fa-plus"></i> New Reservation</button>
         </div>
         <div class="admin-section-body">
           <div class="admin-table-wrap">
@@ -867,7 +873,7 @@ body.admin-body {
       <div class="admin-section">
         <div class="admin-section-header">
           <h2 class="admin-section-title">Menu Management</h2>
-          <button class="admin-btn admin-btn-primary admin-btn-sm" onclick="adminOpenMenuModal()"><i class="fa-solid fa-plus"></i> Add Item</button>
+          <button class="admin-btn admin-btn-primary admin-btn-sm" data-admin-action="new-menu-item"><i class="fa-solid fa-plus"></i> Add Item</button>
         </div>
         <div class="admin-section-body">
           <div class="admin-table-wrap">
@@ -927,30 +933,35 @@ body.admin-body {
           <h2 class="admin-section-title">Settings</h2>
         </div>
         <div class="admin-section-body">
-          <p>Configure restaurant settings, integrations, and policies.</p>
+          <form id="settingsForm" class="admin-form-row" aria-label="Restaurant settings">
+            <label class="admin-form-group">Restaurant name<input class="admin-form-control" name="name" required></label><label class="admin-form-group">Address<input class="admin-form-control" name="address"></label>
+            <label class="admin-form-group">Phone<input class="admin-form-control" name="phone"></label><label class="admin-form-group">WhatsApp<input class="admin-form-control" name="whatsapp"></label>
+            <label class="admin-form-group">Delivery fee (KES)<input class="admin-form-control" type="number" min="0" name="deliveryFee"></label><label class="admin-form-group">Delivery radius (km)<input class="admin-form-control" type="number" min="0" name="deliveryRadiusKm"></label>
+            <label class="admin-form-group">Tax %<input class="admin-form-control" type="number" min="0" max="100" name="taxPercent"></label><label class="admin-form-group">Service charge %<input class="admin-form-control" type="number" min="0" max="100" name="serviceChargePercent"></label>
+            <label class="admin-form-group">Max party size<input class="admin-form-control" type="number" min="1" name="maximumPartySize"></label><label class="admin-form-group">Reservation slot (minutes)<input class="admin-form-control" type="number" min="15" name="reservationSlotMinutes"></label>
+            <label class="admin-form-group" style="grid-column:1/-1">Opening hours<textarea class="admin-form-control" name="openingHours"></textarea></label><button class="admin-btn admin-btn-primary" type="submit">Save settings</button>
+          </form>
         </div>
       </div>
     </section>
 
-    <!-- Other views (stubs) -->
     <section id="view-floor" class="admin-view" style="display:none;">
       <div class="admin-section">
-        <div class="admin-section-body">
-          <div class="admin-empty"><i class="fa-solid fa-table"></i><h3>Floor Plan</h3><p>Interactive floor view coming soon.</p></div>
-        </div>
+        <div class="admin-section-header"><h2 class="admin-section-title">Floor & Tables</h2><button class="admin-btn admin-btn-outline admin-btn-sm" data-admin-action="refresh-floor">Refresh floor</button></div>
+        <div class="admin-section-body"><form id="tableForm" class="admin-form-row"><label class="admin-form-group">Table number<input class="admin-form-control" type="number" name="number" min="1" required></label><label class="admin-form-group">Section<input class="admin-form-control" name="section" placeholder="Indoor, Patio, Lakeside" required></label><label class="admin-form-group">Seats<input class="admin-form-control" type="number" name="seats" min="1" max="50" required></label><button class="admin-btn admin-btn-primary" type="submit">Add table</button></form><div id="floorPlan" class="admin-table-wrap" aria-live="polite"></div><div id="floorReservations"></div></div>
       </div>
     </section>
     <section id="view-guests" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-users"></i><h3>Guest CRM</h3><p>Guest profiles coming soon.</p></div></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Guest CRM</h2><input class="admin-form-control" id="guestSearch" type="search" placeholder="Search guests"></div><div class="admin-section-body"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Guest</th><th>Contact</th><th>Visits</th><th>Spend</th><th>Last visit</th><th>Dietary notes</th><th>Tags & notes</th></tr></thead><tbody id="guestsTable"></tbody></table></div></div></div>
     </section>
     <section id="view-events" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-ticket"></i><h3>Events</h3><p>Event management coming soon.</p></div></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Events & Private Dining</h2></div><div class="admin-section-body"><form id="eventForm" class="admin-form-row"><label class="admin-form-group">Title<input class="admin-form-control" name="title" required></label><label class="admin-form-group">Date & time<input class="admin-form-control" type="datetime-local" name="date" required></label><label class="admin-form-group">Type<select class="admin-form-control" name="type"><option>private dining</option><option>tasting</option><option>live music</option></select></label><label class="admin-form-group">Capacity<input class="admin-form-control" type="number" min="1" name="capacity" required></label><label class="admin-form-group">Price (KES)<input class="admin-form-control" type="number" min="0" name="price"></label><label class="admin-form-group">Image URL<input class="admin-form-control" type="url" name="image"></label><label class="admin-form-group" style="grid-column:1/-1">Description<textarea class="admin-form-control" name="description"></textarea></label><label><input type="checkbox" name="published"> Publish publicly</label><button class="admin-btn admin-btn-primary" type="submit">Create event</button></form><div id="eventsList" aria-live="polite"></div></div></div>
     </section>
     <section id="view-website" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-pen-nib"></i><h3>Website CMS</h3><p>Content editor coming soon.</p></div></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Website Content</h2></div><div class="admin-section-body"><p>Changes publish to the homepage and shared restaurant details.</p><form id="cmsForm" class="admin-form-row"><label class="admin-form-group">Homepage headline<input class="admin-form-control" name="heroTitle"></label><label class="admin-form-group">Homepage introduction<input class="admin-form-control" name="heroSubtitle"></label><label class="admin-form-group" style="grid-column:1/-1">About text<textarea class="admin-form-control" name="aboutText"></textarea></label><label class="admin-form-group" style="grid-column:1/-1">Gallery image URLs (one per line)<textarea class="admin-form-control" name="gallery"></textarea></label><button class="admin-btn admin-btn-primary" type="submit">Publish content</button></form></div></div>
     </section>
     <section id="view-inbox" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-inbox"></i><h3>Inbox & Reviews</h3><p>Guest messages coming soon.</p></div></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Guest Inbox</h2><input class="admin-form-control" id="inboxSearch" type="search" placeholder="Search messages"></div><div class="admin-section-body" id="inboxList" aria-live="polite"></div></div><div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Guest Reviews</h2></div><div class="admin-section-body" id="reviewsList" aria-live="polite"></div></div>
     </section>
     <section id="view-reports" class="admin-view" style="display:none;">
       <div class="report-shell">
@@ -991,17 +1002,20 @@ body.admin-body {
       </div>
     </section>
     <section id="view-integrations" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-plug"></i><h3>Integrations</h3><p>POS & delivery integrations coming soon.</p></div></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Integrations</h2></div><div class="admin-section-body"><p>Secrets are read only from environment variables and never returned to the browser. M-Pesa STK Push requires Daraja credentials and a public callback URL; add those secrets to backend/.env after authorizing the provider.</p><div id="integrationStatus" aria-live="polite"></div><ul><li>M-Pesa Daraja: consumer key/secret, shortcode, passkey</li><li>Email: SMTP host/user/password</li><li>SMS: provider credentials</li><li>Google Analytics: measurement ID</li></ul><p>Credentials are not configured in this environment. Connection tests will remain unavailable until credentials are supplied.</p></div></div>
     </section>
 
   </main>
+
+  <dialog id="adminActionDialog" aria-labelledby="actionDialogTitle" style="border:0;border-radius:12px;padding:1.5rem;max-width:460px;width:calc(100% - 2rem)"><form id="adminActionForm"><h2 id="actionDialogTitle" class="admin-section-title"></h2><div id="actionDialogFields"></div><div class="admin-modal-footer"><button type="button" class="admin-btn admin-btn-outline" data-action-cancel>Cancel</button><button type="submit" class="admin-btn admin-btn-primary">Save</button></div></form></dialog>
+  <div id="adminToast" class="admin-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Reservation Modal -->
   <div class="admin-modal-overlay" id="adminReservationModalOverlay">
     <div class="admin-modal">
       <div class="admin-modal-header">
         <h3 class="admin-modal-title" id="resModalTitle">New Reservation</h3>
-        <button class="admin-modal-close" onclick="adminCloseReservationModal()">&times;</button>
+        <button class="admin-modal-close" data-admin-action="close-reservation">&times;</button>
       </div>
       <div class="admin-modal-body">
         <form id="adminReservationForm">
@@ -1053,8 +1067,8 @@ body.admin-body {
         </form>
       </div>
       <div class="admin-modal-footer">
-        <button class="admin-btn admin-btn-outline" onclick="adminCloseReservationModal()">Cancel</button>
-        <button class="admin-btn admin-btn-primary" onclick="adminSaveReservation()">Save Reservation</button>
+        <button class="admin-btn admin-btn-outline" data-admin-action="close-reservation">Cancel</button>
+        <button class="admin-btn admin-btn-primary" data-admin-action="save-reservation">Save Reservation</button>
       </div>
     </div>
   </div>
@@ -1064,7 +1078,7 @@ body.admin-body {
     <div class="admin-modal">
       <div class="admin-modal-header">
         <h3 class="admin-modal-title" id="menuModalTitle">Add Menu Item</h3>
-        <button class="admin-modal-close" onclick="adminCloseMenuModal()">&times;</button>
+        <button class="admin-modal-close" data-admin-action="close-menu">&times;</button>
       </div>
       <div class="admin-modal-body">
         <form id="adminMenuForm">
@@ -1112,8 +1126,8 @@ body.admin-body {
         </form>
       </div>
       <div class="admin-modal-footer">
-        <button class="admin-btn admin-btn-outline" onclick="adminCloseMenuModal()">Cancel</button>
-        <button class="admin-btn admin-btn-primary" onclick="adminSaveMenuItem()">Save Item</button>
+        <button class="admin-btn admin-btn-outline" data-admin-action="close-menu">Cancel</button>
+        <button class="admin-btn admin-btn-primary" data-admin-action="save-menu">Save Item</button>
       </div>
     </div>
   </div>
@@ -1131,6 +1145,10 @@ body.admin-body {
       const datePill = document.getElementById('adminDatePill');
       const profileName = document.getElementById('adminProfileName');
       const avatar = document.getElementById('adminAvatar');
+      const escapeHtml = window.escapeHtml;
+      let reservationsById = new Map();
+      let menuById = new Map();
+      let usersById = new Map();
 
       // Set date
       const now = new Date();
@@ -1186,7 +1204,48 @@ body.admin-body {
           if (view === 'orders') loadOrders();
           if (view === 'staff') loadStaff();
           if (view === 'reports') loadReports();
+          if (view === 'floor') loadTables();
+          if (view === 'guests') loadGuests();
+          if (view === 'events') loadEvents();
+          if (view === 'inbox') { loadInbox(); loadReviews(); }
+          if (view === 'website') loadCms();
+          if (view === 'settings') loadSettings();
+          if (view === 'integrations') loadIntegrationStatus();
         });
+      });
+
+      document.addEventListener('click', event => {
+        const control = event.target.closest('[data-admin-action]');
+        if (!control) return;
+        const id = control.dataset.id;
+        switch (control.dataset.adminAction) {
+          case 'new-reservation': adminOpenReservationModal(); break;
+          case 'walk-in': adminAddWalkIn(); break;
+          case 'block-table': adminBlockTable(); break;
+          case 'pause-orders': adminPauseOrders(); break;
+          case 'mark-unavailable': adminMarkUnavailable(); break;
+          case 'new-menu-item': adminOpenMenuModal(); break;
+          case 'close-reservation': adminCloseReservationModal(); break;
+          case 'save-reservation': adminSaveReservation(); break;
+          case 'close-menu': adminCloseMenuModal(); break;
+          case 'save-menu': adminSaveMenuItem(); break;
+          case 'edit-reservation': adminEditReservation(id); break;
+          case 'delete-reservation': adminDeleteReservation(id); break;
+          case 'edit-menu': { const item = menuById.get(id); if (item) adminEditMenuItem(item._id, item.name, item.price, item.category, item.available, (item.allergens || []).join(','), (item.dietary || []).join(','), item.spiceLevel); break; }
+          case 'delete-menu': adminDeleteMenuItem(id); break;
+          case 'delete-user': adminDeleteUser(id); break;
+          case 'refresh-floor': loadTables(); break;
+          case 'seat-table': openQuickDialog('walk-in', id); break;
+          case 'free-table': updateTableStatus(id, 'available'); break;
+          case 'block-table-by-id': openQuickDialog('block', id); break;
+          case 'delete-table': deleteTable(id); break;
+          case 'message-status': updateMessageStatus(id, control.dataset.status); break;
+          case 'review-status': updateReview(id, control.dataset.status); break;
+        }
+      });
+      document.addEventListener('change', event => {
+        const control = event.target.closest('[data-admin-action="update-order"]');
+        if (control) adminUpdateOrderStatus(control.dataset.id, control.value);
       });
 
       // Logout
@@ -1223,10 +1282,36 @@ body.admin-body {
           if (!res.ok) throw new Error(data.error || 'The request failed. Please try again.');
           return data;
         } catch (error) {
-          alert(error.message || 'Could not reach the server. Check that it is running and try again.');
+          showAdminToast(error.message || 'Could not reach the server. Check that it is running and try again.');
           return null;
         }
       }
+
+      function showAdminToast(message) {
+        const toast = document.getElementById('adminToast'); if (!toast) return;
+        toast.textContent = String(message); toast.classList.add('show'); clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 3200);
+      }
+      function openQuickDialog(mode, tableNumber = '') {
+        const dialog = document.getElementById('adminActionDialog'), title = document.getElementById('actionDialogTitle'), fields = document.getElementById('actionDialogFields'), form = document.getElementById('adminActionForm');
+        form.dataset.mode = mode; form.dataset.table = tableNumber; form.dataset.menuId = '';
+        if (mode === 'walk-in') { title.textContent = 'Seat a walk-in guest'; fields.innerHTML = `<label class="admin-form-label" for="walkinName">Guest name</label><input class="admin-form-control" id="walkinName" name="guestName" required maxlength="100"><label class="admin-form-label" for="walkinParty">Party size</label><input class="admin-form-control" id="walkinParty" name="partySize" type="number" min="1" required><label class="admin-form-label" for="walkinTable">Available table</label><select class="admin-form-control" id="walkinTable" name="tableNumber" required></select>`; api('/api/admin/tables').then(data => { if (data) document.getElementById('walkinTable').innerHTML = data.tables.filter(table => table.serviceStatus === 'available').map(table => `<option value="${escapeHtml(table.number)}" ${String(table.number) === String(tableNumber) ? 'selected' : ''}>Table ${escapeHtml(table.number)} · ${escapeHtml(table.section)} · ${escapeHtml(table.seats)} seats</option>`).join(''); }); }
+        if (mode === 'block') { title.textContent = 'Block this table'; fields.innerHTML = `<label class="admin-form-label" for="blockReason">Reason for block</label><textarea class="admin-form-control" id="blockReason" name="reason" required maxlength="240"></textarea>`; }
+        if (mode === 'unavailable') { title.textContent = 'Mark menu item sold out'; fields.innerHTML = `<label class="admin-form-label" for="unavailableItem">Search/select menu item</label><select class="admin-form-control" id="unavailableItem" name="item" required></select>`; api('/api/admin/menu').then(data => { if (data) { menuById = new Map(data.menu.map(item => [String(item._id), item])); document.getElementById('unavailableItem').innerHTML = data.menu.map(item => `<option value="${escapeHtml(item._id)}">${escapeHtml(item.name)}${item.available ? '' : ' — Sold out'}</option>`).join(''); } }); }
+        dialog.showModal(); fields.querySelector('input,textarea,select')?.focus();
+      }
+      document.querySelector('[data-action-cancel]').addEventListener('click', () => document.getElementById('adminActionDialog').close());
+      document.getElementById('adminActionForm').addEventListener('submit', async event => {
+        event.preventDefault(); const form = event.currentTarget, values = new FormData(form); let result;
+        if (form.dataset.mode === 'walk-in') result = await api('/api/admin/walkins', { method: 'POST', body: JSON.stringify(Object.fromEntries(values)) });
+        if (form.dataset.mode === 'block') result = await api(`/api/admin/tables/${form.dataset.table}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'blocked', reason: values.get('reason') }) });
+        if (form.dataset.mode === 'unavailable') result = await api(`/api/admin/menu/${values.get('item')}/availability`, { method: 'PATCH', body: JSON.stringify({ available: false }) });
+        if (result) { document.getElementById('adminActionDialog').close(); showAdminToast('Saved successfully.'); loadTables(); loadMenu(); loadDashboard(); }
+      });
+      async function updateTableStatus(id, status) { if (await api(`/api/admin/tables/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })) { showAdminToast('Table status updated.'); loadTables(); loadDashboard(); } }
+      async function deleteTable(id) { if (await api(`/api/admin/tables/${id}`, { method: 'DELETE' })) { showAdminToast('Table removed.'); loadTables(); } }
+      async function updateMessageStatus(id, status) { if (await api(`/api/admin/inbox/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })) { showAdminToast('Inbox updated.'); loadInbox(); } }
+      async function updateReview(id, status) { if (await api(`/api/admin/reviews/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })) { showAdminToast('Review updated.'); loadReviews(); } }
 
       // ── Analytics reports ──
       let analyticsReport = null;
@@ -1786,16 +1871,17 @@ body.admin-body {
         const resData = await api('/api/admin/reservations');
         if (!resData) return;
         const tbody = document.getElementById('dashboardReservations');
+        reservationsById = new Map((resData.reservations || []).map(r => [String(r._id), r]));
         tbody.innerHTML = '';
         (resData.reservations || []).slice(0, 5).forEach(r => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${r.time}</td>
-            <td>${r.guestName}</td>
-            <td>${r.partySize}</td>
-            <td>#${r.tableNumber}</td>
-            <td><span class="admin-badge admin-badge-${r.status}">${r.status}</span></td>
-            <td><button class="admin-action-btn" onclick="adminEditReservation('${r._id}')">Edit</button></td>
+            <td>${escapeHtml(r.time)}</td>
+            <td>${escapeHtml(r.guestName)}</td>
+            <td>${escapeHtml(r.partySize)}</td>
+            <td>#${escapeHtml(r.tableNumber)}</td>
+            <td><span class="admin-badge admin-badge-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+            <td><button class="admin-action-btn" data-admin-action="edit-reservation" data-id="${escapeHtml(r._id)}">Edit</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -1807,20 +1893,21 @@ body.admin-body {
         const data = await api('/api/admin/reservations');
         if (!data) return;
         const tbody = document.getElementById('reservationsTable');
+        reservationsById = new Map((data.reservations || []).map(r => [String(r._id), r]));
         tbody.innerHTML = '';
         (data.reservations || []).forEach(r => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${r.guestName}</td>
-            <td>${r.guestPhone || '—'}</td>
-            <td>${r.partySize}</td>
-            <td>${new Date(r.date).toLocaleDateString()} <span style="display:block;font-size:0.75rem;color:var(--admin-text-sub)">${r.time}</span></td>
-            <td>#${r.tableNumber}</td>
-            <td><span class="admin-badge admin-badge-${r.status}">${r.status}</span></td>
-            <td>${r.occasion || '—'}</td>
+            <td>${escapeHtml(r.guestName)}</td>
+            <td>${escapeHtml(r.guestPhone || '—')}</td>
+            <td>${escapeHtml(r.partySize)}</td>
+            <td>${new Date(r.date).toLocaleDateString()} <span style="display:block;font-size:0.75rem;color:var(--admin-text-sub)">${escapeHtml(r.time)}</span></td>
+            <td>#${escapeHtml(r.tableNumber)}</td>
+            <td><span class="admin-badge admin-badge-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+            <td>${escapeHtml(r.occasion || '—')}</td>
             <td>
-              <button class="admin-action-btn" onclick="adminEditReservation('${r._id}')">Edit</button>
-              <button class="admin-action-btn danger" onclick="adminDeleteReservation('${r._id}')">Delete</button>
+              <button class="admin-action-btn" data-admin-action="edit-reservation" data-id="${escapeHtml(r._id)}">Edit</button>
+              <button class="admin-action-btn danger" data-admin-action="delete-reservation" data-id="${escapeHtml(r._id)}">Delete</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -1832,18 +1919,19 @@ body.admin-body {
         const data = await api('/api/admin/menu');
         if (!data) return;
         const tbody = document.getElementById('menuTable');
+        menuById = new Map((data.menu || []).map(item => [String(item._id), item]));
         tbody.innerHTML = '';
         (data.menu || []).forEach(item => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.category}</td>
-            <td>KES ${item.price.toLocaleString()}</td>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${escapeHtml(item.category)}</td>
+            <td>KES ${Number(item.price).toLocaleString()}</td>
             <td><span class="admin-badge admin-badge-${item.available ? 'available' : 'unavailable'}">${item.available ? 'Available' : 'Unavailable'}</span></td>
-            <td>${(item.allergens || []).join(', ') || '—'}</td>
+            <td>${escapeHtml((item.allergens || []).join(', ') || '—')}</td>
             <td>
-              <button class="admin-action-btn" onclick="adminEditMenuItem('${item._id}', '${item.name}', ${item.price}, '${item.category}', ${item.available}, '${(item.allergens||[]).join(',')}', '${(item.dietary||[]).join(',')}', ${item.spiceLevel})">Edit</button>
-              <button class="admin-action-btn danger" onclick="adminDeleteMenuItem('${item._id}')">Delete</button>
+              <button class="admin-action-btn" data-admin-action="edit-menu" data-id="${escapeHtml(item._id)}">Edit</button>
+              <button class="admin-action-btn danger" data-admin-action="delete-menu" data-id="${escapeHtml(item._id)}">Delete</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -1859,14 +1947,14 @@ body.admin-body {
         (data.orders || []).forEach(o => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${o.orderNumber}</td>
-            <td>${(o.items || []).map(i => i.name).join(', ')}</td>
-            <td>KES ${o.total.toLocaleString()}</td>
-            <td><span class="admin-badge admin-badge-${o.status}">${o.status}</span></td>
-            <td><span class="admin-badge admin-badge-${o.paymentStatus === 'paid' ? 'available' : 'pending'}">${o.paymentStatus}</span></td>
+            <td>${escapeHtml(o.orderNumber)}</td>
+            <td>${escapeHtml((o.items || []).map(i => i.name).join(', '))}</td>
+            <td>KES ${Number(o.total).toLocaleString()}</td>
+            <td><span class="admin-badge admin-badge-${escapeHtml(o.status)}">${escapeHtml(o.status)}</span></td>
+            <td><span class="admin-badge admin-badge-${o.paymentStatus === 'paid' ? 'available' : 'pending'}">${escapeHtml(o.paymentStatus)}</span></td>
             <td>${new Date(o.createdAt).toLocaleString()}</td>
             <td>
-              <select class="admin-form-control" style="width:110px;font-size:0.78rem;padding:0.35rem 0.5rem" onchange="adminUpdateOrderStatus('${o._id}', this.value)">
+              <select class="admin-form-control" data-admin-action="update-order" data-id="${escapeHtml(o._id)}" style="width:110px;font-size:0.78rem;padding:0.35rem 0.5rem">
                 <option value="new" ${o.status === 'new' ? 'selected' : ''}>New</option>
                 <option value="accepted" ${o.status === 'accepted' ? 'selected' : ''}>Accepted</option>
                 <option value="preparing" ${o.status === 'preparing' ? 'selected' : ''}>Preparing</option>
@@ -1885,15 +1973,16 @@ body.admin-body {
         const data = await api('/api/admin/users');
         if (!data) return;
         const tbody = document.getElementById('staffTable');
+        usersById = new Map((data.users || []).map(user => [String(user._id), user]));
         tbody.innerHTML = '';
         (data.users || []).forEach(u => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${u.name}</td>
-            <td>${u.email}</td>
-            <td>${u.role}</td>
+            <td>${escapeHtml(u.name)}</td>
+            <td>${escapeHtml(u.email)}</td>
+            <td>${escapeHtml(u.role)}</td>
             <td>${new Date(u.createdAt).toLocaleDateString()}</td>
-            <td><button class="admin-action-btn danger" onclick="adminDeleteUser('${u._id}')">Delete</button></td>
+            <td><button class="admin-action-btn danger" data-admin-action="delete-user" data-id="${escapeHtml(u._id)}">Delete</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -2029,15 +2118,6 @@ body.admin-body {
       function adminBlockTable() { alert('Table blocking coming soon.'); }
       function adminPauseOrders() { alert('Pause online ordering coming soon.'); }
       function adminMarkUnavailable() { alert('Mark item unavailable coming soon.'); }
-
-      // These functions are called from the page's inline button handlers.
-      Object.assign(window, {
-        adminOpenReservationModal, adminCloseReservationModal, adminSaveReservation,
-        adminEditReservation, adminDeleteReservation, adminOpenMenuModal, adminEditMenuItem,
-        adminCloseMenuModal, adminSaveMenuItem, adminDeleteMenuItem,
-        adminUpdateOrderStatus, adminDeleteUser, adminAddWalkIn,
-        adminBlockTable, adminPauseOrders, adminMarkUnavailable
-      });
 
       // ── Init: check auth ──
       (async () => {

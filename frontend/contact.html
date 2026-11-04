@@ -101,7 +101,7 @@
             <p style="margin-bottom:2rem;color:var(--clr-text-sub)">Have a question about reservations, private events,
               or our menu? Fill in the form below and we'll respond within 24 hours.</p>
 
-            <form id="contactForm" onsubmit="handleContact(event)">
+            <form id="contactForm">
               <div class="contact-form-grid">
                 <div class="form-group">
                   <label for="c-name">Full Name</label>
@@ -351,11 +351,15 @@
   <div class="toast"></div>
   <script src="script.js"></script>
   <script>
-    function handleContact(e) {
-      e.preventDefault();
-      document.getElementById('contactForm').style.display = 'none';
-      document.getElementById('contactSuccess').style.display = 'flex';
-    }
+    document.getElementById('contactForm').addEventListener('submit', async event => {
+      event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return;
+      const values = id => document.getElementById(id).value, submit = form.querySelector('[type="submit"]'); submit.disabled = true;
+      try {
+        const response = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: values('c-name'), email: values('c-email'), phone: values('c-phone'), subject: values('c-subject'), message: values('c-message') }) });
+        const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Could not send your message.');
+        form.style.display = 'none'; document.getElementById('contactSuccess').style.display = 'flex';
+      } catch (error) { showToast(error.message); submit.disabled = false; }
+    });
     function toggleFaq(btn) {
       const item = btn.closest('.faq-item');
       const isOpen = item.classList.contains('open');
