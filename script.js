@@ -174,9 +174,33 @@ function closeCart() {
 
 // ── Auth ───────────────────────────────────────────────────
 const LOGIN_LINKS = document.querySelectorAll('#loginLink');
+const userAccount = document.getElementById('userAccount');
+const accountDropdown = document.getElementById('accountDropdown');
+const userAccountBtn = document.querySelector('.user-account-btn');
+const userNameEl = document.querySelector('.user-name');
+const accountLoginItem = document.getElementById('accountLoginItem');
+const accountLogoutItem = document.getElementById('accountLogoutItem');
+const userDisplayName = document.querySelector('.user-display-name');
+const userDisplayEmail = document.querySelector('.user-display-email');
 
 function isLoggedIn() {
   return !!localStorage.getItem('lb_token');
+}
+
+async function loadUser() {
+  if (!isLoggedIn()) return;
+  try {
+    const r = await fetch('/api/me', { credentials: 'include' });
+    if (r.ok) {
+      const d = await r.json();
+      if (d.user) {
+        const name = d.user.name || d.user.email.split('@')[0];
+        if (userNameEl) userNameEl.textContent = name;
+        if (userDisplayName) userDisplayName.textContent = name;
+        if (userDisplayEmail) userDisplayEmail.textContent = d.user.email;
+      }
+    }
+  } catch {}
 }
 
 async function logout() {
@@ -184,15 +208,56 @@ async function logout() {
     await fetch('/api/logout', { method: 'POST', credentials: 'include' });
   } catch {}
   localStorage.removeItem('lb_token');
+  updateAuthUI();
   location.href = '/index.html';
 }
-
 function updateAuthUI() {
   const loggedIn = isLoggedIn();
+
   LOGIN_LINKS.forEach(link => {
     link.textContent = loggedIn ? 'Logout' : 'Login';
     link.href = loggedIn ? 'javascript:void(0)' : 'login.html';
     link.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+  });
+
+  const footerLink = document.getElementById('footerLoginLink');
+  if (footerLink) {
+    footerLink.textContent = loggedIn ? 'Logout' : 'Login';
+    footerLink.href = loggedIn ? 'javascript:void(0)' : 'login.html';
+    footerLink.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+  }
+
+  const mobileLink = document.getElementById('mobileLoginLink');
+  if (mobileLink) {
+    mobileLink.textContent = loggedIn ? 'Logout' : 'Login';
+    mobileLink.href = loggedIn ? 'javascript:void(0)' : 'login.html';
+    mobileLink.onclick = loggedIn ? e => { e.preventDefault(); logout(); } : null;
+  }
+
+  if (accountLoginItem) accountLoginItem.style.display = loggedIn ? 'none' : 'block';
+  if (accountLogoutItem) accountLogoutItem.style.display = loggedIn ? 'block' : 'none';
+
+  if (accountLogoutItem) {
+    accountLogoutItem.onclick = e => { e.preventDefault(); logout(); };
+  }
+
+  if (accountLoginItem) {
+    accountLoginItem.onclick = e => { e.preventDefault(); location.href = 'login.html'; };
+  }
+
+  if (userAccountBtn) userAccountBtn.blur();
+}
+
+if (userAccountBtn && accountDropdown) {
+  userAccountBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    accountDropdown.classList.toggle('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (userAccount && !userAccount.contains(e.target)) {
+      accountDropdown.classList.remove('open');
+    }
   });
 }
 
@@ -235,8 +300,9 @@ function initHeaderScroll() {
 }
 
 // ── Init ───────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   updateAuthUI();
+  await loadUser();
   updateCartUI();
   initReveal();
   initHeaderScroll();

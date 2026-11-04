@@ -14,35 +14,74 @@
 <body>
 
   <!-- ════════════ HEADER ════════════ -->
-  <header class="site-header">
+  <header class="site-header" data-header>
     <div class="container">
       <a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a>
-      <nav class="nav-links">
-        <a href="index.html" class="active">Home</a>
-        <a href="about.html">About</a>
-        <a href="menu.html">Menu</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="reservation.html">Reservations</a>
-        <a href="contact.html">Contact</a>`n        <a href="login.html" id="loginLink">Login</a>
+      <nav class="header-nav" aria-label="Main navigation">
+        <ul class="nav-list">
+          <li><a href="index.html" class="nav-link active" data-scroll>Home</a></li>
+          <li><a href="about.html" class="nav-link" data-scroll>About</a></li>
+          <li><a href="menu.html" class="nav-link" data-scroll>Menu</a></li>
+          <li><a href="gallery.html" class="nav-link" data-scroll>Gallery</a></li>
+          <li><a href="reservation.html" class="nav-link" data-scroll>Reservations</a></li>
+          <li><a href="contact.html" class="nav-link" data-scroll>Contact</a></li>
+          <li class="nav-cta">
+            <div class="user-account" id="userAccount">
+              <button class="user-account-btn" aria-label="Account">
+                <i class="fa-regular fa-user"></i>
+                <span class="user-name">Account</span>
+              </button>
+              <div class="account-dropdown" id="accountDropdown">
+                <div class="dropdown-header">
+                  <div class="avatar">U</div>
+                  <div class="dropdown-info">
+                    <div class="user-display-name">Guest</div>
+                    <div class="user-display-email"></div>
+                  </div>
+                </div>
+                <hr class="dropdown-divider">
+                <button class="dropdown-item" id="accountLoginItem"><i class="fa-regular fa-right-to-bracket"></i> Login</button>
+                <button class="dropdown-item" id="accountLogoutItem" style="display:none"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+              </div>
+            </div>
+          </li>
+        </ul>
       </nav>
       <div class="header-actions">
-        <button class="cart-btn" aria-label="Open cart">
+        <button class="cart-btn icon-btn" aria-label="Open cart">
           <i class="fa-solid fa-bag-shopping"></i>
           <span class="cart-count">0</span>
         </button>
-        <button class="theme-btn" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
-        <button class="mobile-menu-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
+        <button class="theme-btn icon-btn" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+          <span class="toggle-line"></span>
+          <span class="toggle-line"></span>
+          <span class="toggle-line"></span>
+        </button>
       </div>
     </div>
   </header>
-  <nav class="mobile-nav">
-    <a href="index.html" class="active">Home</a>
-    <a href="about.html">About</a>
-    <a href="menu.html">Menu</a>
-    <a href="gallery.html">Gallery</a>
-    <a href="reservation.html">Reservations</a>
-    <a href="contact.html">Contact</a>`n        <a href="login.html" id="loginLink">Login</a>
-  </nav>
+
+  <div class="mobile-drawer" id="mobileDrawer" hidden>
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer-panel">
+      <button class="drawer-close" id="drawerClose" aria-label="Close menu">
+        <span class="close-line"></span>
+        <span class="close-line"></span>
+      </button>
+      <nav class="drawer-nav" aria-label="Mobile navigation">
+        <ul class="drawer-list">
+          <li><a href="index.html" class="drawer-link active" data-scroll>Home</a></li>
+          <li><a href="about.html" class="drawer-link" data-scroll>About</a></li>
+          <li><a href="menu.html" class="drawer-link" data-scroll>Menu</a></li>
+          <li><a href="gallery.html" class="drawer-link" data-scroll>Gallery</a></li>
+          <li><a href="reservation.html" class="drawer-link" data-scroll>Reservations</a></li>
+          <li><a href="contact.html" class="drawer-link" data-scroll>Contact</a></li>
+          <li class="drawer-cta"><a href="login.html" id="mobileLoginLink" class="btn btn-primary">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
 
   <main>
 
@@ -352,7 +391,7 @@
             <li><a href="menu.html">Menu</a></li>
             <li><a href="gallery.html">Gallery</a></li>
             <li><a href="reservation.html">Reserve a Table</a></li>
-            <li><a href="contact.html">Contact</a>`n        <a href="login.html" id="loginLink">Login</a></li>
+            <li><a href="contact.html">Contact</a>`n        <a href="login.html" id="footerLoginLink">Login</a></li>
           </ul>
         </div>
         <div class="footer-col">
