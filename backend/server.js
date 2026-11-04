@@ -244,6 +244,190 @@ app.get('/api/orders/track/:orderNumber', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch order' });
   }
 });
+
+const REPORT_TIME_ZONE = 'Africa/Nairobi';
+function reportDateKey(value) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: REPORT_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date(value));
+}
+function reportDateBoundary(dateKey) {
+  return new Date(`${dateKey}T00:00:00+03:00`);
+}
+function reportPeriod(fromKey, toKey) {
+  const start = reportDateBoundary(fromKey);
+  const end = reportDateBoundary(toKey);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return { start, end };
+}
+function reportDayCount(fromKey, toKey) {
+  return Math.round((Date.parse(`${toKey}T00:00:00Z`) - Date.parse(`${fromKey}T00:00:00Z`)) / 86400000) + 1;
+}
+function reportShiftDate(dateKey, days) {
+  const date = new Date(`${dateKey}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+function reportShiftYear(dateKey, years) {
+  const date = new Date(`${dateKey}T00:00:00Z`);
+  date.setUTCFullYear(date.getUTCFullYear() + years);
+  return date.toISOString().slice(0, 10);
+}
+function reportOrderSales(order) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  return items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 0), 0);
+}
+function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
+  const days = new Map();
+  const channels = new Map();
+  const paymentMethods = new Map();
+  const menuItems = new Map();
+  const reservationStatuses = new Map();
+  const reservationHours = new Map();
+  let grossSales = 0;
+  let refunds = 0;
+  let paidOrders = 0;
+  let placedOrders = 0;
+  let pickupOrders = 0;
+  let deliveryOrders = 0;
+
+  for (const order of orders) {
+    const orderDay = reportDateKey(order.createdAt);
+    if (orderDay < fromKey || orderDay > toKey) continue;
+    placedOrders += 1;
+    const orderGross = Number(order.total) || 0;
+    const isRefunded = order.paymentStatus === 'refunded' || order.status === 'refunded';
+    const isPaid = order.paymentStatus === 'paid' || isRefunded || order.status === 'completed';
+    if (!isPaid) continue;
+
+    grossSales += orderGross;
+    if (isRefunded) refunds += orderGross;
+    else paidOrders += 1;
+
+    const channel = order.type === 'delivery' ? 'Delivery' : order.type === 'pickup' ? 'Pickup' : 'Other';
+    channels.set(channel, (channels.get(channel) || 0) + (isRefunded ? 0 : orderGross));
+    if (order.type === 'delivery') deliveryOrders += 1;
+    else if (order.type === 'pickup') pickupOrders += 1;
+    const method = order.paymentMethod || 'Not recorded';
+    paymentMethods.set(method, (paymentMethods.get(method) || 0) + (isRefunded ? 0 : orderGross));
+    if (!isRefunded) {
+      for (const item of (order.items || [])) {
+        const name = String(item.name || 'Unlabelled item');
+        const current = menuItems.get(name) || { name, units: 0, sales: 0 };
+        const quantity = Number(item.qty) || 0;
+        current.units += quantity;
+        current.sales += (Number(item.price) || 0) * quantity;
+        menuItems.set(name, current);
+      }
+    }
+    if (!isRefunded) days.set(orderDay, (days.get(orderDay) || 0) + orderGross);
+  }
+
+  let bookedCovers = 0;
+  let seatedCovers = 0;
+  let activeReservations = 0;
+  let partySizeTotal = 0;
+  let partySizeCount = 0;
+  for (const reservation of reservations) {
+    const reservationDay = reportDateKey(reservation.date);
+    if (reservationDay < fromKey || reservationDay > toKey) continue;
+    const status = reservation.status || 'pending';
+    reservationStatuses.set(status, (reservationStatuses.get(status) || 0) + 1);
+    if (['pending', 'confirmed', 'seated', 'completed'].includes(status)) {
+      activeReservations += 1;
+      bookedCovers += Number(reservation.partySize) || 0;
+      partySizeTotal += Number(reservation.partySize) || 0;
+      partySizeCount += 1;
+    }
+    if (status === 'seated' || status === 'completed') seatedCovers += Number(reservation.partySize) || 0;
+    const hour = String(reservation.time || '').slice(0, 2);
+    if (/^\d{2}$/.test(hour)) reservationHours.set(hour, (reservationHours.get(hour) || 0) + 1);
+  }
+
+  const daySeries = [];
+  for (let day = fromKey; day <= toKey; day = reportShiftDate(day, 1)) {
+    daySeries.push({ date: day, sales: days.get(day) || 0 });
+  }
+  const cancelled = reservationStatuses.get('cancelled') || 0;
+  const noShows = reservationStatuses.get('no-show') || 0;
+  const bookingCount = [...reservationStatuses.values()].reduce((sum, count) => sum + count, 0);
+  const netSales = Math.max(0, grossSales - refunds);
+  return {
+    grossSales, netSales, refunds, paidOrders, placedOrders,
+    averageOrderValue: paidOrders ? netSales / paidOrders : 0,
+    pickupOrders, deliveryOrders,
+    reservations: bookingCount, activeReservations, bookedCovers, seatedCovers,
+    averagePartySize: partySizeCount ? partySizeTotal / partySizeCount : 0,
+    cancelled, noShows,
+    cancellationRate: bookingCount ? cancelled / bookingCount * 100 : 0,
+    noShowRate: bookingCount ? noShows / bookingCount * 100 : 0,
+    daySeries,
+    channels: [...channels].map(([name, sales]) => ({ name, sales })).sort((a, b) => b.sales - a.sales),
+    paymentMethods: [...paymentMethods].map(([name, sales]) => ({ name, sales })).sort((a, b) => b.sales - a.sales),
+    reservationStatuses: [...reservationStatuses].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
+    reservationHours: [...reservationHours].map(([hour, count]) => ({ hour: `${hour}:00`, count })).sort((a, b) => a.hour.localeCompare(b.hour)),
+    topItems: [...menuItems.values()].sort((a, b) => b.sales - a.sales).slice(0, 10)
+  };
+}
+
+app.get('/api/admin/reports/analytics', auth, adminOnly, async (req, res) => {
+  try {
+    const { from, to, comparison = 'previous', channel = 'all' } = req.query;
+    const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+    if (!validDate(from) || !validDate(to) || from > to) {
+      return res.status(400).json({ error: 'Choose a valid report date range.' });
+    }
+    const dayCount = reportDayCount(from, to);
+    if (dayCount > 366) return res.status(400).json({ error: 'Choose a date range of 366 days or less.' });
+    if (!['all', 'pickup', 'delivery'].includes(channel)) return res.status(400).json({ error: 'Choose a valid sales channel.' });
+    const currentPeriod = reportPeriod(from, to);
+    let comparisonFrom = null;
+    let comparisonTo = null;
+    if (comparison === 'previous') {
+      comparisonTo = reportShiftDate(from, -1);
+      comparisonFrom = reportShiftDate(comparisonTo, -(dayCount - 1));
+    } else if (comparison === 'year') {
+      comparisonFrom = reportShiftYear(from, -1);
+      comparisonTo = reportShiftYear(to, -1);
+    }
+    const comparisonPeriod = comparisonFrom ? reportPeriod(comparisonFrom, comparisonTo) : null;
+    const currentFilter = { $gte: currentPeriod.start, $lt: currentPeriod.end };
+    const channelFilter = channel === 'all' ? {} : { type: channel };
+    const [orders, reservations, priorOrders, priorReservations] = await Promise.all([
+      Order.find({ createdAt: currentFilter, ...channelFilter }).select('items total subtotal deliveryFee type paymentMethod paymentStatus status createdAt').lean(),
+      Reservation.find({ date: currentFilter }).select('date time partySize status').lean(),
+      comparisonPeriod ? Order.find({ createdAt: { $gte: comparisonPeriod.start, $lt: comparisonPeriod.end }, ...channelFilter }).select('items total subtotal deliveryFee type paymentMethod paymentStatus status createdAt').lean() : [],
+      comparisonPeriod ? Reservation.find({ date: { $gte: comparisonPeriod.start, $lt: comparisonPeriod.end } }).select('date time partySize status').lean() : []
+    ]);
+    const current = summarizeReportPeriod(orders, reservations, from, to);
+    const prior = comparisonPeriod ? summarizeReportPeriod(priorOrders, priorReservations, comparisonFrom, comparisonTo) : null;
+    res.json({
+      period: { from, to, timeZone: REPORT_TIME_ZONE, channel },
+      comparison: { type: comparison, from: comparisonFrom, to: comparisonTo, metrics: prior },
+      metrics: current,
+      definitions: {
+        grossSales: 'Order totals marked paid, completed, or refunded, before recorded full refunds.',
+        netSales: 'Gross sales less the full order totals marked refunded. Partial refund amounts are not recorded.',
+        averageOrderValue: 'Net sales divided by non-refunded paid orders.',
+        seatedCovers: 'Party sizes on reservations marked seated or completed; walk-ins are not recorded.',
+        reservations: 'Reservation records by service date, including cancelled and no-show bookings.',
+        timeBasis: 'Order timestamps and reservation service dates are grouped in Africa/Nairobi time.'
+      },
+      unavailable: [
+        { metric: 'Taxes, tips, discounts, voids, and refund reasons', reason: 'These fields are not stored on order records.' },
+        { metric: 'Dine-in, events, and booking channels', reason: 'Order channel is recorded only as pickup or delivery; reservation source and service period are not recorded.' },
+        { metric: 'Table occupancy, turn time, wait time, and service pacing', reason: 'Table capacity and seating/order timing data are not stored.' },
+        { metric: 'Events, reviews, and website analytics', reason: 'No event, feedback, review, or consented website analytics data source is connected.' },
+        { metric: 'Food cost, labor, budget, waste, and gross margin', reason: 'Reliable cost, staffing, budget, and inventory data are not connected.' },
+        { metric: 'Scheduled report delivery', reason: 'No authorized report recipient or email delivery integration is configured.' }
+      ]
+    });
+  } catch (error) {
+    console.error('Admin analytics report failed:', error.message);
+    res.status(503).json({ error: 'Analytics data is temporarily unavailable. Check the database connection and try again.' });
+  }
+});
+
 app.get('/api/admin/dashboard-stats', auth, adminOnly, async (req, res) => {
   const today = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);

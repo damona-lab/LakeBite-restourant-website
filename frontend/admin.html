@@ -557,6 +557,63 @@ body.admin-body {
 }
 .admin-mobile-overlay.open { display: block; }
 
+/* Analytics and reporting */
+.report-shell { display: grid; gap: 1rem; }
+.report-toolbar, .report-panel, .report-kpi, .report-tab {
+  background: var(--admin-card); border: 1px solid var(--admin-border); border-radius: var(--admin-radius);
+  box-shadow: var(--admin-shadow);
+}
+.report-toolbar { padding: 1rem; display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; }
+.report-filter { display: grid; gap: .32rem; min-width: 145px; }
+.report-filter label, .report-caption { color: var(--admin-text-sub); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.report-filter select, .report-filter input { min-height: 40px; border: 1px solid var(--admin-border); border-radius: 7px; padding: .5rem .65rem; background: #fff; color: var(--admin-text); font: inherit; }
+.report-custom-range { display: flex; flex-wrap: wrap; gap: .65rem; }
+.report-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
+.report-tabs { display: flex; gap: .45rem; overflow-x: auto; padding: .2rem .1rem .45rem; scrollbar-width: thin; }
+.report-tab { box-shadow: none; border-radius: 999px; padding: .6rem .95rem; color: var(--admin-text-sub); white-space: nowrap; cursor: pointer; font: 600 .8rem var(--font-body); }
+.report-tab[aria-selected="true"] { background: var(--admin-sidebar); border-color: var(--admin-sidebar); color: #fff; }
+.report-note { color: var(--admin-text-sub); font-size: .82rem; line-height: 1.5; margin: 0; }
+.report-last-updated { margin-left: auto; white-space: nowrap; }
+.report-kpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .85rem; }
+.report-kpi { padding: 1rem 1.1rem; min-width: 0; }
+.report-kpi-label { color: var(--admin-text-sub); font-size: .78rem; font-weight: 650; }
+.report-kpi-value { color: var(--admin-text); font: 700 1.5rem var(--font-display); margin: .38rem 0 .2rem; overflow-wrap: anywhere; }
+.report-kpi-detail { color: var(--admin-text-sub); font-size: .76rem; line-height: 1.45; }
+.report-delta.up { color: #246344; font-weight: 700; }
+.report-delta.down { color: #a4382c; font-weight: 700; }
+.report-content-grid { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(260px,1fr); gap: .85rem; }
+.report-panel { padding: 1.1rem; min-width: 0; }
+.report-panel h3 { font: 700 1.08rem var(--font-display); margin: 0 0 .35rem; }
+.report-panel-sub { color: var(--admin-text-sub); font-size: .78rem; margin: 0 0 1rem; }
+.report-chart { min-height: 230px; display: flex; align-items: end; gap: .4rem; padding: 1rem .2rem .2rem; border-bottom: 1px solid var(--admin-border); }
+.report-bar-col { flex: 1; min-width: 8px; display: flex; height: 205px; flex-direction: column; align-items: center; justify-content: end; gap: .35rem; }
+.report-bar { background: linear-gradient(180deg,var(--admin-gold-lt),var(--admin-gold)); border-radius: 5px 5px 1px 1px; width: min(100%,34px); min-height: 2px; }
+.report-bar-label { color: var(--admin-text-sub); font-size: .65rem; white-space: nowrap; }
+.report-list { display: grid; gap: .15rem; }
+.report-list-row { display: grid; grid-template-columns: minmax(90px,1fr) minmax(50px,auto) minmax(80px,auto); align-items: center; gap: .5rem; padding: .65rem .1rem; border-bottom: 1px solid #eee9e0; font-size: .82rem; }
+.report-list-row:last-child { border-bottom: 0; }
+.report-list-row strong { text-align: right; }
+.report-table-wrap { overflow-x: auto; }
+.report-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.report-table th, .report-table td { text-align: left; padding: .7rem .55rem; border-bottom: 1px solid #eee9e0; }
+.report-table th { color: var(--admin-text-sub); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+.report-table td:last-child, .report-table th:last-child { text-align: right; }
+.report-empty, .report-error { background: #fff; border: 1px solid var(--admin-border); border-radius: var(--admin-radius); padding: 2rem; color: var(--admin-text-sub); text-align: center; }
+.report-empty h3, .report-error h3 { color: var(--admin-text); font: 700 1.1rem var(--font-display); margin: .3rem 0; }
+.report-unavailable { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .65rem; }
+.report-unavailable-item { border-left: 3px solid var(--admin-gold); background: #fff; border-radius: 0 7px 7px 0; padding: .75rem .85rem; }
+.report-unavailable-item strong { display: block; color: var(--admin-text); font-size: .82rem; margin-bottom: .25rem; }
+.report-unavailable-item span { display: block; color: var(--admin-text-sub); font-size: .76rem; line-height: 1.45; }
+.report-help { color: var(--admin-text-sub); font-size: .76rem; line-height: 1.5; }
+.report-saved-select { max-width: 160px; min-height: 40px; border: 1px solid var(--admin-border); border-radius: 7px; padding: .5rem .65rem; background: #fff; color: var(--admin-text); font: inherit; }
+.report-axis-note { color: var(--admin-text-sub); font-size: .68rem; text-align: right; margin: -.55rem 0 .3rem; }
+.report-tooltip { cursor: help; border-bottom: 1px dotted currentColor; }
+.report-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.report-loading { display: flex; align-items: center; justify-content: center; min-height: 170px; color: var(--admin-text-sub); gap: .6rem; }
+@media (max-width: 900px) { .report-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } .report-content-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .report-kpis { grid-template-columns: 1fr 1fr; gap: .55rem; } .report-kpi { padding: .8rem; } .report-kpi-value { font-size: 1.2rem; } .report-toolbar { align-items: stretch; } .report-filter { flex: 1 1 130px; } .report-actions { margin-left: 0; width: 100%; } .report-actions .admin-btn { flex: 1; justify-content: center; } .report-unavailable { grid-template-columns: 1fr; } }
+@media print { body.admin-body { overflow: visible; background: #fff; } .admin-sidebar, .admin-topbar, .admin-page-actions, .report-toolbar, .report-tabs { display: none !important; } .admin-main { height: auto; overflow: visible; margin: 0; padding: 0; } #view-reports { display: block !important; } .report-panel, .report-kpi { box-shadow: none; break-inside: avoid; } }
+
 /* Hide default mobile-nav / header-actions from global if present on admin page */
 .site-header, .mobile-nav, .cart-drawer, .cart-overlay, .toast { display: none !important; }
 
@@ -849,7 +906,41 @@ body.admin-body {
       <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-inbox"></i><h3>Inbox & Reviews</h3><p>Guest messages coming soon.</p></div></div></div>
     </section>
     <section id="view-reports" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-chart-line"></i><h3>Reports</h3><p>Analytics coming soon.</p></div></div></div>
+      <div class="report-shell">
+        <div class="report-toolbar" aria-label="Report filters">
+          <div class="report-filter"><label for="reportRange">Date range</label><select id="reportRange">
+            <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="week">This week</option><option value="month" selected>This month</option><option value="year">This year</option><option value="custom">Custom range</option>
+          </select></div>
+          <div class="report-custom-range" id="reportCustomRange" hidden>
+            <div class="report-filter"><label for="reportFrom">From</label><input type="date" id="reportFrom"></div>
+            <div class="report-filter"><label for="reportTo">To</label><input type="date" id="reportTo"></div>
+          </div>
+          <div class="report-filter"><label for="reportCompare">Compare with</label><select id="reportCompare"><option value="previous">Previous period</option><option value="year">Same period last year</option><option value="none">No comparison</option></select></div>
+          <div class="report-filter"><label for="reportInterval">Sales grouping</label><select id="reportInterval"><option value="auto">Automatic</option><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select></div>
+          <div class="report-filter"><label for="reportChannel">Online channel</label><select id="reportChannel"><option value="all">All channels</option><option value="pickup">Pickup</option><option value="delivery">Delivery</option></select></div>
+          <div class="report-actions">
+            <select id="reportSavedViews" class="report-filter report-saved-select" aria-label="Saved report views"><option value="">Saved views</option></select>
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="reportSaveView"><i class="fa-regular fa-bookmark"></i> Save view</button>
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="reportExportCsv"><i class="fa-solid fa-file-csv"></i> CSV</button>
+            <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="reportPrint"><i class="fa-solid fa-print"></i> PDF / Print</button>
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="reportApply"><i class="fa-solid fa-filter"></i> Apply</button>
+          </div>
+        </div>
+        <div class="report-tabs" role="tablist" aria-label="Analytics report sections">
+          <button class="report-tab" role="tab" aria-selected="true" data-report="overview">Overview</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="revenue">Revenue & Sales</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="reservations">Reservations & Guests</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="service">Table & Service</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="menu">Menu</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="orders">Online Orders</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="events">Events</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="feedback">Feedback</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="website">Website</button>
+          <button class="report-tab" role="tab" aria-selected="false" data-report="operations">Operations</button>
+        </div>
+        <p class="report-note">Location: LakeBite Nairobi · Reporting dates use Nairobi time (EAT). Channel filters apply to online order sales; reservation channel and service period are not currently captured. <span class="report-last-updated" id="reportLastUpdated">Not loaded</span></p>
+        <div id="reportContent" aria-live="polite"><div class="report-loading"><i class="fa-solid fa-spinner fa-spin"></i> Load a report to see recorded data.</div></div>
+      </div>
     </section>
     <section id="view-integrations" class="admin-view" style="display:none;">
       <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-plug"></i><h3>Integrations</h3><p>POS & delivery integrations coming soon.</p></div></div></div>
@@ -1046,6 +1137,7 @@ body.admin-body {
           if (view === 'menu') loadMenu();
           if (view === 'orders') loadOrders();
           if (view === 'staff') loadStaff();
+          if (view === 'reports') loadReports();
         });
       });
 
@@ -1064,6 +1156,7 @@ body.admin-body {
         if (view === 'menu') loadMenu();
         if (view === 'orders') loadOrders();
         if (view === 'staff') loadStaff();
+        if (view === 'reports') loadReports();
       });
 
       // ── API Helpers ──
@@ -1086,6 +1179,236 @@ body.admin-body {
           return null;
         }
       }
+
+      // ── Analytics reports ──
+      let analyticsReport = null;
+      let activeReportTab = 'overview';
+      const reportTabButtons = document.querySelectorAll('.report-tab');
+      const reportContent = document.getElementById('reportContent');
+      const reportRangeSelect = document.getElementById('reportRange');
+      const reportCustomRange = document.getElementById('reportCustomRange');
+      const reportCompareSelect = document.getElementById('reportCompare');
+      const reportIntervalSelect = document.getElementById('reportInterval');
+      const reportChannelSelect = document.getElementById('reportChannel');
+      const reportFromInput = document.getElementById('reportFrom');
+      const reportToInput = document.getElementById('reportTo');
+
+      function reportLocalDate(date = new Date()) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+      function reportShiftLocalDate(dateKey, days) {
+        const date = new Date(`${dateKey}T12:00:00`);
+        date.setDate(date.getDate() + days);
+        return reportLocalDate(date);
+      }
+      function getReportRange() {
+        const today = reportLocalDate();
+        const mode = reportRangeSelect.value;
+        if (mode === 'custom') return { from: reportFromInput.value, to: reportToInput.value };
+        if (mode === 'today') return { from: today, to: today };
+        if (mode === 'yesterday') {
+          const yesterday = reportShiftLocalDate(today, -1);
+          return { from: yesterday, to: yesterday };
+        }
+        if (mode === 'week') {
+          const weekday = new Date(`${today}T12:00:00`).getDay();
+          const mondayOffset = (weekday + 6) % 7;
+          return { from: reportShiftLocalDate(today, -mondayOffset), to: today };
+        }
+        if (mode === 'year') return { from: `${today.slice(0, 4)}-01-01`, to: today };
+        return { from: `${today.slice(0, 7)}-01`, to: today };
+      }
+      function reportEscape(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      }
+      function reportMoney(value) {
+        return 'KES ' + (Number(value) || 0).toLocaleString('en-KE', { maximumFractionDigits: 0 });
+      }
+      function reportDelta(key, current, comparison, formatter = reportMoney) {
+        if (!comparison || comparison[key] == null) return '<span class="report-kpi-detail">No comparison selected</span>';
+        const prior = Number(comparison[key]) || 0;
+        const value = Number(current) || 0;
+        if (!prior) return `<span class="report-kpi-detail">${value ? 'No prior-period baseline' : 'No recorded change'}</span>`;
+        const delta = ((value - prior) / Math.abs(prior)) * 100;
+        const direction = delta > 0 ? 'up' : delta < 0 ? 'down' : '';
+        const arrow = delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
+        return `<span class="report-delta ${direction}">${arrow} ${Math.abs(delta).toFixed(1)}%</span> <span class="report-kpi-detail">vs ${reportEscape(formatter(prior))}</span>`;
+      }
+      function reportKpi(label, value, key, help, formatter = reportMoney) {
+        const metrics = analyticsReport.metrics;
+        const comparison = analyticsReport.comparison.metrics;
+        const formatted = typeof value === 'string' ? value : formatter(value);
+        return `<article class="report-kpi"><div class="report-kpi-label"><span class="report-tooltip" title="${reportEscape(help)}">${reportEscape(label)} ⓘ</span></div><div class="report-kpi-value">${formatted}</div><div class="report-kpi-detail">${key ? reportDelta(key, metrics[key], comparison, formatter) : reportEscape(help)}</div></article>`;
+      }
+      function reportSeries() {
+        const source = analyticsReport.metrics.daySeries || [];
+        const byMonth = new Map();
+        const byWeek = new Map();
+        const mode = reportIntervalSelect.value === 'auto' ? (source.length <= 35 ? 'day' : 'month') : reportIntervalSelect.value;
+        if (mode === 'day') return source.map(item => ({ label: item.date.slice(5), value: item.sales }));
+        source.forEach(item => {
+          if (mode === 'month') {
+            const month = item.date.slice(0, 7);
+            byMonth.set(month, (byMonth.get(month) || 0) + item.sales);
+          } else {
+            const date = new Date(`${item.date}T12:00:00`);
+            date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+            const week = reportLocalDate(date);
+            byWeek.set(week, (byWeek.get(week) || 0) + item.sales);
+          }
+        });
+        return mode === 'month'
+          ? [...byMonth].map(([label, value]) => ({ label, value }))
+          : [...byWeek].map(([label, value]) => ({ label: `Week ${label.slice(5)}`, value }));
+      }
+      function reportBarChart(items, label, valueKey, formatter = reportMoney) {
+        if (!items || !items.length || items.every(item => !Number(item[valueKey]))) {
+          return `<div class="report-empty"><strong>No recorded data for this period.</strong></div>`;
+        }
+        const maxValue = Math.max(...items.map(item => Number(item[valueKey]) || 0), 1);
+        const bars = items.map((item, index) => {
+          const value = Number(item[valueKey]) || 0;
+          const height = Math.max(1, value / maxValue * 100);
+          const showLabel = items.length <= 12 || index % Math.ceil(items.length / 8) === 0 || index === items.length - 1;
+          return `<div class="report-bar-col" title="${reportEscape(item.label)}: ${reportEscape(formatter(value))}"><div class="report-bar" style="height:${height}%" aria-hidden="true"></div><span class="report-bar-label">${showLabel ? reportEscape(item.label) : ''}</span></div>`;
+        }).join('');
+        const summary = items.map(item => `${item.label}: ${formatter(item[valueKey])}`).join('; ');
+        return `<p class="report-axis-note">Scale: 0–${reportEscape(formatter(maxValue))} · hover or focus a bar for its value</p><div class="report-chart" role="img" aria-label="${reportEscape(label)}. ${reportEscape(summary)}">${bars}</div><p class="report-sr-only">${reportEscape(label)}. ${reportEscape(summary)}</p>`;
+      }
+      function reportRows(items, nameKey, valueKey, formatter = reportMoney) {
+        if (!items || !items.length) return '<div class="report-empty">No records in this date range.</div>';
+        return `<div class="report-list">${items.map(item => `<div class="report-list-row"><span>${reportEscape(item[nameKey])}</span><strong>${reportEscape(formatter(item[valueKey]))}</strong></div>`).join('')}</div>`;
+      }
+      function reportTable(items, columns) {
+        if (!items || !items.length) return '<div class="report-empty">No records in this date range.</div>';
+        return `<div class="report-table-wrap"><table class="report-table"><thead><tr>${columns.map(column => `<th>${reportEscape(column.label)}</th>`).join('')}</tr></thead><tbody>${items.map(item => `<tr>${columns.map(column => `<td>${reportEscape(column.format ? column.format(item[column.key]) : item[column.key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      }
+      function reportUnavailable(items) {
+        return `<div class="report-unavailable">${items.map(item => `<div class="report-unavailable-item"><strong>${reportEscape(item.metric)}</strong><span>${reportEscape(item.reason)}</span></div>`).join('')}</div>`;
+      }
+      function renderReportContent() {
+        if (!analyticsReport) return;
+        const { metrics, comparison, unavailable, definitions } = analyticsReport;
+        const currency = value => reportMoney(value);
+        const dateSeries = reportSeries();
+        const revenueChart = (title = 'Recorded net sales by day') => `<article class="report-panel"><h3>${title}</h3><p class="report-panel-sub">Paid order totals after recorded full refunds; grouped in Nairobi time.</p>${reportBarChart(dateSeries.map(item => ({ label: item.label, value: item.value })), title, 'value')}</article>`;
+        const topItemsTable = reportTable(metrics.topItems, [
+          { key: 'name', label: 'Menu item' },
+          { key: 'units', label: 'Units sold', format: value => Number(value).toLocaleString('en-KE') },
+          { key: 'sales', label: 'Recorded item sales', format: currency }
+        ]);
+        const reservationStatusPanel = `<article class="report-panel"><h3>Reservation status</h3><p class="report-panel-sub">Bookings by service date, including cancelled and no-show records.</p>${reportRows(metrics.reservationStatuses, 'name', 'count', value => Number(value).toLocaleString('en-KE'))}</article>`;
+        const channelPanel = `<article class="report-panel"><h3>Online sales by channel</h3><p class="report-panel-sub">Current order records distinguish pickup and delivery.</p>${reportRows(metrics.channels, 'name', 'sales')}</article>`;
+        const itemPanel = `<article class="report-panel"><h3>Top menu items</h3><p class="report-panel-sub">Item names and unit prices copied to order records; menu category history is not captured.</p>${topItemsTable}</article>`;
+        const availability = reportUnavailable(unavailable);
+        const compareNote = comparison.metrics ? `Compared with ${comparison.from} to ${comparison.to}.` : 'Period comparison is turned off.';
+        const summaryKpis = `<div class="report-kpis">${reportKpi('Gross sales', metrics.grossSales, 'grossSales', definitions.grossSales)}${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on pending, confirmed, seated, and completed bookings.', value => Number(value).toLocaleString('en-KE'))}</div>`;
+
+        if (activeReportTab === 'overview') {
+          reportContent.innerHTML = `${summaryKpis}<div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reservations">Open reservations</button><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="orders">Open orders</button><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="menu">Open menu</button></div><div class="report-content-grid">${revenueChart()}${reservationStatusPanel}${channelPanel}${itemPanel}</div><p class="report-note">${compareNote} Gross and net sales follow the definitions below. Only recorded order and reservation data is shown.</p><article class="report-panel"><h3>Data coverage and unavailable metrics</h3><p class="report-panel-sub">Missing integrations and fields are listed instead of estimated.</p>${availability}</article>`;
+        } else if (activeReportTab === 'revenue') {
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Gross sales', metrics.grossSales, 'grossSales', definitions.grossSales)}${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals with refunded payment status; partial refund amounts are not stored.')}${reportKpi('Average order value', metrics.averageOrderValue, 'averageOrderValue', definitions.averageOrderValue)}</div><div class="report-content-grid">${revenueChart()}${channelPanel}<article class="report-panel"><h3>Payment method</h3><p class="report-panel-sub">Net collected order totals by recorded payment method.</p>${reportRows(metrics.paymentMethods, 'name', 'sales')}</article>${itemPanel}</div><article class="report-panel"><h3>Not available in current order data</h3><p class="report-panel-sub">No estimates are included for missing finance fields.</p>${reportUnavailable(unavailable.filter(item => /taxes|cost|events|website/i.test(item.metric)))}</article>`;
+        } else if (activeReportTab === 'reservations') {
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on pending, confirmed, seated, and completed bookings.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Cancellation rate', `${metrics.cancellationRate.toFixed(1)}%`, null, 'Cancelled reservation records divided by all reservation records.')}${reportKpi('No-show rate', `${metrics.noShowRate.toFixed(1)}%`, null, 'No-show reservation records divided by all reservation records.')}</div><div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="reservations">Open reservation records</button></div><div class="report-content-grid">${reservationStatusPanel}<article class="report-panel"><h3>Demand by requested time</h3><p class="report-panel-sub">Reservation count grouped by time entered; no seating or service duration data is stored.</p>${reportRows(metrics.reservationHours, 'hour', 'count', value => `${value} bookings`)}</article></div><article class="report-panel"><h3>Guest and conversion coverage</h3><p class="report-panel-sub">Booking source, website conversion, walk-ins, waitlists, guest retention and VIP flags are not currently captured.</p>${reportUnavailable(unavailable.filter(item => /dine-in|occupancy|events|reviews|website/i.test(item.metric)))}</article>`;
+        } else if (activeReportTab === 'service') {
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Booked covers', metrics.bookedCovers, 'bookedCovers', 'Party size on active and completed bookings.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Seated covers', metrics.seatedCovers, 'seatedCovers', definitions.seatedCovers, value => Number(value).toLocaleString('en-KE'))}${reportKpi('Average party size', metrics.averagePartySize.toFixed(1), null, 'Average party size for pending, confirmed, seated, and completed bookings.')}</div><div class="report-content-grid"><article class="report-panel"><h3>Reservation demand by time</h3><p class="report-panel-sub">Requested reservation time, not actual seating time.</p>${reportRows(metrics.reservationHours, 'hour', 'count', value => `${value} bookings`)}</article><article class="report-panel"><h3>Capacity and service measures</h3><p class="report-panel-sub">Unavailable until table sections, seat counts, wait times and service timestamps are recorded.</p>${reportUnavailable(unavailable.filter(item => /Table occupancy/i.test(item.metric)))}</article></div>`;
+        } else if (activeReportTab === 'menu') {
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Items in top 10', metrics.topItems.length, null, 'Items from paid, non-refunded order lines.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Pickup orders', metrics.pickupOrders, null, 'Orders marked pickup.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Delivery orders', metrics.deliveryOrders, null, 'Orders marked delivery.', value => Number(value).toLocaleString('en-KE'))}</div><article class="report-panel"><h3>Item performance</h3><p class="report-panel-sub">Ranked by recorded item sales for paid, non-refunded orders. Historical item names are order snapshots.</p>${topItemsTable}</article><article class="report-panel"><h3>Cost and category coverage</h3><p class="report-panel-sub">Category snapshots, ingredients, add-ons, pairings, unavailability history and reliable costs are not recorded on order lines.</p>${reportUnavailable(unavailable.filter(item => /cost|inventory|taxes/i.test(item.metric)))}</article>`;
+        } else if (activeReportTab === 'orders') {
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Orders placed', metrics.placedOrders, null, 'Orders created in the selected date range.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Paid orders', metrics.paidOrders, 'paidOrders', 'Non-refunded paid or completed orders.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Average order value', metrics.averageOrderValue, 'averageOrderValue', definitions.averageOrderValue)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals marked refunded.')}</div><div class="report-actions"><button class="admin-btn admin-btn-outline admin-btn-sm" data-open-view="orders">Open order records</button></div><div class="report-content-grid">${revenueChart('Online order sales over time')}${channelPanel}</div><p class="report-note">Preparation time, on-time completion, failed payment reasons and cancellation reasons are not stored yet. This report covers online pickup and delivery records only.</p>`;
+        } else if (activeReportTab === 'operations') {
+          reportContent.innerHTML = `<div class="report-kpis">${reportKpi('Net sales', metrics.netSales, 'netSales', definitions.netSales)}${reportKpi('Refunds', metrics.refunds, 'refunds', 'Full order totals marked refunded.')}${reportKpi('Paid orders', metrics.paidOrders, 'paidOrders', 'Paid or completed, non-refunded orders.', value => Number(value).toLocaleString('en-KE'))}${reportKpi('Reservations', metrics.reservations, 'reservations', definitions.reservations, value => Number(value).toLocaleString('en-KE'))}</div><article class="report-panel"><h3>Connected financial and operations data</h3><p class="report-panel-sub">Only recorded order and reservation totals appear above. No costs are estimated.</p>${availability}</article>`;
+        } else {
+          const labels = { events: 'Events and private dining', feedback: 'Guest feedback and reviews', website: 'Website analytics' };
+          const relevant = activeReportTab === 'events' ? unavailable.filter(item => /Events/i.test(item.metric)) : activeReportTab === 'feedback' ? unavailable.filter(item => /reviews/i.test(item.metric)) : unavailable.filter(item => /website/i.test(item.metric));
+          reportContent.innerHTML = `<div class="report-empty"><i class="fa-solid fa-circle-info"></i><h3>${labels[activeReportTab] || 'This report'} data is not connected</h3><p>There are no event, review, or consented website analytics records available for this period. Nothing is estimated or shown as actual.</p></div><article class="report-panel"><h3>What is needed</h3>${reportUnavailable(relevant)}</article>`;
+        }
+        document.getElementById('reportLastUpdated').textContent = `Last updated ${new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' })} EAT`;
+      }
+      async function loadReports() {
+        const range = getReportRange();
+        if (!range.from || !range.to || range.from > range.to) {
+          reportContent.innerHTML = '<div class="report-error"><h3>Check the date range</h3><p>Choose valid start and end dates to load this report.</p></div>';
+          return;
+        }
+        reportContent.innerHTML = '<div class="report-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading recorded analytics…</div>';
+        const params = new URLSearchParams({ from: range.from, to: range.to, comparison: reportCompareSelect.value, channel: reportChannelSelect.value });
+        analyticsReport = await api(`/api/admin/reports/analytics?${params}`);
+        if (!analyticsReport) {
+          reportContent.innerHTML = '<div class="report-error"><h3>Report could not load</h3><p>Check the database connection, then use Refresh to try again.</p></div>';
+          return;
+        }
+        renderReportContent();
+      }
+      function exportReportCsv() {
+        if (!analyticsReport) return alert('Load a report before exporting.');
+        const metrics = analyticsReport.metrics;
+        const rows = [['Report', activeReportTab], ['From', analyticsReport.period.from], ['To', analyticsReport.period.to], ['Timezone', analyticsReport.period.timeZone], ['Channel', analyticsReport.period.channel], ['Comparison period', analyticsReport.comparison.from ? `${analyticsReport.comparison.from} to ${analyticsReport.comparison.to}` : 'None'], ['Metric', 'Value'],
+          ['Gross sales (KES)', metrics.grossSales], ['Net sales (KES)', metrics.netSales], ['Refunds (KES)', metrics.refunds], ['Paid orders', metrics.paidOrders], ['Orders placed', metrics.placedOrders], ['Average order value (KES)', metrics.averageOrderValue], ['Reservations', metrics.reservations], ['Booked covers', metrics.bookedCovers], ['Seated covers', metrics.seatedCovers], ['Cancelled reservations', metrics.cancelled], ['No-show reservations', metrics.noShows]];
+        if (analyticsReport.comparison.metrics) {
+          rows.push(['Comparison gross sales (KES)', analyticsReport.comparison.metrics.grossSales], ['Comparison net sales (KES)', analyticsReport.comparison.metrics.netSales], ['Comparison reservations', analyticsReport.comparison.metrics.reservations], ['Comparison booked covers', analyticsReport.comparison.metrics.bookedCovers]);
+        }
+        metrics.channels.forEach(item => rows.push([`Channel sales: ${item.name} (KES)`, item.sales]));
+        metrics.paymentMethods.forEach(item => rows.push([`Payment method sales: ${item.name} (KES)`, item.sales]));
+        metrics.reservationStatuses.forEach(item => rows.push([`Reservations by status: ${item.name}`, item.count]));
+        metrics.reservationHours.forEach(item => rows.push([`Reservations requested at ${item.hour}`, item.count]));
+        metrics.topItems.forEach(item => rows.push([`Item units: ${item.name}`, item.units], [`Item sales (KES): ${item.name}`, item.sales]));
+        metrics.daySeries.forEach(item => rows.push([`Net sales ${item.date} (KES)`, item.sales]));
+        const csv = rows.map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        link.download = `lakebite-${activeReportTab}-${analyticsReport.period.from}-to-${analyticsReport.period.to}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+      function refreshSavedReportViews() {
+        const select = document.getElementById('reportSavedViews');
+        let saved = [];
+        try { saved = JSON.parse(localStorage.getItem('lakebiteReportViews') || '[]'); } catch {}
+        select.innerHTML = '<option value="">Saved views</option>' + saved.map((item, index) => `<option value="${index}">${reportEscape(item.name)}</option>`).join('');
+      }
+      reportRangeSelect.addEventListener('change', () => { reportCustomRange.hidden = reportRangeSelect.value !== 'custom'; });
+      document.getElementById('reportApply').addEventListener('click', loadReports);
+      reportIntervalSelect.addEventListener('change', () => { if (analyticsReport) renderReportContent(); });
+      document.getElementById('reportExportCsv').addEventListener('click', exportReportCsv);
+      document.getElementById('reportPrint').addEventListener('click', () => window.print());
+      document.getElementById('reportSaveView').addEventListener('click', () => {
+        const name = prompt('Name this saved report view:');
+        if (!name || !name.trim()) return;
+        let saved = [];
+        try { saved = JSON.parse(localStorage.getItem('lakebiteReportViews') || '[]'); } catch {}
+        saved.push({ name: name.trim(), range: reportRangeSelect.value, from: reportFromInput.value, to: reportToInput.value, comparison: reportCompareSelect.value, interval: reportIntervalSelect.value, channel: reportChannelSelect.value, tab: activeReportTab });
+        localStorage.setItem('lakebiteReportViews', JSON.stringify(saved.slice(-20)));
+        refreshSavedReportViews();
+        document.getElementById('reportSavedViews').value = String(Math.min(saved.length - 1, 19));
+      });
+      document.getElementById('reportSavedViews').addEventListener('change', event => {
+        if (event.target.value === '') return;
+        let saved = [];
+        try { saved = JSON.parse(localStorage.getItem('lakebiteReportViews') || '[]'); } catch {}
+        const item = saved[Number(event.target.value)];
+        if (!item) return;
+        reportRangeSelect.value = item.range;
+        reportCustomRange.hidden = item.range !== 'custom';
+        reportFromInput.value = item.from || '';
+        reportToInput.value = item.to || '';
+        reportCompareSelect.value = item.comparison || 'previous';
+        reportIntervalSelect.value = item.interval || 'auto';
+        reportChannelSelect.value = item.channel || 'all';
+        activeReportTab = item.tab || 'overview';
+        reportTabButtons.forEach(button => button.setAttribute('aria-selected', String(button.dataset.report === activeReportTab)));
+        loadReports();
+      });
+      reportTabButtons.forEach(button => button.addEventListener('click', () => {
+        activeReportTab = button.dataset.report;
+        reportTabButtons.forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
+        if (analyticsReport) renderReportContent(); else loadReports();
+      }));
+      reportContent.addEventListener('click', event => {
+        const target = event.target.closest('[data-open-view]');
+        if (target) document.querySelector(`.admin-nav-link[data-view="${target.dataset.openView}"]`)?.click();
+      });
+      refreshSavedReportViews();
 
       // ── Load Dashboard ──
       async function loadDashboard() {

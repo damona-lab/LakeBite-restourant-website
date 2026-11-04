@@ -211,7 +211,6 @@ function isLoggedIn() {
 }
 
 async function loadUser() {
-  if (!isLoggedIn()) return;
   try {
     const r = await fetch('/api/me', { credentials: 'include' });
     if (r.ok) {
@@ -222,20 +221,22 @@ async function loadUser() {
         if (userDisplayName) userDisplayName.textContent = name;
         if (userDisplayEmail) userDisplayEmail.textContent = d.user.email;
       }
+      return d.user;
     }
   } catch {}
+  return null;
 }
 
 async function logout() {
   try {
     await fetch('/api/logout', { method: 'POST', credentials: 'include' });
   } catch {}
-  localStorage.removeItem('lb_token');
+  try { localStorage.removeItem('lb_token'); } catch {}
   updateAuthUI();
   location.href = '/index.html';
 }
 function updateAuthUI() {
-  const loggedIn = isLoggedIn();
+  const loggedIn = !!localStorage.getItem('lb_token');
 
   LOGIN_LINKS.forEach(link => {
     link.textContent = loggedIn ? 'Logout' : 'Login';
