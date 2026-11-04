@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — LakeBite</title>
+<link rel="stylesheet" href="global.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* ════════════ ADMIN PANEL ════════════ */
+:root {
+  --admin-bg: #f7f3ec;
+  --admin-sidebar: #1a3d2b;
+  --admin-sidebar-dark: #143222;
+  --admin-gold: #c8973a;
+  --admin-gold-lt: #e0b55a;
+  --admin-card: #ffffff;
+  --admin-border: #e8e2d8;
+  --admin-text: #2c2a24;
+  --admin-text-sub: #6b6458;
+  --admin-shadow: 0 6px 30px rgba(0,0,0,0.06);
+  --admin-radius: 10px;
+}
+
+body.admin-body {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  overflow: hidden;
+}
+
+/* ── Top Bar ── */
+.admin-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  background: var(--admin-card);
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 1100;
+  z-index: 1050;
+}
+.admin-topbar-left {
+  display: flex; align-items: center; gap: 1rem;
+}
+.admin-burger {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--admin-text);
+}
+.admin-brand-mini {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--admin-sidebar);
+  letter-spacing: 0.02em;
+  display: none;
+}
+@media (min-width: 769px) { .admin-brand-mini { display: block; } }
+.admin-topbar-center {
+  display: flex; align-items: center; gap: 0.75rem;
+  flex: 1; max-width: 520px;
+}
+.admin-search {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: #f4f1ea;
+  color: var(--admin-text);
+  font-size: 0.85rem;
+}
+.admin-date-pill {
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: #f4f1ea;
+  color: var(--admin-text-sub);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+.admin-topbar-right {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.admin-icon-btn {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  color: var(--admin-text);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.admin-profile {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  border: 1px solid var(--admin-border);
+  background: #f4f1ea;
+  cursor: pointer;
+}
+.admin-profile-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--admin-gold);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+.admin-profile-info {
+  display: flex; flex-direction: column;
+}
+.admin-profile-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.admin-profile-role {
+  font-size: 0.7rem;
+  color: var(--admin-text-sub);
+}
+
+/* ── Sidebar ── */
+.admin-sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 260px;
+  height: 100vh;
+  background: var(--admin-sidebar);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  z-index: 1100;
+  transition: transform 0.3s ease;
+}
+.admin-sidebar.collapsed { transform: translateX(-100%); }
+.admin-sidebar-header {
+  height: 64px;
+  padding: 0 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.admin-sidebar-logo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.admin-sidebar-logo span {
+  color: var(--admin-gold-lt);
+  font-size: 0.65rem;
+  font-family: var(--font-body);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  margin-top: -2px;
+}
+.admin-loc-switch {
+  margin-top: 1.5rem;
+  padding: 0 1.5rem;
+}
+.admin-loc-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.admin-loc-select {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 0.85rem;
+}
+.admin-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 0;
+}
+.admin-nav-list { list-style: none; margin: 0; padding: 0 1rem; }
+.admin-nav-item { margin-bottom: 0.25rem; }
+.admin-nav-link {
+  display: flex; align-items: center; gap: 0.85rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--admin-radius);
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.admin-nav-link i { width: 20px; text-align: center; font-size: 0.95rem; }
+.admin-nav-link:hover {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+.admin-nav-link.active {
+  background: var(--admin-gold);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(200,151,58,0.25);
+}
+.admin-nav-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 1rem 1.25rem;
+}
+.admin-nav-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.admin-logout {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--admin-radius);
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: #e8a04d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+.admin-logout:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+
+/* ── Main Content ── */
+.admin-main {
+  margin-left: 260px;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 768px) {
+  .admin-main { margin-left: 0; padding: 1rem; }
+  .admin-topbar { padding: 0 1rem; }
+}
+
+/* ── Page Header ── */
+.admin-page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+.admin-page-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--admin-text);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+.admin-page-sub {
+  color: var(--admin-text-sub);
+  font-size: 0.9rem;
+  margin: 0;
+}
+.admin-page-actions {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.admin-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-family: var(--font-body);
+}
+.admin-btn-primary {
+  background: var(--admin-sidebar);
+  color: #fff;
+}
+.admin-btn-primary:hover {
+  background: var(--admin-sidebar-dark);
+  transform: translateY(-1px);
+}
+.admin-btn-outline {
+  background: transparent;
+  color: var(--admin-text);
+  border-color: var(--admin-border);
+}
+.admin-btn-outline:hover {
+  border-color: var(--admin-gold);
+  color: var(--admin-gold);
+}
+.admin-btn-sm { padding: 0.45rem 0.9rem; font-size: 0.78rem; }
+
+/* ── Stat Cards ── */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.admin-stat-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 1.25rem;
+  box-shadow: var(--admin-shadow);
+  display: flex; align-items: center; gap: 1rem;
+}
+.admin-stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: #f4f1ea;
+  color: var(--admin-sidebar);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.admin-stat-icon.gold { background: #fbf6ea; color: var(--admin-gold); }
+.admin-stat-icon.green { background: #eef5ee; color: var(--admin-sidebar); }
+.admin-stat-info .stat-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text);
+  margin: 0;
+}
+.admin-stat-info .stat-label {
+  font-size: 0.8rem;
+  color: var(--admin-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0.15rem 0 0;
+}
+.admin-stat-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+.admin-stat-trend.up { color: var(--admin-sidebar); }
+.admin-stat-trend.down { color: #c0392b; }
+
+/* ── Section ── */
+.admin-section {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  box-shadow: var(--admin-shadow);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.admin-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--admin-border);
+  background: #faf8f2;
+}
+.admin-section-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+.admin-section-body { padding: 1.25rem; }
+
+/* ── Table ── */
+.admin-table-wrap { overflow-x: auto; }
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.admin-table th {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  color: var(--admin-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  border-bottom: 2px solid var(--admin-border);
+  background: #faf8f2;
+}
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: #fbf8f1; }
+
+/* ── Badges ── */
+.admin-badge {
+  display: inline-flex; align-items: center;
+  padding: 0.25rem 0.7rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.admin-badge-confirmed { background: #eef5ee; color: var(--admin-sidebar); }
+.admin-badge-pending { background: #fbf6ea; color: var(--admin-gold); }
+.admin-badge-seated { background: #e8f0f5; color: #1f6f8b; }
+.admin-badge-completed { background: #f1f1f1; color: var(--admin-text-sub); }
+.admin-badge-cancelled { background: #fbeaea; color: #c0392b; }
+.admin-badge-no-show { background: #f1e3e3; color: #a33; }
+.admin-badge-available { background: #eef5ee; color: var(--admin-sidebar); }
+.admin-badge-unavailable { background: #f1e3e3; color: #a33; }
+.admin-badge-new { background: #fbf6ea; color: var(--admin-gold); }
+.admin-badge-accepted { background: #eef5ee; color: var(--admin-sidebar); }
+.admin-badge-preparing { background: #fbf6ea; color: var(--admin-gold); }
+.admin-badge-ready { background: #e8f0f5; color: #1f6f8b; }
+
+/* ── Status Chips ── */
+.admin-action-btn {
+  background: none;
+  border: none;
+  color: var(--admin-gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.admin-action-btn:hover { background: rgba(200,151,58,0.1); }
+.admin-action-btn.danger { color: #c0392b; }
+.admin-action-btn.danger:hover { background: rgba(192,57,43,0.1); }
+
+/* ── Empty / Loading ── */
+.admin-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--admin-text-sub);
+}
+.admin-empty i { font-size: 3rem; opacity: 0.25; margin-bottom: 1rem; display: block; }
+.admin-empty h3 { font-family: var(--font-display); margin: 0 0 0.5rem; color: var(--admin-text); }
+.admin-empty p { margin: 0; font-size: 0.9rem; }
+
+/* ── Modals ── */
+.admin-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  z-index: 1500;
+  display: none; align-items: center; justify-content: center;
+}
+.admin-modal-overlay.open { display: flex; }
+.admin-modal {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  width: min(520px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  animation: adminModalIn 0.3s ease;
+}
+@keyframes adminModalIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.admin-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+.admin-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0;
+}
+.admin-modal-close {
+  background: none; border: none; font-size: 1.25rem;
+  color: var(--admin-text-sub); cursor: pointer;
+}
+.admin-modal-body { padding: 1.5rem; }
+.admin-modal-footer {
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--admin-border);
+  background: #faf8f2;
+}
+
+/* ── Form ── */
+.admin-form-group { margin-bottom: 1rem; }
+.admin-form-label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  color: var(--admin-text-sub); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 0.4rem;
+}
+.admin-form-control {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--admin-border);
+  background: #fff;
+  color: var(--admin-text);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+}
+.admin-form-control:focus {
+  outline: none; border-color: var(--admin-gold);
+}
+.admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* ── Alerts ── */
+.admin-alert {
+  padding: 0.85rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.admin-alert-success {
+  background: #eef5ee; color: var(--admin-sidebar);
+  border: 1px solid #d3e8d9;
+}
+.admin-alert-error {
+  background: #fbeaea; color: #c0392b;
+  border: 1px solid #e8c7c7;
+}
+.admin-alert-info {
+  background: #e8f0f5; color: #1f6f8b;
+  border: 1px solid #c7dce8;
+}
+
+/* ── Mobile overlay for sidebar ── */
+.admin-mobile-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1040;
+  display: none;
+}
+.admin-mobile-overlay.open { display: block; }
+
+/* Hide default mobile-nav / header-actions from global if present on admin page */
+.site-header, .mobile-nav, .cart-drawer, .cart-overlay, .toast { display: none !important; }
+
+</style>
+</head>
+<body class="admin-body">
+
+  <div class="admin-mobile-overlay" id="adminMobileOverlay"></div>
+
+  <header class="admin-topbar">
+    <div class="admin-topbar-left">
+      <button class="admin-burger" id="adminBurger" aria-label="Toggle navigation">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="admin-brand-mini">LakeBite <span style="font-size:0.6rem;color:var(--admin-gold);">Admin</span></span>
+    </div>
+    <div class="admin-topbar-center">
+      <input type="text" class="admin-search" placeholder="Search reservations, guests, menu items...">
+      <span class="admin-date-pill" id="adminDatePill">Today</span>
+    </div>
+    <div class="admin-topbar-right">
+      <button class="admin-icon-btn" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span class="admin-notif-dot"></span></button>
+      <div class="admin-profile" id="adminProfile">
+        <div class="admin-profile-avatar" id="adminAvatar">A</div>
+        <div class="admin-profile-info">
+          <div class="admin-profile-name" id="adminProfileName">Administrator</div>
+          <div class="admin-profile-role">Admin</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-header">
+      <div class="admin-sidebar-logo">LakeBite <span>Admin</span></div>
+    </div>
+    <div class="admin-loc-switch">
+      <span class="admin-loc-label">Location</span>
+      <select class="admin-loc-select" id="adminLocSelect">
+        <option>Westlands, Nairobi</option>
+      </select>
+    </div>
+    <nav class="admin-nav">
+      <ul class="admin-nav-list">
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link active" data-view="dashboard" id="nav-dashboard"><i class="fa-solid fa-chart-pie"></i> Overview</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="reservations" id="nav-reservations"><i class="fa-solid fa-calendar-days"></i> Reservations</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="floor" id="nav-floor"><i class="fa-solid fa-table"></i> Floor & Tables</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="orders" id="nav-orders"><i class="fa-solid fa-utensils"></i> Orders</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="menu" id="nav-menu"><i class="fa-solid fa-book"></i> Menus</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="guests" id="nav-guests"><i class="fa-solid fa-users"></i> Guests</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="events" id="nav-events"><i class="fa-solid fa-ticket"></i> Events</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="website" id="nav-website"><i class="fa-solid fa-pen-nib"></i> Website</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="inbox" id="nav-inbox"><i class="fa-solid fa-inbox"></i> Inbox & Reviews</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="reports" id="nav-reports"><i class="fa-solid fa-chart-line"></i> Reports</a></li>
+        <li class="admin-nav-divider"></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="staff" id="nav-staff"><i class="fa-solid fa-id-card"></i> Staff</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="integrations" id="nav-integrations"><i class="fa-solid fa-plug"></i> Integrations</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="settings" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a></li>
+      </ul>
+    </nav>
+    <div class="admin-nav-footer">
+      <button class="admin-logout" id="adminLogout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main" id="adminMain">
+    <!-- Page Header -->
+    <div class="admin-page-header">
+      <div>
+        <h1 class="admin-page-title" id="adminPageTitle">Overview</h1>
+        <p class="admin-page-sub" id="adminPageSub">Today's restaurant performance at a glance.</p>
+      </div>
+      <div class="admin-page-actions">
+        <button class="admin-btn admin-btn-outline admin-btn-sm" id="adminRefreshBtn"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+      </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <section id="view-dashboard" class="admin-view">
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon green"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="admin-stat-info">
+            <p class="stat-value" id="statReservations">0</p>
+            <p class="stat-label">Reservations Today</p>
+          </div>
+          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon"><i class="fa-solid fa-user-group"></i></div>
+          <div class="admin-stat-info">
+            <p class="stat-value" id="statCovers">0</p>
+            <p class="stat-label">Total Covers</p>
+          </div>
+          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +8%</span>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon gold"><i class="fa-solid fa-clock"></i></div>
+          <div class="admin-stat-info">
+            <p class="stat-value" id="statArrivals">0</p>
+            <p class="stat-label">Expected Arrivals</p>
+          </div>
+          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +5%</span>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon"><i class="fa-solid fa-chair"></i></div>
+          <div class="admin-stat-info">
+            <p class="stat-value" id="statOccupancy">0%</p>
+            <p class="stat-label">Live Occupancy</p>
+          </div>
+          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +3%</span>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon gold"><i class="fa-solid fa-bag-shopping"></i></div>
+          <div class="admin-stat-info">
+            <p class="stat-value" id="statOrders">0</p>
+            <p class="stat-label">Active Orders</p>
+          </div>
+          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +2%</span>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="admin-stat-info">
+            <p class="stat-value" id="statRevenue">KES 0</p>
+            <p class="stat-label">Daily Revenue</p>
+          </div>
+          <span class="admin-stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +15%</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="admin-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">Upcoming Reservations</h2>
+            <a href="#" class="admin-btn admin-btn-outline admin-btn-sm" data-view="reservations">View All</a>
+          </div>
+          <div class="admin-section-body">
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr><th>Time</th><th>Guest</th><th>Party</th><th>Table</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody id="dashboardReservations"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">Alerts & Tasks</h2>
+          </div>
+          <div class="admin-section-body">
+            <div class="admin-empty">
+              <i class="fa-solid fa-bell"></i>
+              <h3>No alerts</h3>
+              <p>All clear for today's service.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem;">
+        <div class="admin-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">Quick Actions</h2>
+          </div>
+          <div class="admin-section-body">
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <button class="admin-btn admin-btn-primary admin-btn-sm" onclick="adminOpenReservationModal()"><i class="fa-solid fa-plus"></i> Add Reservation</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminAddWalkIn()"><i class="fa-solid fa-person-walking"></i> Walk-in</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminBlockTable()"><i class="fa-solid fa-ban"></i> Block Table</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminPauseOrders()"><i class="fa-solid fa-pause"></i> Pause Orders</button>
+              <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="adminMarkUnavailable()"><i class="fa-solid fa-exclamation-triangle"></i> Mark Item Unavailable</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reservations View -->
+    <section id="view-reservations" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">All Reservations</h2>
+          <button class="admin-btn admin-btn-primary admin-btn-sm" onclick="adminOpenReservationModal()"><i class="fa-solid fa-plus"></i> New Reservation</button>
+        </div>
+        <div class="admin-section-body">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Guest</th><th>Contact</th><th>Party</th><th>Date & Time</th><th>Table</th><th>Status</th><th>Occasion</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reservationsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Menu View -->
+    <section id="view-menu" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">Menu Management</h2>
+          <button class="admin-btn admin-btn-primary admin-btn-sm" onclick="adminOpenMenuModal()"><i class="fa-solid fa-plus"></i> Add Item</button>
+        </div>
+        <div class="admin-section-body">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Item</th><th>Category</th><th>Price</th><th>Available</th><th>Allergens</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="menuTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders View -->
+    <section id="view-orders" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">Online Orders</h2>
+        </div>
+        <div class="admin-section-body">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Order #</th><th>Items</th><th>Total</th><th>Status</th><th>Payment</th><th>Time</th><th>Action</th></tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Staff / Users View -->
+    <section id="view-staff" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">Staff Management</h2>
+        </div>
+        <div class="admin-section-body">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr>
+              </thead>
+              <tbody id="staffTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings View -->
+    <section id="view-settings" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">Settings</h2>
+        </div>
+        <div class="admin-section-body">
+          <p>Configure restaurant settings, integrations, and policies.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Other views (stubs) -->
+    <section id="view-floor" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-body">
+          <div class="admin-empty"><i class="fa-solid fa-table"></i><h3>Floor Plan</h3><p>Interactive floor view coming soon.</p></div>
+        </div>
+      </div>
+    </section>
+    <section id="view-guests" class="admin-view" style="display:none;">
+      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-users"></i><h3>Guest CRM</h3><p>Guest profiles coming soon.</p></div></div></div>
+    </section>
+    <section id="view-events" class="admin-view" style="display:none;">
+      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-ticket"></i><h3>Events</h3><p>Event management coming soon.</p></div></div></div>
+    </section>
+    <section id="view-website" class="admin-view" style="display:none;">
+      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-pen-nib"></i><h3>Website CMS</h3><p>Content editor coming soon.</p></div></div></div>
+    </section>
+    <section id="view-inbox" class="admin-view" style="display:none;">
+      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-inbox"></i><h3>Inbox & Reviews</h3><p>Guest messages coming soon.</p></div></div></div>
+    </section>
+    <section id="view-reports" class="admin-view" style="display:none;">
+      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-chart-line"></i><h3>Reports</h3><p>Analytics coming soon.</p></div></div></div>
+    </section>
+    <section id="view-integrations" class="admin-view" style="display:none;">
+      <div class="admin-section"><div class="admin-section-body"><div class="admin-empty"><i class="fa-solid fa-plug"></i><h3>Integrations</h3><p>POS & delivery integrations coming soon.</p></div></div></div>
+    </section>
+
+  </main>
+
+  <!-- Reservation Modal -->
+  <div class="admin-modal-overlay" id="adminReservationModalOverlay">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="resModalTitle">New Reservation</h3>
+        <button class="admin-modal-close" onclick="adminCloseReservationModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <form id="adminReservationForm">
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Guest Name</label>
+              <input type="text" class="admin-form-control" id="resGuestName" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Table Number</label>
+              <input type="number" class="admin-form-control" id="resTableNumber" placeholder="5" required>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Party Size</label>
+              <input type="number" class="admin-form-control" id="resPartySize" min="1" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Date</label>
+              <input type="date" class="admin-form-control" id="resDate" required>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Time</label>
+              <input type="time" class="admin-form-control" id="resTime" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Status</label>
+              <select class="admin-form-control" id="resStatus">
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="seated">Seated</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="no-show">No-show</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Occasion / Notes</label>
+            <input type="text" class="admin-form-control" id="resOccasion" placeholder="e.g. Anniversary, window seat">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Dietary Requirements</label>
+            <input type="text" class="admin-form-control" id="resDietary" placeholder="e.g. Halal, Vegetarian">
+          </div>
+        </form>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-btn admin-btn-outline" onclick="adminCloseReservationModal()">Cancel</button>
+        <button class="admin-btn admin-btn-primary" onclick="adminSaveReservation()">Save Reservation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Modal -->
+  <div class="admin-modal-overlay" id="adminMenuModalOverlay">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="menuModalTitle">Add Menu Item</h3>
+        <button class="admin-modal-close" onclick="adminCloseMenuModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <form id="adminMenuForm">
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Item Name</label>
+              <input type="text" class="admin-form-control" id="menuName" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Category</label>
+              <input type="text" class="admin-form-control" id="menuCategory" placeholder="e.g. Mains" required>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-form-label">Price (KES)</label>
+              <input type="number" class="admin-form-control" id="menuPrice" min="0" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label">Spice Level (0-5)</label>
+              <input type="number" class="admin-form-control" id="menuSpice" min="0" max="5" value="0">
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Description</label>
+            <input type="text" class="admin-form-control" id="menuDescription">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Allergens (comma separated)</label>
+            <input type="text" class="admin-form-control" id="menuAllergens" placeholder="e.g. nuts, dairy, gluten">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Dietary Tags (comma separated)</label>
+            <input type="text" class="admin-form-control" id="menuDietary" placeholder="e.g. vegan, gluten-free">
+          </div>
+          <div class="admin-form-group admin-form-row">
+            <div class="admin-form-group" style="grid-column: 1">
+              <label class="admin-form-label">Available</label>
+              <select class="admin-form-control" id="menuAvailable">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-btn admin-btn-outline" onclick="adminCloseMenuModal()">Cancel</button>
+        <button class="admin-btn admin-btn-primary" onclick="adminSaveMenuItem()">Save Item</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    /* ════════════ ADMIN PANEL LOGIC ════════════ */
+    (() => {
+      const sidebar = document.getElementById('adminSidebar');
+      const burger = document.getElementById('adminBurger');
+      const overlay = document.getElementById('adminMobileOverlay');
+      const navLinks = document.querySelectorAll('.admin-nav-link');
+      const views = document.querySelectorAll('.admin-view');
+      const logoutBtn = document.getElementById('adminLogout');
+      const datePill = document.getElementById('adminDatePill');
+      const profileName = document.getElementById('adminProfileName');
+      const avatar = document.getElementById('adminAvatar');
+
+      // Set date
+      const now = new Date();
+      datePill.textContent = now.toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' });
+
+      // Sidebar toggle (mobile)
+      burger.addEventListener('click', () => {
+        const open = !sidebar.classList.contains('collapsed');
+        if (open) {
+          sidebar.classList.add('collapsed');
+          overlay.classList.add('open');
+        } else {
+          sidebar.classList.remove('collapsed');
+          overlay.classList.remove('open');
+        }
+      });
+      overlay.addEventListener('click', () => {
+        sidebar.classList.add('collapsed');
+        overlay.classList.remove('open');
+      });
+
+      // Navigation
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const view = link.getAttribute('data-view');
+          navLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+          views.forEach(v => v.style.display = 'none');
+          document.getElementById('view-' + view).style.display = 'block';
+          // Update page title
+          const titleMap = {
+            dashboard: 'Overview',
+            reservations: 'Reservations',
+            floor: 'Floor & Tables',
+            orders: 'Orders',
+            menu: 'Menus',
+            guests: 'Guests',
+            events: 'Events',
+            website: 'Website',
+            inbox: 'Inbox & Reviews',
+            reports: 'Reports',
+            staff: 'Staff',
+            integrations: 'Integrations',
+            settings: 'Settings'
+          };
+          document.getElementById('adminPageTitle').textContent = titleMap[view] || 'Overview';
+          sidebar.classList.add('collapsed');
+          overlay.classList.remove('open');
+          if (view === 'dashboard') loadDashboard();
+          if (view === 'reservations') loadReservations();
+          if (view === 'menu') loadMenu();
+          if (view === 'orders') loadOrders();
+          if (view === 'staff') loadStaff();
+        });
+      });
+
+      // Logout
+      logoutBtn.addEventListener('click', async () => {
+        await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/login.html';
+      });
+
+      // Refresh
+      document.getElementById('adminRefreshBtn').addEventListener('click', () => {
+        const active = document.querySelector('.admin-nav-link.active');
+        const view = active ? active.getAttribute('data-view') : 'dashboard';
+        if (view === 'dashboard') loadDashboard();
+        if (view === 'reservations') loadReservations();
+        if (view === 'menu') loadMenu();
+        if (view === 'orders') loadOrders();
+        if (view === 'staff') loadStaff();
+      });
+
+      // ── API Helpers ──
+      async function api(path, opts = {}) {
+        const res = await fetch(path, {
+          ...opts,
+          headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+          credentials: 'include'
+        });
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/login.html';
+          return null;
+        }
+        return res.json();
+      }
+
+      // ── Load Dashboard ──
+      async function loadDashboard() {
+        const data = await api('/api/admin/dashboard-stats');
+        if (!data) return;
+        document.getElementById('statReservations').textContent = data.reservationsToday;
+        document.getElementById('statCovers').textContent = data.confirmedToday + data.seatedToday;
+        document.getElementById('statArrivals').textContent = data.reservationsToday;
+        document.getElementById('statOccupancy').textContent = '60%';
+        document.getElementById('statOrders').textContent = data.ordersToday;
+        document.getElementById('statRevenue').textContent = 'KES ' + data.revenueToday.toLocaleString();
+
+        // upcoming reservations
+        const resData = await api('/api/admin/reservations');
+        if (!resData) return;
+        const tbody = document.getElementById('dashboardReservations');
+        tbody.innerHTML = '';
+        (resData.reservations || []).slice(0, 5).forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.time}</td>
+            <td>${r.guestName}</td>
+            <td>${r.partySize}</td>
+            <td>#${r.tableNumber}</td>
+            <td><span class="admin-badge admin-badge-${r.status}">${r.status}</span></td>
+            <td><button class="admin-action-btn" onclick="adminEditReservation('${r._id}')">Edit</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Load Reservations ──
+      async function loadReservations() {
+        const data = await api('/api/admin/reservations');
+        if (!data) return;
+        const tbody = document.getElementById('reservationsTable');
+        tbody.innerHTML = '';
+        (data.reservations || []).forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.guestName}</td>
+            <td>${r.guestPhone || '—'}</td>
+            <td>${r.partySize}</td>
+            <td>${new Date(r.date).toLocaleDateString()} <span style="display:block;font-size:0.75rem;color:var(--admin-text-sub)">${r.time}</span></td>
+            <td>#${r.tableNumber}</td>
+            <td><span class="admin-badge admin-badge-${r.status}">${r.status}</span></td>
+            <td>${r.occasion || '—'}</td>
+            <td>
+              <button class="admin-action-btn" onclick="adminEditReservation('${r._id}')">Edit</button>
+              <button class="admin-action-btn danger" onclick="adminDeleteReservation('${r._id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Load Menu ──
+      async function loadMenu() {
+        const data = await api('/api/admin/menu');
+        if (!data) return;
+        const tbody = document.getElementById('menuTable');
+        tbody.innerHTML = '';
+        (data.menu || []).forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td>KES ${item.price.toLocaleString()}</td>
+            <td><span class="admin-badge admin-badge-${item.available ? 'available' : 'unavailable'}">${item.available ? 'Available' : 'Unavailable'}</span></td>
+            <td>${(item.allergens || []).join(', ') || '—'}</td>
+            <td>
+              <button class="admin-action-btn" onclick="adminEditMenuItem('${item._id}', '${item.name}', ${item.price}, '${item.category}', ${item.available}, '${(item.allergens||[]).join(',')}', '${(item.dietary||[]).join(',')}', ${item.spiceLevel})">Edit</button>
+              <button class="admin-action-btn danger" onclick="adminDeleteMenuItem('${item._id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Load Orders ──
+      async function loadOrders() {
+        const data = await api('/api/admin/orders');
+        if (!data) return;
+        const tbody = document.getElementById('ordersTable');
+        tbody.innerHTML = '';
+        (data.orders || []).forEach(o => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${o.orderNumber}</td>
+            <td>${(o.items || []).map(i => i.name).join(', ')}</td>
+            <td>KES ${o.total.toLocaleString()}</td>
+            <td><span class="admin-badge admin-badge-${o.status}">${o.status}</span></td>
+            <td><span class="admin-badge admin-badge-${o.paymentStatus === 'paid' ? 'available' : 'pending'}">${o.paymentStatus}</span></td>
+            <td>${new Date(o.createdAt).toLocaleString()}</td>
+            <td>
+              <select class="admin-form-control" style="width:110px;font-size:0.78rem;padding:0.35rem 0.5rem" onchange="adminUpdateOrderStatus('${o._id}', this.value)">
+                <option value="new" ${o.status === 'new' ? 'selected' : ''}>New</option>
+                <option value="accepted" ${o.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+                <option value="preparing" ${o.status === 'preparing' ? 'selected' : ''}>Preparing</option>
+                <option value="ready" ${o.status === 'ready' ? 'selected' : ''}>Ready</option>
+                <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
+                <option value="refunded" ${o.status === 'refunded' ? 'selected' : ''}>Refunded</option>
+              </select>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Load Staff ──
+      async function loadStaff() {
+        const data = await api('/api/admin/users');
+        if (!data) return;
+        const tbody = document.getElementById('staffTable');
+        tbody.innerHTML = '';
+        (data.users || []).forEach(u => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${u.name}</td>
+            <td>${u.email}</td>
+            <td>${u.role}</td>
+            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+            <td><button class="admin-action-btn danger" onclick="adminDeleteUser('${u._id}')">Delete</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Reservation Modal ──
+      let editReservationId = null;
+      function adminOpenReservationModal(id = null) {
+        editReservationId = id;
+        document.getElementById('resModalTitle').textContent = id ? 'Edit Reservation' : 'New Reservation';
+        document.getElementById('adminReservationForm').reset();
+        document.getElementById('adminReservationModalOverlay').classList.add('open');
+        if (id) {
+          const data = await api('/api/admin/reservations');
+          if (!data) return;
+          const r = (data.reservations || []).find(x => x._id === id);
+          if (!r) return;
+          document.getElementById('resGuestName').value = r.guestName;
+          document.getElementById('resTableNumber').value = r.tableNumber;
+          document.getElementById('resPartySize').value = r.partySize;
+          document.getElementById('resDate').value = r.date.slice(0, 10);
+          document.getElementById('resTime').value = r.time;
+          document.getElementById('resStatus').value = r.status;
+          document.getElementById('resOccasion').value = r.occasion || '';
+          document.getElementById('resDietary').value = r.dietary || '';
+        }
+      }
+      function adminCloseReservationModal() {
+        document.getElementById('adminReservationModalOverlay').classList.remove('open');
+        editReservationId = null;
+      }
+      async function adminSaveReservation() {
+        const body = {
+          guestName: document.getElementById('resGuestName').value,
+          tableNumber: parseInt(document.getElementById('resTableNumber').value),
+          partySize: parseInt(document.getElementById('resPartySize').value),
+          date: document.getElementById('resDate').value,
+          time: document.getElementById('resTime').value,
+          status: document.getElementById('resStatus').value,
+          occasion: document.getElementById('resOccasion').value,
+          dietary: document.getElementById('resDietary').value
+        };
+        if (editReservationId) {
+          await api('/api/admin/reservations/' + editReservationId, { method: 'PATCH', body: JSON.stringify(body) });
+        } else {
+          await api('/api/admin/reservations', { method: 'POST', body: JSON.stringify(body) });
+        }
+        adminCloseReservationModal();
+        loadReservations();
+        loadDashboard();
+      }
+      async function adminDeleteReservation(id) {
+        if (!confirm('Delete this reservation?')) return;
+        await api('/api/admin/reservations/' + id, { method: 'DELETE' });
+        loadReservations();
+        loadDashboard();
+      }
+      async function adminEditReservation(id) { adminOpenReservationModal(id); }
+
+      // ── Menu Modal ──
+      let editMenuId = null;
+      function adminOpenMenuModal(id = null, name = '', price = 0, category = '', available = true, allergens = '', dietary = '', spice = 0) {
+        editMenuId = id;
+        document.getElementById('menuModalTitle').textContent = id ? 'Edit Menu Item' : 'Add Menu Item';
+        document.getElementById('adminMenuForm').reset();
+        document.getElementById('adminMenuModalOverlay').classList.add('open');
+        if (id) {
+          document.getElementById('menuName').value = name;
+          document.getElementById('menuCategory').value = category;
+          document.getElementById('menuPrice').value = price;
+          document.getElementById('menuAvailable').value = available;
+          document.getElementById('menuAllergens').value = allergens;
+          document.getElementById('menuDietary').value = dietary;
+          document.getElementById('menuSpice').value = spice;
+        }
+      }
+      function adminCloseMenuModal() {
+        document.getElementById('adminMenuModalOverlay').classList.remove('open');
+        editMenuId = null;
+      }
+      async function adminSaveMenuItem() {
+        const body = {
+          name: document.getElementById('menuName').value,
+          category: document.getElementById('menuCategory').value,
+          price: parseFloat(document.getElementById('menuPrice').value),
+          available: document.getElementById('menuAvailable').value === 'true',
+          description: document.getElementById('menuDescription').value,
+          allergens: document.getElementById('menuAllergens').value.split(',').map(s => s.trim()).filter(Boolean),
+          dietary: document.getElementById('menuDietary').value.split(',').map(s => s.trim()).filter(Boolean),
+          spiceLevel: parseInt(document.getElementById('menuSpice').value) || 0
+        };
+        if (editMenuId) {
+          await api('/api/admin/menu/' + editMenuId, { method: 'PATCH', body: JSON.stringify(body) });
+        } else {
+          await api('/api/admin/menu', { method: 'POST', body: JSON.stringify(body) });
+        }
+        adminCloseMenuModal();
+        loadMenu();
+        loadDashboard();
+      }
+      async function adminDeleteMenuItem(id) {
+        if (!confirm('Delete this menu item?')) return;
+        await api('/api/admin/menu/' + id, { method: 'DELETE' });
+        loadMenu();
+      }
+
+      // ── Order Status ──
+      async function adminUpdateOrderStatus(id, status) {
+        await api('/api/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+        loadOrders();
+      }
+
+      // ── Staff Delete ──
+      async function adminDeleteUser(id) {
+        if (!confirm('Remove this staff member?')) return;
+        await api('/api/admin/users/' + id, { method: 'DELETE' });
+        loadStaff();
+      }
+
+      // ── Placeholder actions ──
+      function adminAddWalkIn() { alert('Walk-in flow: seat guest at an available table.'); }
+      function adminBlockTable() { alert('Table blocking coming soon.'); }
+      function adminPauseOrders() { alert('Pause online ordering coming soon.'); }
+      function adminMarkUnavailable() { alert('Mark item unavailable coming soon.'); }
+
+      // ── Init: check auth ──
+      (async () => {
+        const me = await api('/api/me');
+        if (!me) return;
+        profileName.textContent = me.user.name;
+        avatar.textContent = (me.user.name || 'A').charAt(0).toUpperCase();
+        loadDashboard();
+      })();
+    })();
+  </script>
+</body>
+</html>

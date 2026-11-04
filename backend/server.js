@@ -13,7 +13,8 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.static(__dirname));
+
+app.get('/api/admin/test-ping', (req, res) => { res.json({ ok: true, time: Date.now() }); });
 
 const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 20 });
 
@@ -137,7 +138,7 @@ async function logAudit(actor, action, endpoint, details) {
 }
 
 // ── Dashboard stats ──
-app.get('/api/admin/stats', auth, adminOnly, async (req, res) => {
+app.get('/api/admin/dashboard-stats', auth, adminOnly, async (req, res) => {
   const today = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
   const reservations = await Reservation.find({ date: { $gte: today, $lt: tomorrow } });
@@ -218,6 +219,8 @@ app.get('/api/admin/audit-logs', auth, adminOnly, async (req, res) => {
   const logs = await AuditLog.find().sort({ timestamp: -1 }).limit(100);
   res.json({ logs });
 });
+
+app.use(express.static(__dirname));
 
 app.get('/admin', (req, res) => res.sendFile(__dirname + '/admin.html'));
 app.get('/login', (req, res) => res.sendFile(__dirname + '/login.html'));
