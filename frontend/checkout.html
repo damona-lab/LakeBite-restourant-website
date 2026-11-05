@@ -32,19 +32,24 @@
     .checkout-steps .current{color:var(--clr-primary);font-weight:600}
     .checkout-steps .current b{background:var(--clr-gold)}
     .checkout-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.75fr);gap:clamp(1.25rem,3vw,2.4rem);align-items:start}
-    .checkout-panel,.checkout-summary{background:var(--clr-card);border:1px solid var(--clr-border);border-radius:20px;box-shadow:0 14px 45px rgba(22,42,30,.08)}
+    .checkout-panel,.checkout-summary{background:var(--clr-card);border:1px solid color-mix(in srgb,var(--clr-primary) 12%,var(--clr-border));border-radius:20px;box-shadow:0 14px 45px rgba(22,42,30,.08)}
     [data-theme="dark"] .checkout-panel,[data-theme="dark"] .checkout-summary{box-shadow:0 14px 45px rgba(0,0,0,.2)}
-    .checkout-panel{padding:clamp(1.2rem,3vw,2rem)}
-    .checkout-panel h2,.checkout-summary h2{font-size:1.5rem;margin-bottom:1.2rem}
-    .checkout-panel h2::after,.checkout-summary h2::after{content:"";display:block;width:42px;height:2px;margin-top:.65rem;background:var(--clr-gold)}
-    .checkout-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem .8rem;max-width:680px}
-    .checkout-fields .admin-form-group{margin:0 0 .35rem}
+    .checkout-panel{padding:clamp(1.25rem,3vw,2.1rem)}
+    .checkout-panel h2,.checkout-summary h2{font-size:1.5rem;margin-bottom:1.2rem;color:var(--clr-primary)}
+    [data-theme="dark"] .checkout-panel h2,[data-theme="dark"] .checkout-summary h2{color:var(--clr-text)}
+    .checkout-panel h2::after,.checkout-summary h2::after{content:"";display:block;width:42px;height:2px;margin-top:.65rem;background:linear-gradient(90deg,var(--clr-gold),var(--clr-gold-lt))}
+    .checkout-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.15rem;max-width:700px}
+    .checkout-fields .admin-form-group{min-width:0;margin:0}
     .checkout-fields .wide{grid-column:1/-1}
-    .checkout-fields label{display:block;margin-bottom:.35rem;font-size:.73rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--clr-text-sub)}
-    .checkout-fields input,.checkout-fields select,.checkout-fields textarea{width:100%;padding:.68rem .8rem;border:1px solid var(--clr-border);border-radius:8px;background:var(--clr-bg);color:var(--clr-text);font-size:.9rem;transition:border-color var(--transition),box-shadow var(--transition),background var(--transition)}
+    .checkout-fields label{display:flex;align-items:center;gap:.35rem;margin-bottom:.45rem;font-size:.76rem;font-weight:600;letter-spacing:.045em;text-transform:uppercase;color:var(--clr-primary)}
+    [data-theme="dark"] .checkout-fields label{color:var(--clr-gold-lt)}
+    .checkout-fields input,.checkout-fields select,.checkout-fields textarea{display:block;width:100%;min-width:0;padding:.72rem .85rem;border:1px solid color-mix(in srgb,var(--clr-primary) 18%,var(--clr-border));border-radius:9px;background:color-mix(in srgb,var(--clr-primary) 3%,var(--clr-bg2));color:var(--clr-text);font-size:.9rem;line-height:1.4;transition:border-color var(--transition),box-shadow var(--transition),background var(--transition)}
     .checkout-fields input::placeholder,.checkout-fields textarea::placeholder{color:var(--clr-text-sub);opacity:.65}
-    .checkout-fields input:focus,.checkout-fields select:focus,.checkout-fields textarea:focus{outline:none;border-color:var(--clr-gold);background:var(--clr-bg2);box-shadow:0 0 0 4px rgba(200,151,58,.13)}
-    .checkout-fields textarea{min-height:76px;resize:vertical}
+    .checkout-fields input:focus,.checkout-fields select:focus,.checkout-fields textarea:focus{outline:none;border-color:var(--clr-gold);background:var(--clr-bg2);box-shadow:0 0 0 4px rgba(200,151,58,.16)}
+    .checkout-fields textarea{min-height:82px;resize:vertical}
+    .checkout-fields select{min-height:44px;cursor:pointer}
+    .checkout-fields input:focus-visible,.checkout-fields select:focus-visible,.checkout-fields textarea:focus-visible{outline:3px solid rgba(200,151,58,.2);outline-offset:1px}
+    .checkout-fields .wide textarea{min-height:76px}
     .checkout-summary{padding:1.7rem;position:sticky;top:2rem;overflow:hidden}
     .checkout-summary::before{content:"";display:block;height:4px;position:absolute;top:0;left:0;right:0;background:linear-gradient(90deg,var(--clr-primary),var(--clr-gold-lt))}
     .checkout-items{display:grid;gap:.8rem;list-style:none;padding:0;margin:0 0 1.2rem}
@@ -55,7 +60,8 @@
     .checkout-submit{width:100%;max-width:680px;justify-content:center;margin-top:1.25rem;min-height:48px;border-radius:7px}
     .checkout-pause-message{padding:.9rem 1rem;background:rgba(200,151,58,.12);border:1px solid rgba(200,151,58,.25);border-radius:10px;margin-bottom:1rem;color:var(--clr-text)}
     #checkoutError{color:#c0392b;margin-top:1rem}
-    @media(max-width:760px){.checkout-page{padding-top:1.5rem}.checkout-top{margin-bottom:2rem}.checkout-layout{grid-template-columns:1fr}.checkout-summary{position:static;grid-row:1}.checkout-fields{grid-template-columns:1fr;max-width:none}.checkout-fields .wide{grid-column:auto}.checkout-submit{max-width:none}}
+    @media(max-width:760px){.checkout-page{padding-top:1.5rem}.checkout-top{margin-bottom:2rem}.checkout-layout{grid-template-columns:1fr}.checkout-summary{position:static;grid-row:1}.checkout-fields{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;gap:.85rem}.checkout-fields .wide{grid-column:1/-1}.checkout-submit{max-width:none}}
+    @media(max-width:520px){.checkout-fields{grid-template-columns:1fr}.checkout-fields .wide{grid-column:auto}}
     @media(max-width:420px){.checkout-top .logo{font-size:1.35rem}.checkout-top .logo span{display:none}}
     @media(max-width:600px){.checkout-top{align-items:flex-start;gap:1rem;flex-direction:column}.checkout-nav{width:100%;justify-content:flex-start}.checkout-nav a{flex:1;padding:.65rem .55rem;font-size:.74rem;white-space:nowrap}}
   </style>
@@ -73,7 +79,7 @@
             <div class="checkout-fields">
               <div class="admin-form-group wide"><label for="checkoutName">Name</label><input id="checkoutName" name="name" autocomplete="name" required maxlength="100"></div>
               <div class="admin-form-group"><label for="checkoutPhone">Phone</label><input id="checkoutPhone" name="phone" type="tel" autocomplete="tel" required maxlength="40"></div>
-              <div class="admin-form-group"><label for="checkoutEmail">Email (optional)</label><input id="checkoutEmail" name="email" type="email" autocomplete="email" maxlength="254"></div>
+              <div class="admin-form-group"><label for="checkoutEmail">Email address</label><input id="checkoutEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></div>
               <div class="admin-form-group wide"><label for="checkoutType">Fulfilment</label><select id="checkoutType" name="type"><option value="pickup">Pickup</option><option value="delivery">Delivery</option></select></div>
               <div class="admin-form-group wide" id="checkoutAddressGroup" hidden><label for="checkoutAddress">Delivery address</label><textarea id="checkoutAddress" name="address" maxlength="300"></textarea></div>
               <div class="admin-form-group wide"><label for="checkoutNotes">Order notes (optional)</label><textarea id="checkoutNotes" name="notes" maxlength="500"></textarea></div>

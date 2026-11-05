@@ -24,10 +24,10 @@
           <li><a href="contact.html" class="nav-link active" data-scroll>Contact</a></li>
           <li class="nav-cta">
             <div class="user-account" id="userAccount">
-              <button class="user-account-btn" aria-label="Account">
+              <a href="login.html" class="user-account-btn" aria-label="Sign in">
                 <i class="fa-regular fa-user"></i>
-                <span class="user-name">Account</span>
-              </button>
+                <span class="user-name">Sign in</span>
+              </a>
               <div class="account-dropdown" id="accountDropdown">
                 <div class="dropdown-header">
                   <div class="avatar">U</div>
@@ -352,7 +352,9 @@
   <script src="script.js"></script>
   <script>
     document.getElementById('contactForm').addEventListener('submit', async event => {
-      event.preventDefault(); const form = event.currentTarget; if (!form.reportValidity()) return;
+      event.preventDefault(); const form = event.currentTarget;
+      if (!(await requireSignedIn('contact.html'))) return;
+      if (!form.reportValidity()) return;
       const values = id => document.getElementById(id).value, submit = form.querySelector('[type="submit"]'); submit.disabled = true;
       try {
         const response = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: values('c-name'), email: values('c-email'), phone: values('c-phone'), subject: values('c-subject'), message: values('c-message') }) });

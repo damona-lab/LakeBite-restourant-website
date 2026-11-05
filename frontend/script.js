@@ -185,7 +185,7 @@ function initCheckoutPage() {
     submit.disabled = true; submit.textContent = 'Placing order…'; error.hidden = true;
     const data = new FormData(form);
     try {
-      const response = await fetch('/api/orders', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerName: data.get('name'), customerPhone: data.get('phone'), customerEmail: data.get('email'), type: data.get('type'), deliveryAddress: data.get('address'), notes: data.get('notes'), paymentMethod: data.get('paymentMethod'), items: cart.map(item => ({ id: item.id, qty: item.qty })) }) });
+      const response = await fetch('/api/orders', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerName: data.get('name'), customerPhone: data.get('phone'), customerEmail: data.get('email'), type: data.get('type'), deliveryAddress: data.get('address'), notes: data.get('notes'), paymentMethod: data.get('paymentMethod'), items: cart.map(item => ({ id: item.id, name: item.name, qty: item.qty })) }) });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || 'Could not place order.');
       cart = []; saveCart(); updateCartUI();
@@ -337,8 +337,24 @@ const accountLogoutItem = document.getElementById('accountLogoutItem');
 const userDisplayName = document.querySelector('.user-display-name');
 const userDisplayEmail = document.querySelector('.user-display-email');
 
+// Keep the account control at the end of the header actions, immediately after the theme toggle.
+const themeToggle = document.querySelector('.header-actions .theme-btn');
+if (userAccount && themeToggle) {
+  themeToggle.after(userAccount);
+  userAccount.closest('.nav-cta')?.remove();
+}
+
 let currentUser = null;
 function isLoggedIn() { return !!currentUser; }
+
+async function requireSignedIn(returnPage) {
+  try {
+    const response = await fetch('/api/me', { credentials: 'include' });
+    if (response.ok) return true;
+  } catch { /* Treat an unavailable session check as signed out. */ }
+  location.href = `login.html?return=${encodeURIComponent(returnPage)}`;
+  return false;
+}
 
 async function loadUser() {
   try {
@@ -348,7 +364,8 @@ async function loadUser() {
       if (d.user) {
         currentUser = d.user;
         const name = d.user.name || d.user.email.split('@')[0];
-        if (userNameEl) userNameEl.textContent = name;
+        if (userNameEl) userNameEl.textContent = name.trim().split(/\s+/)[0];
+        if (userAccountBtn) userAccountBtn.setAttribute('aria-label', `Account menu for ${name}`);
         if (userDisplayName) userDisplayName.textContent = name;
         if (userDisplayEmail) userDisplayEmail.textContent = d.user.email;
       }
@@ -369,6 +386,18 @@ async function logout() {
 }
 function updateAuthUI() {
   const loggedIn = isLoggedIn();
+  document.querySelector('.site-header')?.classList.toggle('has-account', loggedIn);
+  if (userAccountBtn) {
+    if (loggedIn) {
+      userAccountBtn.href = '#';
+      userAccountBtn.setAttribute('aria-label', `Account menu for ${currentUser.name || 'you'}`);
+      if (userNameEl) userNameEl.textContent = (currentUser.name || 'Account').trim().split(/\s+/)[0];
+    } else {
+      userAccountBtn.href = 'login.html';
+      userAccountBtn.setAttribute('aria-label', 'Sign in');
+      if (userNameEl) userNameEl.textContent = 'Sign in';
+    }
+  }
 
   LOGIN_LINKS.forEach(link => {
     link.textContent = loggedIn ? 'Logout' : 'Login';
@@ -414,6 +443,8 @@ document.addEventListener('click', e => {
 if (userAccountBtn && accountDropdown) {
   userAccountBtn.addEventListener('click', e => {
     e.stopPropagation();
+    if (!isLoggedIn()) return;
+    e.preventDefault();
     accountDropdown.classList.toggle('open');
   });
 

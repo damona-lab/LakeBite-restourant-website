@@ -255,7 +255,7 @@ app.get('/api/menu', async (req, res, next) => {
   catch (error) { next(error); }
 });
 
-app.post('/api/reservations', authLimiter, async (req, res, next) => {
+app.post('/api/reservations', authLimiter, auth, async (req, res, next) => {
   try {
     const body = req.body || {};
     const guestName = String(body.guestName || '').trim().slice(0, 100);
@@ -323,7 +323,8 @@ app.post('/api/orders', async (req, res) => {
     if (operations?.value?.ordersPaused) return res.status(503).json({ error: 'Online ordering is paused. Please try again later.' });
     const { items = [], customerName, customerEmail, customerPhone, type = 'pickup', deliveryAddress = '', notes = '', paymentMethod = 'pay-on-delivery' } = req.body;
     if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Cart is empty' });
-    if (!customerName || !customerPhone) return res.status(400).json({ error: 'Name and phone are required' });
+    if (!customerName || !customerPhone || !customerEmail) return res.status(400).json({ error: 'Name, phone, and email are required' });
+    if (String(customerEmail).length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(customerEmail).trim())) return res.status(400).json({ error: 'Enter a valid email address' });
     if (!['pickup','delivery'].includes(type)) return res.status(400).json({ error: 'Invalid order type' });
     if (type === 'delivery' && !deliveryAddress) return res.status(400).json({ error: 'Delivery address required' });
     if (!['mpesa','pay-on-delivery'].includes(paymentMethod)) return res.status(400).json({ error: 'Invalid payment method' });
@@ -337,7 +338,10 @@ app.post('/api/orders', async (req, res) => {
       const qty = Number(it.qty);
       if (!Number.isInteger(qty) || qty < 1 || qty > 20) return res.status(400).json({ error: 'Item quantity must be between 1 and 20' });
       const catalogId = String(it.id || '').slice(0, 100);
-      const mi = await MenuItem.findOne({ catalogId });
+      const itemName = String(it.name || '').trim().slice(0, 120);
+      // Older/static homepage cards can use a different ID from the database catalog.
+      // Resolve those by the submitted display name, but always take price and availability from MongoDB.
+      const mi = await MenuItem.findOne({ $or: [{ catalogId }, ...(itemName ? [{ name: itemName }] : [])] });
       if (!mi) return res.status(400).json({ error: 'An item is no longer on the menu. Refresh the menu and try again.' });
       if (mi.available === false) return res.status(400).json({ error: `${mi.name} is currently unavailable` });
       validated.push({ id: mi.catalogId || String(mi._id), name: mi.name, price: mi.price, qty, img: mi.image || '' });
@@ -876,7 +880,7 @@ app.get('/api/admin/operations', auth, adminOnly, async (req, res, next) => { tr
 app.patch('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, new: true }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
 app.patch('/api/admin/menu/:id/availability', auth, authorize('admin','manager','kitchen'), async (req, res, next) => { try { if (typeof req.body.available !== 'boolean') return res.status(400).json({ error: 'Availability must be true or false.' }); const item = await MenuItem.findByIdAndUpdate(req.params.id, { available: req.body.available }, { new: true }); if (!item) return res.status(404).json({ error: 'Menu item not found' }); await logAudit(req.user.id, 'toggle_menu_availability', req.path, `${item.name}: ${item.available ? 'available' : 'sold out'}`); res.json({ item }); } catch (error) { next(error); } });
 
-app.post('/api/contact', authLimiter, [body('name').trim().isLength({ min: 1, max: 100 }), body('email').isEmail().normalizeEmail(), body('message').trim().isLength({ min: 1, max: 3000 }), validateRequest], async (req, res, next) => { try { const message = await ContactMessage.create({ name: req.body.name, email: req.body.email, phone: String(req.body.phone || '').slice(0,40), subject: String(req.body.subject || '').slice(0,120), message: req.body.message }); res.status(201).json({ ok: true, id: message.id }); } catch (error) { next(error); } });
+app.post('/api/contact', authLimiter, auth, [body('name').trim().isLength({ min: 1, max: 100 }), body('email').isEmail().normalizeEmail(), body('message').trim().isLength({ min: 1, max: 3000 }), validateRequest], async (req, res, next) => { try { const message = await ContactMessage.create({ name: req.body.name, email: req.body.email, phone: String(req.body.phone || '').slice(0,40), subject: String(req.body.subject || '').slice(0,120), message: req.body.message }); res.status(201).json({ ok: true, id: message.id }); } catch (error) { next(error); } });
 app.get('/api/admin/inbox', auth, authorize('admin','manager'), async (req, res, next) => { try { const filter = {}; if (req.query.q) { const q = String(req.query.q).slice(0,100); filter.$or = ['name','email','subject','message'].map(key => ({ [key]: { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } })); } res.json({ messages: await ContactMessage.find(filter).sort({ createdAt: -1 }).limit(200).lean() }); } catch (error) { next(error); } });
 app.patch('/api/admin/inbox/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { if (!['unread','read','archived'].includes(req.body.status)) return res.status(400).json({ error: 'Invalid message status' }); const message = await ContactMessage.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true }); if (!message) return res.status(404).json({ error: 'Message not found' }); res.json({ message }); } catch (error) { next(error); } });
 

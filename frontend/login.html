@@ -178,7 +178,10 @@
         const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
         const d=await r.json();
         if(!r.ok){ msg.textContent=d.error||'Unable to sign in.'; submitBtn.disabled=false; submitText.textContent=mode==='login'?'Sign In':'Create Account'; return; }
-        if(d.user && d.user.role==='admin') location.href='/admin'; else location.href='/';
+        const returnPage=new URLSearchParams(location.search).get('return');
+        if(d.user && d.user.role==='admin') location.href='/admin';
+        else if(['contact.html','reservation.html'].includes(returnPage)) location.href=returnPage;
+        else location.href='/';
       } catch (err) {
         msg.textContent='Network error. Please try again.';
         submitBtn.disabled=false;

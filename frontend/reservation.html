@@ -24,10 +24,10 @@
           <li><a href="contact.html" class="nav-link" data-scroll>Contact</a></li>
           <li class="nav-cta">
             <div class="user-account" id="userAccount">
-              <button class="user-account-btn" aria-label="Account">
+              <a href="login.html" class="user-account-btn" aria-label="Sign in">
                 <i class="fa-regular fa-user"></i>
-                <span class="user-name">Account</span>
-              </button>
+                <span class="user-name">Sign in</span>
+              </a>
               <div class="account-dropdown" id="accountDropdown">
                 <div class="dropdown-header">
                   <div class="avatar">U</div>
@@ -348,7 +348,9 @@
       for (const table of tables) { const option = document.createElement('option'); option.value = table.number; option.textContent = `Table ${table.number} · ${table.section} · ${table.seats} seats`; tableSelect.appendChild(option); }
     }).catch(() => {});
     reservationForm.addEventListener('submit', async event => {
-      event.preventDefault(); if (!reservationForm.reportValidity()) return;
+      event.preventDefault();
+      if (!(await requireSignedIn('reservation.html'))) return;
+      if (!reservationForm.reportValidity()) return;
       const error = document.getElementById('reservationError'), submit = reservationForm.querySelector('[type="submit"]');
       error.hidden = true; submit.disabled = true;
       const value = id => document.getElementById(id).value;
