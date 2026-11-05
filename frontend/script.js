@@ -145,6 +145,7 @@ function updateCartUI() {
 }
 
 function addToCart(id, name, price, img) {
+  if (!currentUser) { showToast('Please sign in to add items to your cart'); location.href = 'login.html'; return; }
   const button = [...document.querySelectorAll('.add-to-cart-btn')].find(candidate => candidate.dataset.id === id);
   if (button?.disabled) { showToast('This dish is sold out'); return; }
   const existing = cart.find(i => i.id === id);
