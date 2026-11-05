@@ -159,48 +159,29 @@ function addToCart(id, name, price, img) {
   showToast(`<i class="fa-solid fa-circle-check"></i> Added to cart`);
 }
 
-function closeCheckoutModal() {
-  document.getElementById('checkoutOverlay')?.remove();
-  document.body.style.overflow = '';
+function openCheckoutModal() {
+  location.href = 'checkout.html';
 }
 
-function openCheckoutModal(total) {
-  if (document.getElementById('checkoutOverlay')) return;
-  const overlay = document.createElement('div');
-  overlay.id = 'checkoutOverlay';
-  overlay.className = 'admin-modal-overlay open';
-  overlay.style.zIndex = '2200';
-  overlay.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" class="admin-modal" style="font-family:inherit;color:#28271f">
-    <header class="admin-modal-header"><h2 id="checkoutTitle" class="admin-modal-title">Complete your order</h2><button type="button" class="admin-modal-close" data-checkout-close aria-label="Close checkout">×</button></header>
-    <form id="checkoutForm"><div class="admin-modal-body">
-      <p class="checkout-pause-message" hidden role="status">Online ordering is paused. Please try again later.</p>
-      <p>Cart subtotal: <strong>KES ${Number(total).toLocaleString('en-KE')}</strong></p>
-      <div class="admin-form-group"><label class="admin-form-label" for="checkoutName">Name</label><input class="admin-form-control" id="checkoutName" name="name" autocomplete="name" required maxlength="100"></div>
-      <div class="admin-form-group"><label class="admin-form-label" for="checkoutPhone">Phone</label><input class="admin-form-control" id="checkoutPhone" name="phone" type="tel" autocomplete="tel" required maxlength="40"></div>
-      <div class="admin-form-group"><label class="admin-form-label" for="checkoutEmail">Email (optional)</label><input class="admin-form-control" id="checkoutEmail" name="email" type="email" autocomplete="email" maxlength="254"></div>
-      <div class="admin-form-group"><label class="admin-form-label" for="checkoutType">Fulfilment</label><select class="admin-form-control" id="checkoutType" name="type"><option value="pickup">Pickup</option><option value="delivery">Delivery</option></select></div>
-      <div class="admin-form-group" id="checkoutAddressGroup" hidden><label class="admin-form-label" for="checkoutAddress">Delivery address</label><textarea class="admin-form-control" id="checkoutAddress" name="address" maxlength="300"></textarea></div>
-      <div class="admin-form-group"><label class="admin-form-label" for="checkoutNotes">Order notes (optional)</label><textarea class="admin-form-control" id="checkoutNotes" name="notes" maxlength="500"></textarea></div>
-      <div class="admin-form-group"><label class="admin-form-label" for="checkoutPayment">Payment</label><select class="admin-form-control" id="checkoutPayment" name="paymentMethod"><option value="pay-on-delivery">Pay on delivery / collection</option><option value="mpesa">M-Pesa (not configured)</option></select></div>
-      <p id="checkoutError" role="alert" hidden></p>
-    </div><footer class="admin-modal-footer"><button type="button" class="btn btn-outline" data-checkout-close>Cancel</button><button type="submit" class="btn btn-primary" id="checkoutSubmit">Place order</button></footer></form></section>`;
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-  overlay.querySelector('#checkoutName').focus();
-  overlay.addEventListener('click', event => { if (event.target === overlay || event.target.closest('[data-checkout-close]')) closeCheckoutModal(); });
-  overlay.querySelector('#checkoutType').addEventListener('change', event => {
+function initCheckoutPage() {
+  const form = document.getElementById('checkoutForm');
+  if (!form) return;
+  if (!cart.length) { location.replace('menu.html'); return; }
+  const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 0), 0);
+  document.getElementById('checkoutTotal').textContent = `KES ${total.toLocaleString('en-KE')}`;
+  document.getElementById('checkoutItems').innerHTML = cart.map(item => `<li><span>${window.escapeHtml(item.name)} × ${Number(item.qty) || 0}</span><strong>KES ${((Number(item.price) || 0) * (Number(item.qty) || 0)).toLocaleString('en-KE')}</strong></li>`).join('');
+  document.getElementById('checkoutType').addEventListener('change', event => {
     const isDelivery = event.target.value === 'delivery';
-    overlay.querySelector('#checkoutAddressGroup').hidden = !isDelivery;
-    overlay.querySelector('#checkoutAddress').required = isDelivery;
+    document.getElementById('checkoutAddressGroup').hidden = !isDelivery;
+    document.getElementById('checkoutAddress').required = isDelivery;
   });
-  document.addEventListener('keydown', function esc(event) { if (event.key === 'Escape' && document.getElementById('checkoutOverlay')) { closeCheckoutModal(); document.removeEventListener('keydown', esc); } });
   fetch('/api/public/status').then(response => response.json()).then(status => {
-    if (status.ordersPaused) { overlay.querySelector('.checkout-pause-message').hidden = false; overlay.querySelector('#checkoutSubmit').disabled = true; }
+    if (status.ordersPaused) { document.querySelector('.checkout-pause-message').hidden = false; document.getElementById('checkoutSubmit').disabled = true; }
   }).catch(() => {});
-  overlay.querySelector('#checkoutForm').addEventListener('submit', async event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
     const form = event.currentTarget; if (!form.reportValidity()) return;
-    const submit = overlay.querySelector('#checkoutSubmit'), error = overlay.querySelector('#checkoutError');
+    const submit = document.getElementById('checkoutSubmit'), error = document.getElementById('checkoutError');
     submit.disabled = true; submit.textContent = 'Placing order…'; error.hidden = true;
     const data = new FormData(form);
     try {
@@ -317,6 +298,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('.checkout-btn')) {
     const total = cart.reduce((s, i) => s + (Number(i.price)||0) * (Number(i.qty)||0), 0);
     if (cart.length === 0) { showToast('Your cart is empty'); return; }
+    closeCart();
     openCheckoutModal(total);
   }
 });
@@ -459,6 +441,7 @@ function initReveal() {
 
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  initCheckoutPage();
   await loadUser();
   updateAuthUI();
   updateCartUI();

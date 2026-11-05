@@ -56,6 +56,7 @@ app.use('/api/', apiLimiter);
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  phone: { type: String, trim: true, default: '' },
   password: { type: String, required: true, minlength: 8 },
   role: { type: String, enum: ['user','admin','manager','host','kitchen'], default: 'user' },
   active: { type: Boolean, default: true },
@@ -206,15 +207,17 @@ function setAuthCookie(res, token) {
 app.post('/api/register', authLimiter, async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ error: 'All fields required' });
+    const phone = String(req.body.phone || '').trim();
+    if (!name || !email || !password || !phone) return res.status(400).json({ error: 'Name, email, phone, and password are required' });
+    if (phone.length > 40) return res.status(400).json({ error: 'Phone number must be 40 characters or fewer' });
     if (typeof password !== 'string' || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
     const emailNorm = String(email).toLowerCase().trim();
     if (await User.findOne({ email: emailNorm })) return res.status(409).json({ error: 'Email already registered' });
     const hash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name: String(name).trim(), email: emailNorm, password: hash, role: 'user' });
+    const user = await User.create({ name: String(name).trim(), email: emailNorm, phone, password: hash, role: 'user' });
     const token = signToken(user);
     setAuthCookie(res, token);
-    res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    res.json({ user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role } });
   } catch (e) { res.status(500).json({ error: 'Registration failed' }); }
 });
 

@@ -11,16 +11,28 @@
   <link rel="stylesheet" href="global.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(1200px 600px at 20% 10%, rgba(200,151,58,.08), transparent), var(--clr-bg)}
-    .auth-card{width:100%;max-width:440px;background:var(--clr-card);border:1px solid var(--clr-border);border-radius:14px;padding:2.75rem;box-shadow:var(--shadow-lg)}
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;isolation:isolate;overflow:hidden;padding:2rem;background:linear-gradient(135deg,rgba(8,30,20,.82),rgba(15,49,33,.55)),url('imege/jiko.jpg') center/cover fixed}
+    .auth-wrap::before,.auth-wrap::after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(2px);pointer-events:none}
+    .auth-wrap::before{width:340px;height:340px;top:7%;left:8%;background:radial-gradient(circle,rgba(224,181,90,.32),rgba(224,181,90,0) 70%)}
+    .auth-wrap::after{width:440px;height:440px;right:5%;bottom:-12%;background:radial-gradient(circle,rgba(65,145,99,.38),rgba(65,145,99,0) 70%)}
+    .auth-card{width:100%;max-width:460px;position:relative;overflow:hidden;background:rgba(248,245,240,.78);-webkit-backdrop-filter:blur(24px) saturate(145%);backdrop-filter:blur(24px) saturate(145%);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:clamp(1.5rem,5vw,2.75rem);box-shadow:0 28px 90px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.65)}
+    [data-theme="dark"] .auth-card{background:rgba(19,32,25,.78);border-color:rgba(255,255,255,.14);box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.12)}
+    .auth-card::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,transparent,var(--clr-gold-lt),var(--clr-gold),transparent)}
+    .auth-card{transform-style:preserve-3d;transform-origin:left center;backface-visibility:hidden}
+    .auth-card.page-turn-out{animation:bookPageOut .42s cubic-bezier(.65,0,.35,1) both}
+    .auth-card.page-turn-in{animation:bookPageIn .48s cubic-bezier(.2,.75,.25,1) both}
+    @keyframes bookPageOut{0%{transform:perspective(1400px) rotateY(0) translateX(0);opacity:1}55%{box-shadow:0 22px 60px rgba(0,0,0,.22)}100%{transform:perspective(1400px) rotateY(-72deg) translateX(-14px);opacity:.2}}
+    @keyframes bookPageIn{0%{transform:perspective(1400px) rotateY(72deg) translateX(14px);opacity:.2}100%{transform:perspective(1400px) rotateY(0) translateX(0);opacity:1}}
+    @media(prefers-reduced-motion:reduce){.auth-card.page-turn-out,.auth-card.page-turn-in{animation-duration:.01ms}}
     .auth-card-header{text-align:center;margin-bottom:2rem}
     .auth-card-header .logo{justify-content:center;font-size:1.6rem}
     .auth-card-header p{margin-top:.5rem;color:var(--clr-text-sub);font-size:.9rem}
     .form-group{margin-bottom:1rem}
     .form-group label{display:block;margin-bottom:.5rem;font-size:.9rem;font-weight:500}
     .input-wrap{position:relative}
-    .input-wrap input{width:100%;padding:.85rem 2.8rem .85rem .9rem;border:1px solid var(--clr-border);border-radius:10px;background:transparent;color:inherit;font-size:.95rem}
-    .input-wrap input:focus-visible{outline:2px solid var(--clr-gold);outline-offset:2px}
+    .input-wrap input{width:100%;padding:.9rem 2.8rem .9rem .95rem;border:1px solid rgba(106,119,107,.28);border-radius:11px;background:rgba(255,255,255,.48);color:var(--clr-text);font-size:.95rem;transition:border-color .2s,background .2s,box-shadow .2s}
+    [data-theme="dark"] .input-wrap input{background:rgba(0,0,0,.18);border-color:rgba(255,255,255,.16);color:var(--clr-text)}
+    .input-wrap input:focus-visible{outline:none;border-color:var(--clr-gold);background:rgba(255,255,255,.72);box-shadow:0 0 0 4px rgba(200,151,58,.15)}
     .toggle-pass{position:absolute;right:.6rem;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--clr-text-sub);cursor:pointer}
     .auth-card button[type="submit"]{width:100%;margin-top:.5rem;padding:.95rem;border:none;border-radius:10px;background:linear-gradient(135deg,var(--clr-gold),#b8943f);color:#fff;cursor:pointer;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;display:flex;align-items:center;justify-content:center;gap:.6rem}
     .auth-card button[disabled]{opacity:.7;cursor:not-allowed}
@@ -29,6 +41,14 @@
     .msg{margin-top:1rem;text-align:center;color:#e74c3c;font-size:.9rem;min-height:1.2rem}
     .theme-row{display:flex;justify-content:flex-end;margin-bottom:1rem}
     .theme-btn{border:1px solid var(--clr-border);background:transparent;color:inherit;border-radius:50px;padding:.4rem .7rem;cursor:pointer}
+    .auth-card button[type="submit"]{box-shadow:0 8px 20px rgba(160,111,29,.2);transition:transform .2s,box-shadow .2s}
+    .auth-card button[type="submit"]:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(160,111,29,.3)}
+    .auth-card-header .logo{color:var(--clr-primary)}
+    [data-theme="dark"] .auth-card-header .logo{color:var(--clr-text)}
+    .toggle-pass{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;}
+    .toggle-pass:hover{color:var(--clr-gold);background:rgba(200,151,58,.1)}
+    @media(max-width:520px){.auth-wrap{padding:1rem;background-attachment:scroll}.auth-card{border-radius:20px}.auth-card-header{margin-bottom:1.4rem}}
+    .signup-only{display:none}
   </style>
 </head>
 <body>
@@ -49,10 +69,23 @@
             <input id="name" type="text" autocomplete="name" placeholder="e.g. Amara Ochieng">
           </div>
         </div>
+        <div class="form-group signup-only" id="phoneGroup">
+          <label for="phone">Phone number</label>
+          <div class="input-wrap">
+            <input id="phone" type="tel" autocomplete="tel" placeholder="+254 7XX XXX XXX" maxlength="40">
+          </div>
+        </div>
         <div class="form-group">
           <label for="email">Email address</label>
           <div class="input-wrap">
             <input id="email" type="email" autocomplete="email" required placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="form-group signup-only" id="confirmPasswordGroup">
+          <label for="confirmPassword">Confirm password</label>
+          <div class="input-wrap">
+            <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your password">
+            <button type="button" class="toggle-pass" id="toggleConfirmPass" aria-label="Show confirmation password"><i class="fa-regular fa-eye"></i></button>
           </div>
         </div>
         <div class="form-group">
@@ -82,8 +115,12 @@
     const msg=document.getElementById('msg');
     const submitBtn=document.getElementById('submitBtn');
     const submitText=document.getElementById('submitText');
+    const authCard=document.querySelector('.auth-card');
     const passwordInput=document.getElementById('password');
     const togglePass=document.getElementById('togglePass');
+    const phoneInput=document.getElementById('phone');
+    const confirmPasswordInput=document.getElementById('confirmPassword');
+    const toggleConfirmPass=document.getElementById('toggleConfirmPass');
 
     togglePass.onclick=()=>{
       const showing = passwordInput.type === 'text';
@@ -91,18 +128,36 @@
       togglePass.innerHTML = showing ? '<i class="fa-regular fa-eye"></i>' : '<i class="fa-regular fa-eye-slash"></i>';
       togglePass.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
     };
+    toggleConfirmPass.onclick=()=>{
+      const showing = confirmPasswordInput.type === 'text';
+      confirmPasswordInput.type = showing ? 'password' : 'text';
+      toggleConfirmPass.innerHTML = showing ? '<i class="fa-regular fa-eye"></i>' : '<i class="fa-regular fa-eye-slash"></i>';
+      toggleConfirmPass.setAttribute('aria-label', showing ? 'Show confirmation password' : 'Hide confirmation password');
+    };
 
     toggle.onclick=e=>{
       e.preventDefault();
+      if(authCard.classList.contains('page-turn-out')) return;
+      authCard.classList.remove('page-turn-in');
+      authCard.classList.add('page-turn-out');
+      window.setTimeout(()=>{
       mode=mode==='login'?'signup':'login';
       titleEl.textContent=mode==='login'?'Login':'Create Account';
       subtitle.textContent=mode==='login'?'Welcome back — sign in to continue':'Join LakeBite for reservations and faster checkout';
       nameGroup.style.display=mode==='signup'?'block':'none';
       nameInput.required = mode==='signup';
+      document.getElementById('phoneGroup').style.display=mode==='signup'?'block':'none';
+      phoneInput.required = mode==='signup';
+      document.getElementById('confirmPasswordGroup').style.display=mode==='signup'?'block':'none';
+      confirmPasswordInput.required = mode==='signup';
       toggleText.textContent=mode==='login'?'Need an account?':'Already have an account?';
       toggle.textContent=mode==='login'?'Sign up':'Log in';
       passwordInput.setAttribute('autocomplete', mode==='login'?'current-password':'new-password');
       msg.textContent='';
+      authCard.classList.remove('page-turn-out');
+      authCard.classList.add('page-turn-in');
+      window.setTimeout(()=>authCard.classList.remove('page-turn-in'),500);
+      },400);
     };
 
     form.onsubmit=async e=>{
@@ -113,8 +168,10 @@
       const password=passwordInput.value;
       if(password.length < 8){ msg.textContent='Password must be at least 8 characters.'; return; }
       const url=mode==='login'?'/api/login':'/api/register';
-      const body=mode==='login'?{email,password}:{name:nameInput.value.trim(),email,password};
+      const body=mode==='login'?{email,password}:{name:nameInput.value.trim(),phone:phoneInput.value.trim(),email,password};
       if(mode==='signup' && !body.name){ msg.textContent='Please enter your full name.'; return; }
+      if(mode==='signup' && !body.phone){ msg.textContent='Please enter your phone number.'; return; }
+      if(mode==='signup' && password!==confirmPasswordInput.value){ msg.textContent='Passwords do not match.'; return; }
       submitBtn.disabled=true;
       submitText.textContent='Please wait...';
       try {
