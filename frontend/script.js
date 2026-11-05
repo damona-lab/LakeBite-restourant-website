@@ -243,6 +243,16 @@ function renderCartDrawer() {
   const totalEl = document.querySelector('.cart-total .total-price');
   if (!itemsEl) return;
 
+  // Recover photos for older saved cart entries when the matching menu card is present.
+  let recoveredCartImage = false;
+  cart.forEach(item => {
+    if (item.img) return;
+    const button = [...document.querySelectorAll('.add-to-cart-btn')].find(candidate => (candidate.dataset.id || candidate.dataset.name) === item.id);
+    const image = button?.closest('.menu-card, .dish-card, .menu-item, .product-card')?.querySelector('.mc-img img, .dish-img-wrap img, img');
+    if (image?.getAttribute('src')) { item.img = image.getAttribute('src'); recoveredCartImage = true; }
+  });
+  if (recoveredCartImage) saveCart();
+
   if (cart.length === 0) {
     itemsEl.innerHTML = `
       <div class="cart-empty">
@@ -253,7 +263,7 @@ function renderCartDrawer() {
   } else {
     itemsEl.innerHTML = cart.map(item => `
       <div class="cart-item">
-        <div class="cart-item-img"><img src="${window.escapeHtml(safeImageUrl(item.img))}" alt="${window.escapeHtml(item.name)}"></div>
+        <div class="cart-item-img">${safeImageUrl(item.img) ? `<img src="${window.escapeHtml(safeImageUrl(item.img))}" alt="${window.escapeHtml(item.name)}" onerror="this.remove();this.parentElement.classList.add('image-missing')">` : '<i class="fa-solid fa-utensils" aria-hidden="true"></i>'}</div>
         <div class="cart-item-info">
           <h4>${window.escapeHtml(item.name)}</h4>
           <div class="price">KES ${(Number(item.price || 0) * Number(item.qty || 0)).toLocaleString()}</div>
@@ -280,11 +290,13 @@ document.addEventListener('click', e => {
   if (e.target.closest('.add-to-cart-btn')) {
     e.preventDefault();
     const btn = e.target.closest('.add-to-cart-btn');
+    const itemCard = btn.closest('.menu-card, .dish-card, .menu-item, .product-card');
+    const foodImage = itemCard?.querySelector('.mc-img img, .dish-img-wrap img, img');
     addToCart(
       btn.dataset.id || btn.dataset.name,
       btn.dataset.name || 'Item',
       btn.dataset.price || 0,
-      btn.dataset.img || btn.querySelector('img')?.getAttribute('src') || ''
+      btn.dataset.img || btn.querySelector('img')?.getAttribute('src') || foodImage?.getAttribute('src') || ''
     );
   }
   if (e.target.closest('.qty-btn')) {
@@ -445,6 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadUser();
   updateAuthUI();
   updateCartUI();
+  if (new URLSearchParams(location.search).get('cart') === '1') openCart();
   loadPublicMenuState();
   loadPublicContent();
   loadPublicEventsAndReviews();

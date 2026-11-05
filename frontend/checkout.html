@@ -8,44 +8,63 @@
   <link rel="stylesheet" href="global.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    body{min-height:100vh;background:radial-gradient(ellipse at 10% 0,rgba(200,151,58,.12),transparent 35%),var(--clr-bg)}
-    .checkout-page{padding:calc(var(--header-h) + 3rem) 0 5rem}
-    .checkout-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2.5rem}
+    body{min-height:100vh;background:radial-gradient(ellipse at 8% 0,rgba(200,151,58,.14),transparent 34%),radial-gradient(ellipse at 100% 45%,rgba(26,61,43,.07),transparent 32%),var(--clr-bg)}
+    .checkout-page{padding:3rem 0 5rem}
+    .checkout-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3rem;padding-bottom:1.2rem;border-bottom:1px solid var(--clr-border)}
     .checkout-top .logo{font-size:1.65rem}
-    .checkout-top a.back-link{color:var(--clr-text-sub);font-size:.9rem}
-    .checkout-top a:hover{color:var(--clr-gold)}
-    .checkout-heading{margin-bottom:2rem}
-    .checkout-heading h1{font-size:clamp(2.3rem,5vw,3.5rem);margin:.2rem 0 .45rem}
-    .checkout-heading p{color:var(--clr-text-sub)}
-    .checkout-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.75fr);gap:2rem;align-items:start}
-    .checkout-panel,.checkout-summary{background:var(--clr-card);border:1px solid var(--clr-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
-    .checkout-panel{padding:clamp(1.25rem,4vw,2.5rem)}
-    .checkout-panel h2,.checkout-summary h2{font-size:1.55rem;margin-bottom:1.4rem}
-    .checkout-fields{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-    .checkout-fields .admin-form-group{margin:0 0 .4rem}
+    .checkout-top a.back-link{color:var(--clr-text-sub);font-size:.9rem;padding:.55rem .85rem;border:1px solid var(--clr-border);border-radius:50px;transition:all var(--transition)}
+    .checkout-top a:hover{color:var(--clr-gold);border-color:var(--clr-gold)}
+    .checkout-nav{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;justify-content:flex-end}
+    .checkout-nav a{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;min-height:44px;padding:.65rem 1rem;border:1px solid var(--clr-border);border-radius:999px;background:var(--clr-card);color:var(--clr-text-sub);font-size:.82rem;font-weight:500;letter-spacing:.025em;box-shadow:0 3px 12px rgba(20,40,28,.04);transition:transform var(--transition),background var(--transition),color var(--transition),border-color var(--transition),box-shadow var(--transition)}
+    .checkout-nav a i{font-size:.82rem;color:var(--clr-gold)}
+    .checkout-nav a:hover{transform:translateY(-2px);background:var(--clr-primary);color:#fff;border-color:var(--clr-primary);box-shadow:0 7px 18px rgba(26,61,43,.18)}
+    .checkout-nav a:hover i{color:var(--clr-gold-lt)}
+    .checkout-nav a:focus-visible{outline:3px solid rgba(200,151,58,.45);outline-offset:3px}
+    .checkout-nav a:first-child{background:var(--clr-primary);color:#fff;border-color:var(--clr-primary)}
+    .checkout-nav a:first-child i{color:var(--clr-gold-lt)}
+    .checkout-nav a:first-child:hover{background:var(--clr-primary-lt);border-color:var(--clr-primary-lt)}
+    .checkout-heading{margin-bottom:2.2rem}
+    .checkout-heading h1{font-size:clamp(2.7rem,5vw,4rem);margin:.2rem 0 .45rem;letter-spacing:-.025em}
+    .checkout-heading p{color:var(--clr-text-sub);font-size:1.02rem}
+    .checkout-steps{display:flex;gap:.7rem;align-items:center;margin:0 0 1.25rem;color:var(--clr-text-sub);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+    .checkout-steps span{display:inline-flex;align-items:center;gap:.5rem}
+    .checkout-steps b{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:var(--clr-primary);color:white;font-size:.72rem}
+    .checkout-steps .current{color:var(--clr-primary);font-weight:600}
+    .checkout-steps .current b{background:var(--clr-gold)}
+    .checkout-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.75fr);gap:clamp(1.25rem,3vw,2.4rem);align-items:start}
+    .checkout-panel,.checkout-summary{background:var(--clr-card);border:1px solid var(--clr-border);border-radius:20px;box-shadow:0 14px 45px rgba(22,42,30,.08)}
+    [data-theme="dark"] .checkout-panel,[data-theme="dark"] .checkout-summary{box-shadow:0 14px 45px rgba(0,0,0,.2)}
+    .checkout-panel{padding:clamp(1.2rem,3vw,2rem)}
+    .checkout-panel h2,.checkout-summary h2{font-size:1.5rem;margin-bottom:1.2rem}
+    .checkout-panel h2::after,.checkout-summary h2::after{content:"";display:block;width:42px;height:2px;margin-top:.65rem;background:var(--clr-gold)}
+    .checkout-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem .8rem;max-width:680px}
+    .checkout-fields .admin-form-group{margin:0 0 .35rem}
     .checkout-fields .wide{grid-column:1/-1}
-    .checkout-fields label{display:block;margin-bottom:.4rem;font-size:.83rem;font-weight:500;color:var(--clr-text-sub)}
-    .checkout-fields input,.checkout-fields select,.checkout-fields textarea{width:100%;padding:.85rem .95rem;border:1px solid var(--clr-border);border-radius:9px;background:var(--clr-bg2);color:var(--clr-text)}
-    .checkout-fields input:focus,.checkout-fields select:focus,.checkout-fields textarea:focus{outline:2px solid rgba(200,151,58,.45);border-color:var(--clr-gold)}
-    .checkout-fields textarea{min-height:100px;resize:vertical}
-    .checkout-summary{padding:1.6rem;position:sticky;top:2rem}
+    .checkout-fields label{display:block;margin-bottom:.35rem;font-size:.73rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--clr-text-sub)}
+    .checkout-fields input,.checkout-fields select,.checkout-fields textarea{width:100%;padding:.68rem .8rem;border:1px solid var(--clr-border);border-radius:8px;background:var(--clr-bg);color:var(--clr-text);font-size:.9rem;transition:border-color var(--transition),box-shadow var(--transition),background var(--transition)}
+    .checkout-fields input::placeholder,.checkout-fields textarea::placeholder{color:var(--clr-text-sub);opacity:.65}
+    .checkout-fields input:focus,.checkout-fields select:focus,.checkout-fields textarea:focus{outline:none;border-color:var(--clr-gold);background:var(--clr-bg2);box-shadow:0 0 0 4px rgba(200,151,58,.13)}
+    .checkout-fields textarea{min-height:76px;resize:vertical}
+    .checkout-summary{padding:1.7rem;position:sticky;top:2rem;overflow:hidden}
+    .checkout-summary::before{content:"";display:block;height:4px;position:absolute;top:0;left:0;right:0;background:linear-gradient(90deg,var(--clr-primary),var(--clr-gold-lt))}
     .checkout-items{display:grid;gap:.8rem;list-style:none;padding:0;margin:0 0 1.2rem}
-    .checkout-items li{display:flex;justify-content:space-between;gap:1rem;padding-bottom:.8rem;border-bottom:1px solid var(--clr-border);font-size:.9rem}
+    .checkout-items li{display:flex;justify-content:space-between;gap:1rem;padding:.2rem 0 .85rem;border-bottom:1px solid var(--clr-border);font-size:.9rem}
     .checkout-items li strong{white-space:nowrap}
     .checkout-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:.5rem;font-weight:600}
     .checkout-total-row strong{font-family:var(--font-display);font-size:1.45rem;color:var(--clr-gold)}
-    .checkout-submit{width:100%;justify-content:center;margin-top:1.5rem}
-    .checkout-pause-message{padding:.8rem;background:rgba(200,151,58,.12);border-radius:8px;margin-bottom:1rem}
+    .checkout-submit{width:100%;max-width:680px;justify-content:center;margin-top:1.25rem;min-height:48px;border-radius:7px}
+    .checkout-pause-message{padding:.9rem 1rem;background:rgba(200,151,58,.12);border:1px solid rgba(200,151,58,.25);border-radius:10px;margin-bottom:1rem;color:var(--clr-text)}
     #checkoutError{color:#c0392b;margin-top:1rem}
-    @media(max-width:760px){.checkout-page{padding-top:calc(var(--header-h) + 2rem)}.checkout-layout{grid-template-columns:1fr}.checkout-summary{position:static;grid-row:1}.checkout-fields{grid-template-columns:1fr}.checkout-fields .wide{grid-column:auto}}
+    @media(max-width:760px){.checkout-page{padding-top:1.5rem}.checkout-top{margin-bottom:2rem}.checkout-layout{grid-template-columns:1fr}.checkout-summary{position:static;grid-row:1}.checkout-fields{grid-template-columns:1fr;max-width:none}.checkout-fields .wide{grid-column:auto}.checkout-submit{max-width:none}}
     @media(max-width:420px){.checkout-top .logo{font-size:1.35rem}.checkout-top .logo span{display:none}}
+    @media(max-width:600px){.checkout-top{align-items:flex-start;gap:1rem;flex-direction:column}.checkout-nav{width:100%;justify-content:flex-start}.checkout-nav a{flex:1;padding:.65rem .55rem;font-size:.74rem;white-space:nowrap}}
   </style>
 </head>
 <body>
   <main class="checkout-page">
     <div class="container">
-      <div class="checkout-top"><a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a><a class="back-link" href="menu.html"><i class="fa-solid fa-arrow-left"></i> Back to menu</a></div>
-      <header class="checkout-heading"><span class="section-label">Almost there</span><h1>Checkout</h1><p>Share your details and choose how you’d like to receive your order.</p></header>
+      <div class="checkout-top"><a href="index.html" class="logo">LakeBite <span>Nairobi, Kenya</span></a><nav class="checkout-nav" aria-label="Checkout navigation"><a class="back-link" href="menu.html?cart=1"><i class="fa-solid fa-arrow-left"></i> Back to cart</a><a class="back-link" href="menu.html"><i class="fa-solid fa-utensils"></i> Back to menu</a><a class="back-link" href="index.html"><i class="fa-solid fa-house"></i> Home</a></nav></div>
+      <header class="checkout-heading"><div class="checkout-steps" aria-label="Checkout progress"><span><b><i class="fa-solid fa-check"></i></b> Cart</span><span aria-hidden="true">/</span><span class="current"><b>2</b> Details</span><span aria-hidden="true">/</span><span><b>3</b> Confirmation</span></div><span class="section-label">Almost there</span><h1>Checkout</h1><p>Share your details and choose how you’d like to receive your order.</p></header>
       <div class="checkout-layout">
         <section class="checkout-panel">
           <h2>Your details</h2>
