@@ -798,6 +798,31 @@ app.get('/api/admin/menu', auth, authorize('admin','manager','kitchen'), async (
   res.json({ menu: list });
 });
 
+app.post('/api/admin/menu-image', auth, authorize('admin','manager'), express.raw({ type: 'application/octet-stream', limit: '5mb' }), async (req, res) => {
+  const declaredType = String(req.get('x-image-type') || '').split(';')[0].trim().toLowerCase();
+  const extensions = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+  const bytes = req.body;
+  if (!Buffer.isBuffer(bytes) || !bytes.length) return res.status(400).json({ error: 'No image data was received. Please choose the image again.' });
+  const signatures = {
+    jpg: bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff,
+    png: bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])),
+    webp: bytes.length >= 12 && bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP',
+    gif: bytes.length >= 6 && ['GIF87a','GIF89a'].includes(bytes.toString('ascii', 0, 6))
+  };
+  const extension = extensions[declaredType] || Object.keys(signatures).find(type => signatures[type]);
+  if (!extension || !signatures[extension]) return res.status(400).json({ error: 'The selected file is not a supported JPG, PNG, WebP, or GIF image.' });
+  const directory = path.join(__dirname, 'uploads', 'menu');
+  try {
+    await fs.promises.mkdir(directory, { recursive: true });
+    const filename = `${crypto.randomBytes(16).toString('hex')}.${extension}`;
+    await fs.promises.writeFile(path.join(directory, filename), bytes, { flag: 'wx' });
+    res.status(201).json({ image: `/uploads/menu/${filename}` });
+  } catch (error) {
+    console.error('Menu image storage failed:', error.message);
+    res.status(500).json({ error: 'The server could not save the image. Check that backend/uploads is writable.' });
+  }
+});
+
 app.post('/api/admin/menu', auth, authorize('admin','manager'), async (req, res) => {
   const item = await MenuItem.create(req.body);
   await logAudit(req.user.id || 'admin', 'create_menu_item', '/api/admin/menu', item.name);
@@ -909,6 +934,7 @@ app.use((error, req, res, next) => {
   res.status(status).json({ error: status >= 500 ? 'The server could not complete the request.' : error.message || 'Invalid request' });
 });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0 }));
 app.use(express.static(path.join(__dirname, '../frontend'), { maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0 }));
 
 app.get('/admin', auth, authorize('admin','manager','host','kitchen'), (req, res) => {

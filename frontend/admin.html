@@ -1112,6 +1112,12 @@ body.admin-body {
             <input type="text" class="admin-form-control" id="menuDescription">
           </div>
           <div class="admin-form-group">
+            <label class="admin-form-label" for="menuImage">Item Image</label>
+            <input type="file" class="admin-form-control" id="menuImage" accept="image/jpeg,image/png,image/webp,image/gif">
+            <small>Choose a JPG, PNG, WebP, or GIF image (up to 5 MB).</small>
+            <img id="menuImagePreview" alt="Menu item image preview" hidden style="display:none;max-width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:10px">
+          </div>
+          <div class="admin-form-group">
             <label class="admin-form-label">Allergens (comma separated)</label>
             <input type="text" class="admin-form-control" id="menuAllergens" placeholder="e.g. nuts, dairy, gluten">
           </div>
@@ -1239,7 +1245,7 @@ body.admin-body {
           case 'save-menu': adminSaveMenuItem(); break;
           case 'edit-reservation': adminEditReservation(id); break;
           case 'delete-reservation': adminDeleteReservation(id); break;
-          case 'edit-menu': { const item = menuById.get(id); if (item) adminEditMenuItem(item._id, item.name, item.price, item.category, item.available, (item.allergens || []).join(','), (item.dietary || []).join(','), item.spiceLevel); break; }
+          case 'edit-menu': { const item = menuById.get(id); if (item) adminEditMenuItem(item._id, item.name, item.price, item.category, item.available, (item.allergens || []).join(','), (item.dietary || []).join(','), item.spiceLevel, item.image, item.description); break; }
           case 'delete-menu': adminDeleteMenuItem(id); break;
           case 'delete-user': adminDeleteUser(id); break;
           case 'refresh-floor': loadTables(); break;
@@ -2126,10 +2132,14 @@ body.admin-body {
 
       // ── Menu Modal ──
       let editMenuId = null;
-      function adminOpenMenuModal(id = null, name = '', price = 0, category = '', available = true, allergens = '', dietary = '', spice = 0) {
+      function adminOpenMenuModal(id = null, name = '', price = 0, category = '', available = true, allergens = '', dietary = '', spice = 0, image = '', description = '') {
         editMenuId = id;
         document.getElementById('menuModalTitle').textContent = id ? 'Edit Menu Item' : 'Add Menu Item';
         document.getElementById('adminMenuForm').reset();
+        const imagePreview = document.getElementById('menuImagePreview');
+        imagePreview.removeAttribute('src');
+        imagePreview.hidden = true;
+        imagePreview.style.display = 'none';
         document.getElementById('adminMenuModalOverlay').classList.add('open');
         if (id) {
           document.getElementById('menuName').value = name;
@@ -2139,24 +2149,51 @@ body.admin-body {
           document.getElementById('menuAllergens').value = allergens;
           document.getElementById('menuDietary').value = dietary;
           document.getElementById('menuSpice').value = spice;
+          document.getElementById('menuDescription').value = description || '';
+          updateMenuImagePreview(image || '');
         }
       }
       function adminCloseMenuModal() {
         document.getElementById('adminMenuModalOverlay').classList.remove('open');
         editMenuId = null;
       }
-      function adminEditMenuItem(id, name, price, category, available, allergens, dietary, spice) {
-        adminOpenMenuModal(id, name, price, category, available, allergens, dietary, spice);
+      function adminEditMenuItem(id, name, price, category, available, allergens, dietary, spice, image, description) {
+        adminOpenMenuModal(id, name, price, category, available, allergens, dietary, spice, image, description);
       }
+      function updateMenuImagePreview(existingImage = '') {
+        const input = document.getElementById('menuImage');
+        const preview = document.getElementById('menuImagePreview');
+        const file = input.files[0];
+        const value = file ? URL.createObjectURL(file) : existingImage;
+        preview.onerror = () => { preview.hidden = true; preview.style.display = 'none'; };
+        preview.onload = () => { preview.hidden = false; preview.style.display = 'block'; };
+        if (!value) { preview.removeAttribute('src'); preview.hidden = true; preview.style.display = 'none'; return; }
+        preview.src = value;
+      }
+      document.getElementById('menuImage').addEventListener('change', () => updateMenuImagePreview(menuById.get(String(editMenuId))?.image || ''));
       async function adminSaveMenuItem() {
         const form = document.getElementById('adminMenuForm');
         if (!form.reportValidity()) return;
+        const imageFile = document.getElementById('menuImage').files[0];
+        let imageUrl = menuById.get(String(editMenuId))?.image || '';
+        if (imageFile) {
+          try {
+            if (imageFile.size > 5 * 1024 * 1024) throw new Error('The image must be 5 MB or smaller.');
+            const upload = await fetch('/api/admin/menu-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Image-Type': imageFile.type }, body: imageFile, credentials: 'include' });
+            if (upload.status === 401) { window.location.href = '/login.html'; return; }
+            const uploaded = await upload.json().catch(() => ({}));
+            if (upload.status === 404) throw new Error('Image upload route not found. Restart the updated backend/server.js and reload the admin page.');
+            if (!upload.ok) throw new Error(uploaded.error || `Image upload failed (${upload.status}).`);
+            imageUrl = uploaded.image;
+          } catch (error) { showAdminToast(error.message || 'Could not upload the image.'); return; }
+        }
         const body = {
           name: document.getElementById('menuName').value,
           category: document.getElementById('menuCategory').value,
           price: parseFloat(document.getElementById('menuPrice').value),
           available: document.getElementById('menuAvailable').value === 'true',
           description: document.getElementById('menuDescription').value,
+          image: imageUrl,
           allergens: document.getElementById('menuAllergens').value.split(',').map(s => s.trim()).filter(Boolean),
           dietary: document.getElementById('menuDietary').value.split(',').map(s => s.trim()).filter(Boolean),
           spiceLevel: parseInt(document.getElementById('menuSpice').value) || 0

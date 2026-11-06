@@ -13,6 +13,62 @@ function safeImageUrl(value) {
   const url = String(value || '').trim();
   return /^(https:\/\/|\/|\.\/|imege\/)/i.test(url) && !/^\/\//.test(url) ? url : '';
 }
+function renderPublicMenuItems(menu) {
+  const grid = document.getElementById('menuGrid');
+  if (!grid) return;
+  const existingNames = new Set([...grid.querySelectorAll('.menu-card h3')].map(title => title.textContent.trim().toLowerCase()));
+  const tabs = document.querySelector('.menu-tabs');
+  const slugify = value => String(value || 'other').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'other';
+  const categoryFor = value => {
+    const category = String(value || '').trim();
+    const normalized = category.toLowerCase();
+    if (/kenyan|mains|main course|local/.test(normalized)) return 'kenyan';
+    if (/seafood|fish/.test(normalized)) return 'seafood';
+    if (/fast\s?food|burger|pizza/.test(normalized)) return 'fastfood';
+    if (/vegetarian|vegan/.test(normalized)) return 'vegetarian';
+    if (/dessert|sweet/.test(normalized)) return 'desserts';
+    if (/drink|beverage|cocktail/.test(normalized)) return 'drinks';
+    return slugify(category);
+  };
+  for (const item of menu) {
+    if (!item.name || existingNames.has(String(item.name).trim().toLowerCase())) continue;
+    const category = String(item.category || 'Other').trim() || 'Other';
+    const categorySlug = categoryFor(category);
+    if (tabs && !tabs.querySelector(`.tab-btn[data-cat="${CSS.escape(categorySlug)}"]`)) {
+      const tab = document.createElement('button');
+      tab.type = 'button'; tab.className = 'tab-btn'; tab.dataset.cat = categorySlug; tab.textContent = category;
+      tab.addEventListener('click', () => {
+        tabs.querySelectorAll('.tab-btn').forEach(button => button.classList.toggle('active', button === tab));
+        grid.querySelectorAll('.menu-card').forEach(card => { card.style.display = categorySlug === 'all' || card.dataset.cat === categorySlug ? '' : 'none'; });
+      });
+      tabs.appendChild(tab);
+    }
+    const card = document.createElement('article');
+    card.className = 'menu-card'; card.dataset.cat = categorySlug;
+    const imageUrl = safeImageUrl(item.image);
+    if (imageUrl) {
+      const imageWrap = document.createElement('div'); imageWrap.className = 'mc-img';
+      const image = document.createElement('img'); image.src = imageUrl; image.alt = item.name; image.loading = 'lazy';
+      imageWrap.appendChild(image); card.appendChild(imageWrap);
+    }
+    const body = document.createElement('div'); body.className = 'mc-body';
+    const categoryLabel = document.createElement('div'); categoryLabel.className = 'mc-cat'; categoryLabel.textContent = category;
+    const title = document.createElement('h3'); title.textContent = item.name;
+    const description = document.createElement('p'); description.textContent = item.description || '';
+    const footer = document.createElement('div'); footer.className = 'mc-footer';
+    const price = document.createElement('span'); price.className = 'mc-price'; price.textContent = `KES ${Number(item.price || 0).toLocaleString()}`;
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'btn btn-primary add-to-cart-btn';
+    button.dataset.id = item.catalogId || item._id; button.dataset.name = item.name; button.dataset.price = item.price; button.dataset.img = imageUrl;
+    button.disabled = item.available === false; button.setAttribute('aria-label', button.disabled ? `${item.name} sold out` : `Add ${item.name} to cart`);
+    button.title = button.disabled ? 'Sold out' : `Add ${item.name} to cart`;
+    button.innerHTML = button.disabled ? 'Sold out' : '<i class="fa-solid fa-plus"></i>';
+    footer.append(price, button); body.append(categoryLabel, title, description, footer); card.appendChild(body);
+    if (button.disabled) { card.classList.add('is-sold-out'); const badge = document.createElement('span'); badge.className = 'availability-badge'; badge.textContent = 'Sold out'; card.querySelector('.mc-img')?.appendChild(badge); }
+    const activeCategory = tabs?.querySelector('.tab-btn.active')?.dataset.cat || 'all';
+    if (activeCategory !== 'all' && activeCategory !== categorySlug) card.style.display = 'none';
+    grid.appendChild(card); existingNames.add(String(item.name).trim().toLowerCase());
+  }
+}
 function loadPublicContent() {
   fetch('/api/site-content').then(response => response.ok ? response.json() : null).then(result => {
     const content = result?.content; if (!content) return;
@@ -202,6 +258,7 @@ async function loadPublicMenuState() {
     const [menuResponse, statusResponse] = await Promise.all([fetch('/api/menu'), fetch('/api/public/status')]);
     if (menuResponse.ok) {
       const { menu = [] } = await menuResponse.json();
+      renderPublicMenuItems(menu);
       for (const item of menu) {
         const card = document.querySelector(`.menu-card .add-to-cart-btn[data-id="${CSS.escape(item.catalogId || '')}"]`)?.closest('.menu-card');
         if (!card) continue;

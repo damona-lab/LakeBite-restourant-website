@@ -16,7 +16,12 @@
     .order-box{border:1px solid var(--clr-border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;text-align:left}
     .order-row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.95rem}
     .order-row.muted{color:var(--clr-text-sub)}
-    .actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+    .receipt{background:#fff;color:#222;border:1px solid #ddd;border-radius:12px;padding:2rem;max-width:480px;margin:1.5rem auto;text-align:left;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+    .receipt h3{color:#1a3a2a;text-align:center;margin-bottom:1.5rem;font-size:1.4rem}
+    .receipt .order-row{padding:.5rem 0;border-bottom:1px dashed #e0e0e0}
+    .receipt .order-row:last-child{border-bottom:none}
+    .receipt .qr{text-align:center;margin-top:1.5rem}
+    .receipt .total{color:#1a3a2a;font-size:1.1rem}
     @media print{body *{visibility:hidden}#receipt,#receipt *{visibility:visible}#receipt{position:absolute;left:0;top:0;width:100%}}
   </style>
 </head>
@@ -63,8 +68,9 @@
           const itemsHtml=(o.items||[]).map(i=>`<div class="order-row"><span>${i.name} x${i.qty}</span><span>KES ${Number(i.price*i.qty).toLocaleString()}</span></div>`).join('');
           const type=o.type||'pickup';
           const delivery=type==='delivery'?(o.deliveryAddress||'—'):'Pickup';
-          const receipt=`<div id="receipt" style="margin-top:1.5rem;text-align:left;border:1px solid var(--clr-border);border-radius:12px;padding:1.25rem">
-            <h3 style="margin-bottom:1rem">Receipt</h3>
+          const receipt=`<div id="receipt" class="receipt">
+            <h3>LakeBite Receipt</h3>
+            <p style="text-align:center;margin-bottom:1.5rem;color:#555">LakeBite Nairobi, Kenya<br>Tel: +254 700 000 000<br>Email: info@lakebite.co.ke</p>
             <div class="order-row"><span>Order No.</span><strong>${o.orderNumber}</strong></div>
             <div class="order-row"><span>Customer</span><span>${o.customerName||'—'}</span></div>
             <div class="order-row"><span>Email</span><span>${o.customerEmail||'—'}</span></div>
