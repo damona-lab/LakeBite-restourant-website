@@ -379,7 +379,7 @@ app.get('/api/orders/track/:orderNumber', async (req, res) => {
   try {
     const order = await Order.findOne({ orderNumber: req.params.orderNumber }).select('-__v');
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    res.json({ order: { orderNumber: order.orderNumber, status: order.status, paymentStatus: order.paymentStatus, total: order.total, items: order.items, createdAt: order.createdAt, type: order.type } });
+    res.json({ order: { orderNumber: order.orderNumber, status: order.status, paymentStatus: order.paymentStatus, total: order.total, items: order.items, createdAt: order.createdAt, type: order.type, deliveryAddress: order.deliveryAddress, paymentMethod: order.paymentMethod, customerName: order.customerName, customerEmail: order.customerEmail } });
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch order' });
   }

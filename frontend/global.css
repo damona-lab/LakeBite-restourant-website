@@ -222,7 +222,7 @@ textarea.form-control { resize: vertical; min-height: 130px; }
 /* ── HEADER ── */
 .site-header {
   position: fixed;
-  inset: 0 auto 0;
+  inset: 0 auto auto;
   width: 100%;
   height: var(--header-h);
   z-index: var(--nav-z, 1000);

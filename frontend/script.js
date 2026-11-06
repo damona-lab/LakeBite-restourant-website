@@ -156,7 +156,7 @@ function addToCart(id, name, price, img) {
   }
   saveCart();
   updateCartUI();
-  showToast(`<i class="fa-solid fa-circle-check"></i> Added to cart`);
+  showToast(`${name} added to cart`);
 }
 
 function openCheckoutModal() {

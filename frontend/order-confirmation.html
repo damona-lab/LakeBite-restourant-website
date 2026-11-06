@@ -17,6 +17,7 @@
     .order-row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.95rem}
     .order-row.muted{color:var(--clr-text-sub)}
     .actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+    @media print{body *{visibility:hidden}#receipt,#receipt *{visibility:visible}#receipt{position:absolute;left:0;top:0;width:100%}}
   </style>
 </head>
 <body>
@@ -55,9 +56,27 @@
     if(num){
       fetch('/api/orders/track/' + encodeURIComponent(num)).then(r=>r.json()).then(d=>{
         if(d.order){
-          document.getElementById('orderStatus').textContent = d.order.status;
-          document.getElementById('paymentStatus').textContent = d.order.paymentStatus;
-          document.getElementById('orderTotal').textContent = 'KES ' + Number(d.order.total||0).toLocaleString();
+          const o=d.order;
+          document.getElementById('orderStatus').textContent = o.status;
+          document.getElementById('paymentStatus').textContent = o.paymentStatus;
+          document.getElementById('orderTotal').textContent = 'KES ' + Number(o.total||0).toLocaleString();
+          const itemsHtml=(o.items||[]).map(i=>`<div class="order-row"><span>${i.name} x${i.qty}</span><span>KES ${Number(i.price*i.qty).toLocaleString()}</span></div>`).join('');
+          const type=o.type||'pickup';
+          const delivery=type==='delivery'?(o.deliveryAddress||'—'):'Pickup';
+          const receipt=`<div id="receipt" style="margin-top:1.5rem;text-align:left;border:1px solid var(--clr-border);border-radius:12px;padding:1.25rem">
+            <h3 style="margin-bottom:1rem">Receipt</h3>
+            <div class="order-row"><span>Order No.</span><strong>${o.orderNumber}</strong></div>
+            <div class="order-row"><span>Customer</span><span>${o.customerName||'—'}</span></div>
+            <div class="order-row"><span>Email</span><span>${o.customerEmail||'—'}</span></div>
+            <div class="order-row"><span>Date/Time</span><span>${new Date(o.createdAt).toLocaleString()}</span></div>
+            ${itemsHtml}
+            <div class="order-row"><span>Payment Method</span><span>${o.paymentMethod||'pay-on-delivery'}</span></div>
+            <div class="order-row"><span>Fulfillment</span><span>${type} - ${delivery}</span></div>
+            <div class="order-row"><strong>Total</strong><strong>KES ${Number(o.total||0).toLocaleString()}</strong></div>
+            <div style="text-align:center;margin-top:1rem"><img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(o.orderNumber)}" alt="QR" style="width:120px;height:120px"></div>
+          </div>
+          <div class="actions" style="margin-top:1rem"><button class="btn btn-outline" onclick="window.print()">Download / Print Receipt</button></div>`;
+          document.querySelector('.order-box').insertAdjacentHTML('afterend', receipt);
         }
       }).catch(()=>{});
     }
