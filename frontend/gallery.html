@@ -96,7 +96,7 @@
           <h2 class="section-title">Our Food</h2>
           <div class="divider"></div>
         </div>
-        <div class="gallery-grid gallery-grid--food">
+        <div class="gallery-grid gallery-grid--food" data-cms-gallery-cat="food">
           <div class="gallery-item gi-large reveal"><img src="imege/17-cuts-of-all-you-can.jpg"
               alt="Nyama Choma platter">
             <div class="gi-overlay"><span>Nyama Choma Platter</span></div>
@@ -145,7 +145,7 @@
           <h2 class="section-title">Restaurant Interior</h2>
           <div class="divider"></div>
         </div>
-        <div class="gallery-grid gallery-grid--interior">
+        <div class="gallery-grid gallery-grid--interior" data-cms-gallery-cat="interior">
           <div class="gallery-item gi-wide reveal"><img src="imege/caption (9).jpg" alt="Main dining hall">
             <div class="gi-overlay"><span>Main Dining Hall</span></div>
           </div>
@@ -181,7 +181,7 @@
           <h2 class="section-title">Events & Celebrations</h2>
           <div class="divider"></div>
         </div>
-        <div class="gallery-grid gallery-grid--events">
+        <div class="gallery-grid gallery-grid--events" data-cms-gallery-cat="events">
           <div class="gallery-item reveal"><img src="imege/event 2.jpg" alt="Birthday celebration">
             <div class="gi-overlay"><span>Birthday Celebration</span></div>
           </div>
@@ -215,7 +215,7 @@
           <h2 class="section-title">Our Rooms</h2>
           <div class="divider"></div>
         </div>
-        <div class="rooms-gallery-grid">
+        <div class="gallery-grid" data-cms-gallery-cat="rooms">
           <div class="room-item reveal">
             <div class="room-img"><img src="imege/welcome-to-inti-a-nikkei.jpg" alt="Main Hall"></div>
             <div class="room-label">
@@ -333,9 +333,11 @@
 
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       grid-auto-rows: 220px;
+      grid-auto-flow: dense;
       gap: 1rem;
+      align-items: stretch;
     }
 
     .gallery-item {
@@ -344,12 +346,14 @@
       overflow: hidden;
       background: var(--clr-bg3);
       cursor: pointer;
+      min-height: 100%;
     }
 
     .gallery-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
       transition: transform 0.5s ease;
     }
 
@@ -386,6 +390,10 @@
 
     .gi-wide {
       grid-column: span 2;
+    }
+
+    .gi-tall {
+      grid-row: span 2;
     }
 
     .gi-tall {
@@ -476,8 +484,12 @@
 
     @media(max-width:1024px) {
       .gallery-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: 200px;
       }
+
+      .gi-wide { grid-column: span 2; }
+      .gi-large { grid-column: span 2; grid-row: span 2; }
 
       .rooms-gallery-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -486,14 +498,17 @@
 
     @media(max-width:640px) {
       .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
-        grid-auto-rows: 160px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: 150px;
+        gap: .75rem;
       }
 
       .gi-large {
-        grid-column: span 1;
-        grid-row: span 1;
+        grid-column: span 2;
+        grid-row: span 2;
       }
+      .gi-wide { grid-column: span 2; grid-row: span 1; }
+      .gi-tall { grid-row: span 2; }
 
       .rooms-gallery-grid {
         grid-template-columns: 1fr;

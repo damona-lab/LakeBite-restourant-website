@@ -70,7 +70,7 @@ function renderPublicMenuItems(menu) {
   }
 }
 function loadPublicContent() {
-  fetch('/api/site-content').then(response => response.ok ? response.json() : null).then(result => {
+  fetch('/api/site-content', { cache: 'no-store', credentials: 'same-origin' }).then(response => response.ok ? response.json() : null).then(result => {
     const content = result?.content; if (!content) return;
     document.querySelectorAll('[data-cms]').forEach(element => {
       const key = element.dataset.cms, value = content[key];
@@ -80,9 +80,41 @@ function loadPublicContent() {
     document.querySelectorAll('[data-cms="phone"]').forEach(element => { if (content.phone) element.textContent = content.phone; });
     document.querySelectorAll('[data-cms="openingHours"]').forEach(element => { if (content.openingHours) element.textContent = content.openingHours; });
     const about = document.querySelector('[data-cms="aboutText"]'); if (about && content.aboutText) about.textContent = content.aboutText;
-    if (Array.isArray(content.gallery) && document.querySelector('[data-cms-gallery]')) {
-      const gallery = document.querySelector('[data-cms-gallery]'); gallery.replaceChildren();
-      content.gallery.forEach((url, index) => { const image = document.createElement('img'); image.src = safeImageUrl(url); image.alt = `LakeBite gallery image ${index + 1}`; gallery.appendChild(image); });
+    const galleryRaw = Array.isArray(content.galleryItems) ? content.galleryItems : (Array.isArray(content.gallery) ? content.gallery : []);
+    const galleryItems = galleryRaw.map(item => typeof item === 'string' ? { url: item, category: 'uncategorized', description: '' } : { url: item?.url || '', category: item?.category || 'uncategorized', description: item?.description || item?.caption || '' }).filter(i => i.url);
+    document.querySelectorAll('[data-cms-gallery-cat]').forEach(container => {
+      const cat = container.dataset.cmsGalleryCat;
+      const items = galleryItems.filter(i => i.category === cat && i.url);
+      if (!items.length) return; // keep default/static markup when no managed items for this category
+      container.replaceChildren();
+      const isRooms = cat === 'rooms';
+      items.forEach((item, index) => {
+        const url = safeImageUrl(item.url);
+        const desc = String(item.description || '').trim();
+        if (isRooms) {
+          const card = document.createElement('div');
+          card.className = 'room-item reveal visible';
+          card.innerHTML = `<div class="room-img"><img src="${window.escapeHtml ? window.escapeHtml(url) : url}" alt="${window.escapeHtml ? window.escapeHtml(desc || 'LakeBite room') : (desc || 'LakeBite room')}" loading="lazy"></div><div class="room-label"><h3>${window.escapeHtml ? window.escapeHtml(desc || 'Our Room') : (desc || 'Our Room')}</h3><p></p></div>`;
+          container.appendChild(card);
+          return;
+        }
+        const wrap = document.createElement('div');
+        wrap.className = 'gallery-item reveal visible' + (index === 0 && items.length > 3 ? ' gi-large' : (index === 4 ? ' gi-wide' : ''));
+        const img = document.createElement('img'); img.src = url; img.alt = desc || `LakeBite gallery photo`; img.loading = 'lazy';
+        const overlay = document.createElement('div'); overlay.className = 'gi-overlay';
+        const span = document.createElement('span'); span.textContent = desc || 'LakeBite';
+        overlay.appendChild(span); wrap.append(img, overlay); container.appendChild(wrap);
+      });
+    });
+    // legacy single-container support
+    if (galleryItems.length && document.querySelector('[data-cms-gallery="managed"]')) {
+      const gallery = document.querySelector('[data-cms-gallery="managed"]'); gallery.replaceChildren();
+      galleryItems.forEach((item, index) => {
+        const wrap = document.createElement('div'); wrap.className = 'gallery-item reveal visible';
+        const img = document.createElement('img'); img.src = safeImageUrl(item.url); img.alt = item.description || `LakeBite gallery photo ${index + 1}`; img.loading = 'lazy';
+        const overlay = document.createElement('div'); overlay.className = 'gi-overlay'; overlay.innerHTML = `<span>${window.escapeHtml ? window.escapeHtml(item.description || 'LakeBite') : (item.description || 'LakeBite')}</span>`;
+        wrap.append(img, overlay); gallery.appendChild(wrap);
+      });
     }
   }).catch(() => {});
 }
@@ -90,18 +122,27 @@ function loadPublicEventsAndReviews() {
   const eventsTarget = document.getElementById('publicEventsList');
   if (eventsTarget) fetch('/api/events').then(response => response.json()).then(({ events = [] }) => {
     eventsTarget.replaceChildren();
-    if (!events.length) { eventsTarget.textContent = 'There are no upcoming events at this time.'; return; }
+    eventsTarget.classList.remove('experience-grid--empty');
+    if (!events.length) { eventsTarget.classList.add('experience-grid--empty'); eventsTarget.innerHTML = '<div class="experience-empty"><i class="fa-regular fa-calendar"></i><p>There are no upcoming experiences at the moment. Check back soon.</p></div>'; return; }
     for (const event of events) {
-      const card = document.createElement('article'); card.className = 'menu-card';
-      const image = document.createElement('img'); image.src = safeImageUrl(event.image); image.alt = event.title;
-      const title = document.createElement('h3'); title.textContent = event.title;
-      const details = document.createElement('p'); details.textContent = `${new Date(event.date).toLocaleString()} · ${event.type} · ${event.capacity} places · KES ${Number(event.price).toLocaleString()}`;
-      const description = document.createElement('p'); description.textContent = event.description || '';
-      const form = document.createElement('form'); form.dataset.eventBooking = event._id;
-      form.innerHTML = '<label>Name<input name="name" required maxlength="100"></label><label>Email<input name="email" type="email" required></label><label>Guests<input name="guests" type="number" min="1" value="1" required></label><button class="btn btn-primary" type="submit">Enquire / book</button><p role="status" aria-live="polite"></p>';
-      card.append(image, title, details, description, form); eventsTarget.appendChild(card);
+      const card = document.createElement('article'); card.className = 'experience-card';
+      const media = document.createElement('div'); media.className = 'experience-media';
+      const image = document.createElement('img'); image.src = safeImageUrl(event.image); image.alt = event.title || 'LakeBite experience'; image.loading = 'lazy'; image.decoding = 'async';
+      const badge = document.createElement('span'); badge.className = 'experience-badge'; badge.innerHTML = `<i class="fa-solid fa-sparkles"></i> ${window.escapeHtml ? window.escapeHtml(event.type || 'Experience') : (event.type || 'Experience')}`;
+      media.append(image, badge);
+      const body = document.createElement('div'); body.className = 'experience-body';
+      const title = document.createElement('h3'); title.className = 'experience-title'; title.textContent = event.title || 'Upcoming experience';
+      const meta = document.createElement('div'); meta.className = 'experience-meta';
+      const date = event.date ? new Date(event.date) : null;
+      const dateText = date && !isNaN(date) ? date.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Date to be announced';
+      const price = Number(event.price || 0);
+      meta.innerHTML = `<span><i class="fa-regular fa-clock"></i> ${dateText}</span><span><i class="fa-solid fa-user-group"></i> ${Number(event.capacity || 0)} places</span><span><i class="fa-solid fa-tag"></i> ${price > 0 ? `KES ${price.toLocaleString()}` : 'Complimentary'}</span>`;
+      const description = document.createElement('p'); description.className = 'experience-desc'; description.textContent = event.description || 'Join us for a memorable LakeBite experience.';
+      const form = document.createElement('form'); form.className = 'experience-form'; form.dataset.eventBooking = event._id;
+      form.innerHTML = '<div class="experience-form-grid"><label><span>Name</span><input class="form-control" name="name" required maxlength="100" autocomplete="name"></label><label><span>Email</span><input class="form-control" name="email" type="email" required autocomplete="email"></label><label><span>Guests</span><input class="form-control" name="guests" type="number" min="1" value="1" required></label></div><button class="btn btn-primary experience-submit" type="submit"><i class="fa-regular fa-calendar-check"></i> Reserve your spot</button><p class="experience-status" role="status" aria-live="polite"></p>';
+      body.append(title, meta, description, form); card.append(media, body); eventsTarget.appendChild(card);
     }
-  }).catch(() => { eventsTarget.textContent = 'Event information is temporarily unavailable.'; });
+  }).catch(() => { eventsTarget.classList.add('experience-grid--empty'); eventsTarget.innerHTML = '<div class="experience-empty"><p>Event information is temporarily unavailable.</p></div>'; });
   const reviewsTarget = document.getElementById('publicReviewsList');
   if (reviewsTarget) fetch('/api/reviews').then(response => response.json()).then(data => {
     reviewsTarget.replaceChildren(); const summary = document.getElementById('publicReviewSummary');

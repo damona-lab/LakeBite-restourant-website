@@ -221,7 +221,7 @@ app.post('/api/register', authLimiter, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Registration failed' }); }
 });
 
-app.get('/api/site-content', async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }).lean(); const value = entry?.value || {}; res.json({ content: { name: value.name, address: value.address, phone: value.phone, whatsapp: value.whatsapp, openingHours: value.openingHours, heroTitle: value.heroTitle, heroSubtitle: value.heroSubtitle, aboutText: value.aboutText, socialLinks: value.socialLinks || {}, gallery: value.gallery || [] } }); } catch (error) { next(error); } });
+app.get('/api/site-content', async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }).lean(); const value = entry?.value || {}; const galleryItems = Array.isArray(value.galleryItems) ? value.galleryItems : (Array.isArray(value.gallery) ? value.gallery.map(url => ({ url, category: 'uncategorized', description: '' })) : []); res.json({ content: { name: value.name, address: value.address, phone: value.phone, whatsapp: value.whatsapp, openingHours: value.openingHours, heroTitle: value.heroTitle, heroSubtitle: value.heroSubtitle, aboutText: value.aboutText, socialLinks: value.socialLinks || {}, gallery: value.gallery || [], galleryItems } }); } catch (error) { next(error); } });
 app.get('/api/admin/integrations/status', auth, adminOnly, (req, res) => res.json({ mpesa: Boolean(process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET && process.env.MPESA_SHORTCODE && process.env.MPESA_PASSKEY), email: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD), sms: Boolean(process.env.SMS_API_KEY), analytics: Boolean(process.env.GA_MEASUREMENT_ID) }));
 
 app.post('/api/login', authLimiter, async (req, res) => {
@@ -823,6 +823,56 @@ app.post('/api/admin/menu-image', auth, authorize('admin','manager'), express.ra
   }
 });
 
+app.post('/api/admin/event-image', auth, authorize('admin','manager'), express.raw({ type: 'application/octet-stream', limit: '5mb' }), async (req, res) => {
+  const declaredType = String(req.get('x-image-type') || '').split(';')[0].trim().toLowerCase();
+  const extensions = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+  const bytes = req.body;
+  if (!Buffer.isBuffer(bytes) || !bytes.length) return res.status(400).json({ error: 'No image data was received. Please choose the image again.' });
+  const signatures = {
+    jpg: bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff,
+    png: bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])),
+    webp: bytes.length >= 12 && bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP',
+    gif: bytes.length >= 6 && ['GIF87a','GIF89a'].includes(bytes.toString('ascii', 0, 6))
+  };
+  const extension = extensions[declaredType] || Object.keys(signatures).find(type => signatures[type]);
+  if (!extension || !signatures[extension]) return res.status(400).json({ error: 'The selected file is not a supported JPG, PNG, WebP, or GIF image.' });
+  const directory = path.join(__dirname, 'uploads', 'events');
+  try {
+    await fs.promises.mkdir(directory, { recursive: true });
+    const filename = `${crypto.randomBytes(16).toString('hex')}.${extension}`;
+    await fs.promises.writeFile(path.join(directory, filename), bytes, { flag: 'wx' });
+    res.status(201).json({ image: `/uploads/events/${filename}` });
+  } catch (error) {
+    console.error('Event image storage failed:', error.message);
+    res.status(500).json({ error: 'The server could not save the image. Check that backend/uploads is writable.' });
+  }
+});
+
+app.post('/api/admin/gallery-image', auth, authorize('admin','manager'), express.raw({ type: 'application/octet-stream', limit: '5mb' }), async (req, res) => {
+  const declaredType = String(req.get('x-image-type') || '').split(';')[0].trim().toLowerCase();
+  const extensions = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+  const bytes = req.body;
+  if (!Buffer.isBuffer(bytes) || !bytes.length) return res.status(400).json({ error: 'No image data was received. Please choose the image again.' });
+  const signatures = {
+    jpg: bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff,
+    png: bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])),
+    webp: bytes.length >= 12 && bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP',
+    gif: bytes.length >= 6 && ['GIF87a','GIF89a'].includes(bytes.toString('ascii', 0, 6))
+  };
+  const extension = extensions[declaredType] || Object.keys(signatures).find(type => signatures[type]);
+  if (!extension || !signatures[extension]) return res.status(400).json({ error: 'The selected file is not a supported JPG, PNG, WebP, or GIF image.' });
+  const directory = path.join(__dirname, 'uploads', 'gallery');
+  try {
+    await fs.promises.mkdir(directory, { recursive: true });
+    const filename = `${crypto.randomBytes(16).toString('hex')}.${extension}`;
+    await fs.promises.writeFile(path.join(directory, filename), bytes, { flag: 'wx' });
+    res.status(201).json({ image: `/uploads/gallery/${filename}` });
+  } catch (error) {
+    console.error('Gallery image storage failed:', error.message);
+    res.status(500).json({ error: 'The server could not save the image. Check that backend/uploads is writable.' });
+  }
+});
+
 app.post('/api/admin/menu', auth, authorize('admin','manager'), async (req, res) => {
   const item = await MenuItem.create(req.body);
   await logAudit(req.user.id || 'admin', 'create_menu_item', '/api/admin/menu', item.name);
@@ -923,7 +973,7 @@ app.patch('/api/admin/reviews/:id', auth, authorize('admin','manager'), async (r
 app.get('/api/reviews', async (req, res, next) => { try { const reviews = await Review.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(100).lean(); const average = reviews.length ? reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length : null; res.json({ reviews, count: reviews.length, average }); } catch (error) { next(error); } });
 
 app.get('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }); res.json({ settings: entry?.value || {} }); } catch (error) { next(error); } });
-app.patch('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const allowed = ['name','address','phone','whatsapp','deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','openingHours','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours','heroTitle','heroSubtitle','aboutText','socialLinks','gallery']; const updates = {}; for (const key of allowed) if (req.body[key] !== undefined) updates[key] = typeof req.body[key] === 'string' ? req.body[key].trim().slice(0,5000) : req.body[key]; for (const field of ['deliveryFee','deliveryRadiusKm','taxPercent','serviceChargePercent','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours']) if (updates[field] !== undefined && (!Number.isFinite(Number(updates[field])) || Number(updates[field]) < 0 || ['taxPercent','serviceChargePercent'].includes(field) && Number(updates[field]) > 100)) return res.status(400).json({ error: `Invalid ${field}` }); if (Array.isArray(updates.gallery)) updates.gallery = updates.gallery.slice(0,50).map(item => String(item).slice(0,500)); const entry = await Setting.findOne({ key: 'restaurant' }) || new Setting({ key: 'restaurant', value: {} }); entry.value = { ...(entry.value || {}), ...updates }; entry.updatedAt = new Date(); await entry.save(); await logAudit(req.user.id, 'update_restaurant_settings', req.path, 'Restaurant settings updated'); res.json({ settings: entry.value }); } catch (error) { next(error); } });
+app.patch('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const allowed = ['name','address','phone','whatsapp','email','mapUrl','currency','timezone','websiteUrl','seoDescription','announcementText','reservationConfirmationMessage','deliveryFee','freeDeliveryMinimum','deliveryRadiusKm','minimumOrderAmount','taxPercent','serviceChargePercent','openingHours','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours','heroTitle','heroSubtitle','aboutText','socialLinks','gallery','galleryItems','acceptingOrders','acceptingReservations','showAnnouncementBar','socialFacebook','socialInstagram','socialX','socialTiktok']; const updates = {}; for (const key of allowed) if (req.body[key] !== undefined) updates[key] = typeof req.body[key] === 'string' ? req.body[key].trim().slice(0,5000) : req.body[key]; for (const field of ['deliveryFee','freeDeliveryMinimum','deliveryRadiusKm','minimumOrderAmount','taxPercent','serviceChargePercent','reservationSlotMinutes','maximumPartySize','leadTimeHours','cutoffHours']) if (updates[field] !== undefined && (!Number.isFinite(Number(updates[field])) || Number(updates[field]) < 0 || ['taxPercent','serviceChargePercent'].includes(field) && Number(updates[field]) > 100)) return res.status(400).json({ error: `Invalid ${field}` }); if (Array.isArray(updates.gallery)) updates.gallery = updates.gallery.slice(0,50).map(item => String(item).slice(0,500)); if (Array.isArray(updates.galleryItems)) { const allowedCats = new Set(['food','interior','events','rooms','uncategorized']); updates.galleryItems = updates.galleryItems.slice(0, 200).map(item => ({ url: String(item?.url || item || '').trim().slice(0, 500), category: allowedCats.has(String(item?.category || 'uncategorized')) ? String(item.category) : 'uncategorized', description: String(item?.description || item?.caption || '').trim().slice(0, 240) })).filter(item => item.url || item.description); updates.gallery = updates.galleryItems.map(item => item.url).filter(Boolean); } for (const field of ['acceptingOrders','acceptingReservations','showAnnouncementBar']) if (updates[field] !== undefined) updates[field] = updates[field] === true || updates[field] === 'true' || updates[field] === 'on' || updates[field] === 1 || updates[field] === '1'; const entry = await Setting.findOne({ key: 'restaurant' }) || new Setting({ key: 'restaurant', value: {} }); entry.value = { ...(entry.value || {}), ...updates }; entry.updatedAt = new Date(); await entry.save(); await logAudit(req.user.id, 'update_restaurant_settings', req.path, 'Restaurant settings updated'); res.json({ settings: entry.value }); } catch (error) { next(error); } });
 
 app.get('/api/admin/notifications', auth, authorize('admin','manager','host','kitchen'), async (req, res, next) => { try { const since = new Date(Date.now() - 24*60*60*1000); const [orders,reservations,messages,unavailable] = await Promise.all([Order.countDocuments({ status: 'new', createdAt: { $gte: since } }), Reservation.countDocuments({ status: 'pending', createdAt: { $gte: since } }), ContactMessage.countDocuments({ status: 'unread' }), MenuItem.countDocuments({ available: false })]); res.json({ alerts: [{ type: 'orders', count: orders, label: 'New orders' },{ type: 'reservations', count: reservations, label: 'New reservations' },{ type: 'messages', count: messages, label: 'Unread messages' },{ type: 'menu', count: unavailable, label: 'Unavailable menu items' }].filter(item => item.count) }); } catch (error) { next(error); } });
 

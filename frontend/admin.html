@@ -7,25 +7,36 @@
 <link rel="stylesheet" href="global.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* ════════════ ADMIN PANEL ════════════ */
+/* ════════════ ADMIN PANEL (Glassmorphism) ════════════ */
 :root {
-  --admin-bg: #f7f3ec;
-  --admin-sidebar: #1a3d2b;
+  --admin-bg-a: #eef3ee;
+  --admin-bg-b: #f7f1e6;
+  --admin-sidebar: rgba(20, 50, 34, 0.72);
+  --admin-sidebar-solid: #1a3d2b;
   --admin-sidebar-dark: #143222;
   --admin-gold: #c8973a;
   --admin-gold-lt: #e0b55a;
-  --admin-card: #ffffff;
-  --admin-border: #e8e2d8;
-  --admin-text: #2c2a24;
-  --admin-text-sub: #6b6458;
-  --admin-shadow: 0 6px 30px rgba(0,0,0,0.06);
-  --admin-radius: 10px;
+  --admin-card: rgba(255, 255, 255, 0.58);
+  --admin-card-strong: rgba(255, 255, 255, 0.72);
+  --admin-border: rgba(255, 255, 255, 0.55);
+  --admin-border-subtle: rgba(26, 61, 43, 0.10);
+  --admin-text: #1f241f;
+  --admin-text-sub: #5b6358;
+  --admin-shadow: 0 10px 40px rgba(20, 50, 34, 0.10);
+  --admin-shadow-lg: 0 20px 60px rgba(20, 50, 34, 0.16);
+  --admin-radius: 14px;
+  --admin-blur: 16px;
+  --admin-blur-strong: 22px;
 }
 
 body.admin-body {
-  background: var(--admin-bg);
   color: var(--admin-text);
   overflow: hidden;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(200, 151, 58, 0.18), transparent 55%),
+    radial-gradient(900px 500px at 95% 0%, rgba(26, 61, 43, 0.16), transparent 50%),
+    linear-gradient(135deg, var(--admin-bg-a), var(--admin-bg-b));
+  background-attachment: fixed;
 }
 
 /* ── Top Bar ── */
@@ -33,13 +44,15 @@ body.admin-body {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 64px;
-  background: var(--admin-card);
+  background: var(--admin-card-strong);
   border-bottom: 1px solid var(--admin-border);
+  box-shadow: 0 8px 32px rgba(20, 50, 34, 0.06);
+  backdrop-filter: blur(var(--admin-blur-strong)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--admin-blur-strong)) saturate(140%);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
-  z-index: 1100;
   z-index: 1050;
 }
 .admin-topbar-left {
@@ -47,13 +60,16 @@ body.admin-body {
 }
 .admin-burger {
   width: 40px; height: 40px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--admin-border);
-  background: transparent;
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   color: var(--admin-text);
 }
+.admin-burger:hover { background: rgba(255,255,255,0.55); }
 .admin-brand-mini {
   font-family: var(--font-display);
   font-size: 1.15rem;
@@ -70,17 +86,22 @@ body.admin-body {
 .admin-search {
   flex: 1;
   padding: 0.65rem 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--admin-border);
-  background: #f4f1ea;
+  background: rgba(255,255,255,0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--admin-text);
   font-size: 0.85rem;
 }
+.admin-search::placeholder { color: rgba(31,36,31,0.45); }
 .admin-date-pill {
   padding: 0.65rem 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--admin-border);
-  background: #f4f1ea;
+  background: rgba(255,255,255,0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--admin-text-sub);
   font-size: 0.85rem;
   font-weight: 600;
@@ -91,20 +112,25 @@ body.admin-body {
 }
 .admin-icon-btn {
   width: 40px; height: 40px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--admin-border);
-  background: transparent;
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--admin-text);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   font-size: 1rem;
 }
+.admin-icon-btn:hover { background: rgba(255,255,255,0.55); }
 .admin-profile {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.5rem 1rem;
   border-radius: 50px;
   border: 1px solid var(--admin-border);
-  background: #f4f1ea;
+  background: rgba(255,255,255,0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
 }
 .admin-profile-avatar {
@@ -138,7 +164,10 @@ body.admin-body {
   width: 260px;
   height: 100vh;
   background: var(--admin-sidebar);
-  border-right: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 8px 0 40px rgba(20, 50, 34, 0.12);
+  backdrop-filter: blur(var(--admin-blur-strong)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--admin-blur-strong)) saturate(130%);
   display: flex;
   flex-direction: column;
   z-index: 1100;
@@ -149,7 +178,8 @@ body.admin-body {
   height: 64px;
   padding: 0 1.5rem;
   display: flex; align-items: center; gap: 0.75rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
 }
 .admin-sidebar-logo {
   font-family: var(--font-display);
@@ -174,19 +204,22 @@ body.admin-body {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.5);
   margin-bottom: 0.5rem;
   display: block;
 }
 .admin-loc-select {
   width: 100%;
   padding: 0.6rem 0.9rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #fff;
   font-size: 0.85rem;
 }
+.admin-loc-select option { color: #1f241f; background: #fff; }
 .admin-nav {
   flex: 1;
   overflow-y: auto;
@@ -208,30 +241,33 @@ body.admin-body {
 }
 .admin-nav-link i { width: 20px; text-align: center; font-size: 0.95rem; }
 .admin-nav-link:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.10);
   color: #fff;
 }
 .admin-nav-link.active {
-  background: var(--admin-gold);
+  background: linear-gradient(135deg, rgba(200,151,58,0.95), rgba(224,181,90,0.85));
   color: #fff;
-  box-shadow: 0 4px 14px rgba(200,151,58,0.25);
+  border: 1px solid rgba(255,255,255,0.25);
+  box-shadow: 0 8px 22px rgba(200,151,58,0.28);
 }
 .admin-nav-divider {
   height: 1px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.10);
   margin: 1rem 1.25rem;
 }
 .admin-nav-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 .admin-logout {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: var(--admin-radius);
-  border: 1px solid rgba(255,255,255,0.15);
-  background: transparent;
-  color: #e8a04d;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f0cfa0;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -239,7 +275,7 @@ body.admin-body {
   transition: all 0.2s ease;
 }
 .admin-logout:hover {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.12);
   color: #fff;
 }
 
@@ -249,11 +285,13 @@ body.admin-body {
   height: 100vh;
   overflow-y: auto;
   padding: 1.5rem;
+  padding-top: 88px;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 @media (max-width: 768px) {
-  .admin-main { margin-left: 0; padding: 1rem; }
+  .admin-main { margin-left: 0; padding: 1rem; padding-top: 80px; }
   .admin-topbar { padding: 0 1rem; }
 }
 
@@ -281,7 +319,7 @@ body.admin-body {
 .admin-btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.6rem 1.25rem;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
   font-size: 0.85rem;
   font-weight: 600;
@@ -291,21 +329,27 @@ body.admin-body {
   font-family: var(--font-body);
 }
 .admin-btn-primary {
-  background: var(--admin-sidebar);
+  background: linear-gradient(135deg, var(--admin-sidebar-solid), #24543b);
   color: #fff;
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 6px 18px rgba(26,61,43,0.22);
 }
 .admin-btn-primary:hover {
-  background: var(--admin-sidebar-dark);
+  filter: brightness(1.05);
   transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(26,61,43,0.28);
 }
 .admin-btn-outline {
-  background: transparent;
+  background: rgba(255,255,255,0.45);
   color: var(--admin-text);
   border-color: var(--admin-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .admin-btn-outline:hover {
-  border-color: var(--admin-gold);
+  border-color: rgba(200,151,58,0.55);
   color: var(--admin-gold);
+  background: rgba(255,255,255,0.65);
 }
 .admin-btn-sm { padding: 0.45rem 0.9rem; font-size: 0.78rem; }
 
@@ -322,19 +366,28 @@ body.admin-body {
   border-radius: var(--admin-radius);
   padding: 1.25rem;
   box-shadow: var(--admin-shadow);
+  backdrop-filter: blur(var(--admin-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--admin-blur)) saturate(140%);
   display: flex; align-items: center; gap: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.admin-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-lg);
+  border-color: rgba(255,255,255,0.75);
 }
 .admin-stat-icon {
   width: 48px; height: 48px;
   border-radius: 12px;
-  background: #f4f1ea;
-  color: var(--admin-sidebar);
+  background: rgba(255,255,255,0.55);
+  color: var(--admin-sidebar-solid);
+  border: 1px solid rgba(255,255,255,0.6);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.25rem;
   flex-shrink: 0;
 }
-.admin-stat-icon.gold { background: #fbf6ea; color: var(--admin-gold); }
-.admin-stat-icon.green { background: #eef5ee; color: var(--admin-sidebar); }
+.admin-stat-icon.gold { background: rgba(251,246,234,0.75); color: var(--admin-gold); }
+.admin-stat-icon.green { background: rgba(238,245,238,0.75); color: var(--admin-sidebar-solid); }
 .admin-stat-info .stat-value {
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -363,14 +416,16 @@ body.admin-body {
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
   box-shadow: var(--admin-shadow);
+  backdrop-filter: blur(var(--admin-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--admin-blur)) saturate(140%);
   margin-bottom: 1.5rem;
   overflow: hidden;
 }
 .admin-section-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--admin-border);
-  background: #faf8f2;
+  border-bottom: 1px solid rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.35);
 }
 .admin-section-title {
   font-family: var(--font-display);
@@ -397,17 +452,17 @@ body.admin-body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.72rem;
-  border-bottom: 2px solid var(--admin-border);
-  background: #faf8f2;
+  border-bottom: 1px solid rgba(26,61,43,0.08);
+  background: rgba(255,255,255,0.38);
 }
 .admin-table td {
   padding: 1rem;
-  border-bottom: 1px solid var(--admin-border);
+  border-bottom: 1px solid rgba(26,61,43,0.06);
   color: var(--admin-text);
   vertical-align: middle;
 }
 .admin-table tr:last-child td { border-bottom: none; }
-.admin-table tr:hover td { background: #fbf8f1; }
+.admin-table tr:hover td { background: rgba(255,255,255,0.35); }
 
 /* ── Badges ── */
 .admin-badge {
@@ -418,19 +473,22 @@ body.admin-body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  border: 1px solid rgba(255,255,255,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-.admin-badge-confirmed { background: #eef5ee; color: var(--admin-sidebar); }
-.admin-badge-pending { background: #fbf6ea; color: var(--admin-gold); }
-.admin-badge-seated { background: #e8f0f5; color: #1f6f8b; }
-.admin-badge-completed { background: #f1f1f1; color: var(--admin-text-sub); }
-.admin-badge-cancelled { background: #fbeaea; color: #c0392b; }
-.admin-badge-no-show { background: #f1e3e3; color: #a33; }
-.admin-badge-available { background: #eef5ee; color: var(--admin-sidebar); }
-.admin-badge-unavailable { background: #f1e3e3; color: #a33; }
-.admin-badge-new { background: #fbf6ea; color: var(--admin-gold); }
-.admin-badge-accepted { background: #eef5ee; color: var(--admin-sidebar); }
-.admin-badge-preparing { background: #fbf6ea; color: var(--admin-gold); }
-.admin-badge-ready { background: #e8f0f5; color: #1f6f8b; }
+.admin-badge-confirmed { background: rgba(238,245,238,0.75); color: var(--admin-sidebar-solid); }
+.admin-badge-pending { background: rgba(251,246,234,0.75); color: var(--admin-gold); }
+.admin-badge-seated { background: rgba(232,240,245,0.75); color: #1f6f8b; }
+.admin-badge-completed { background: rgba(241,241,241,0.7); color: var(--admin-text-sub); }
+.admin-badge-cancelled { background: rgba(251,234,234,0.75); color: #c0392b; }
+.admin-badge-no-show { background: rgba(241,227,227,0.75); color: #a33; }
+.admin-badge-available { background: rgba(238,245,238,0.75); color: var(--admin-sidebar-solid); }
+.admin-badge-unavailable { background: rgba(241,227,227,0.75); color: #a33; }
+.admin-badge-new { background: rgba(251,246,234,0.75); color: var(--admin-gold); }
+.admin-badge-accepted { background: rgba(238,245,238,0.75); color: var(--admin-sidebar-solid); }
+.admin-badge-preparing { background: rgba(251,246,234,0.75); color: var(--admin-gold); }
+.admin-badge-ready { background: rgba(232,240,245,0.75); color: #1f6f8b; }
 
 /* ── Status Chips ── */
 .admin-action-btn {
@@ -461,20 +519,23 @@ body.admin-body {
 /* ── Modals ── */
 .admin-modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(4px);
+  background: rgba(20, 50, 34, 0.18);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   z-index: 1500;
   display: none; align-items: center; justify-content: center;
 }
 .admin-modal-overlay.open { display: flex; }
 .admin-modal {
-  background: var(--admin-card);
-  border: 1px solid var(--admin-border);
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(255,255,255,0.65);
   border-radius: var(--admin-radius);
   width: min(520px, 92vw);
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  box-shadow: var(--admin-shadow-lg);
+  backdrop-filter: blur(var(--admin-blur-strong)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--admin-blur-strong)) saturate(150%);
   animation: adminModalIn 0.3s ease;
 }
 @keyframes adminModalIn {
@@ -484,7 +545,8 @@ body.admin-body {
 .admin-modal-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--admin-border);
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.25);
 }
 .admin-modal-title {
   font-family: var(--font-display);
@@ -501,8 +563,8 @@ body.admin-body {
 .admin-modal-footer {
   display: flex; justify-content: flex-end; gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--admin-border);
-  background: #faf8f2;
+  border-top: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.25);
 }
 
 /* ── Form ── */
@@ -515,22 +577,29 @@ body.admin-body {
 .admin-form-control {
   width: 100%;
   padding: 0.65rem 0.9rem;
-  border-radius: 8px;
-  border: 1.5px solid var(--admin-border);
-  background: #fff;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--admin-text);
   font-size: 0.9rem;
   font-family: var(--font-body);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .admin-form-control:focus {
-  outline: none; border-color: var(--admin-gold);
+  outline: none;
+  border-color: rgba(200,151,58,0.65);
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 0 0 3px rgba(200,151,58,0.12);
 }
 .admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.admin-toast { position: fixed; right: 1rem; bottom: 1rem; z-index: 3000; padding: .85rem 1.1rem; border-radius: 8px; background: var(--admin-sidebar); color: #fff; box-shadow: var(--admin-shadow); opacity: 0; transform: translateY(1rem); pointer-events: none; transition: .2s; }
+.admin-toast { position: fixed; right: 1rem; bottom: 1rem; z-index: 3000; padding: .85rem 1.1rem; border-radius: 12px; background: rgba(26,61,43,0.88); color: #fff; box-shadow: var(--admin-shadow-lg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); opacity: 0; transform: translateY(1rem); pointer-events: none; transition: .2s; }
 .admin-toast.show { opacity: 1; transform: none; }
 .floor-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: .8rem; margin-top: 1rem; }
-.floor-table-card { border: 1px solid var(--admin-border); border-radius: 10px; padding: 1rem; background: var(--admin-card); }
-.floor-table-card[data-status="seated"] { border-color: #47775a; }.floor-table-card[data-status="blocked"] { border-color: #a4382c; opacity: .8; }
+.floor-table-card { border: 1px solid var(--admin-border); border-radius: 12px; padding: 1rem; background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(20,50,34,0.06); }
+.floor-table-card[data-status="seated"] { border-color: rgba(71,119,90,0.55); background: rgba(238,245,238,0.45); }
+.floor-table-card[data-status="blocked"] { border-color: rgba(164,56,44,0.45); opacity: .85; background: rgba(251,234,234,0.35); }
 .floor-table-card h3 { margin: 0 0 .4rem; }.floor-table-actions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .7rem; }
 
 /* ── Alerts ── */
@@ -557,7 +626,9 @@ body.admin-body {
 /* ── Mobile overlay for sidebar ── */
 .admin-mobile-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(20, 50, 34, 0.22);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1040;
   display: none;
 }
@@ -568,16 +639,19 @@ body.admin-body {
 .report-toolbar, .report-panel, .report-kpi, .report-tab {
   background: var(--admin-card); border: 1px solid var(--admin-border); border-radius: var(--admin-radius);
   box-shadow: var(--admin-shadow);
+  backdrop-filter: blur(var(--admin-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--admin-blur)) saturate(140%);
 }
 .report-toolbar { padding: 1rem; display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; }
 .report-filter { display: grid; gap: .32rem; min-width: 145px; }
 .report-filter label, .report-caption { color: var(--admin-text-sub); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-.report-filter select, .report-filter input { min-height: 40px; border: 1px solid var(--admin-border); border-radius: 7px; padding: .5rem .65rem; background: #fff; color: var(--admin-text); font: inherit; }
+.report-filter select, .report-filter input { min-height: 40px; border: 1px solid var(--admin-border); border-radius: 10px; padding: .5rem .65rem; background: rgba(255,255,255,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--admin-text); font: inherit; }
+.report-filter select:focus, .report-filter input:focus { outline: none; border-color: rgba(200,151,58,0.65); box-shadow: 0 0 0 3px rgba(200,151,58,0.12); }
 .report-custom-range { display: flex; flex-wrap: wrap; gap: .65rem; }
 .report-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
 .report-tabs { display: flex; gap: .45rem; overflow-x: auto; padding: .2rem .1rem .45rem; scrollbar-width: thin; }
 .report-tab { box-shadow: none; border-radius: 999px; padding: .6rem .95rem; color: var(--admin-text-sub); white-space: nowrap; cursor: pointer; font: 600 .8rem var(--font-body); }
-.report-tab[aria-selected="true"] { background: var(--admin-sidebar); border-color: var(--admin-sidebar); color: #fff; }
+.report-tab[aria-selected="true"] { background: linear-gradient(135deg, var(--admin-sidebar-solid), #24543b); border-color: transparent; color: #fff; box-shadow: 0 6px 16px rgba(26,61,43,0.22); }
 .report-note { color: var(--admin-text-sub); font-size: .82rem; line-height: 1.5; margin: 0; }
 .report-last-updated { margin-left: auto; white-space: nowrap; }
 .report-kpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .85rem; }
@@ -591,17 +665,17 @@ body.admin-body {
 .report-panel { padding: 1.1rem; min-width: 0; }
 .report-panel h3 { font: 700 1.08rem var(--font-display); margin: 0 0 .35rem; }
 .report-panel-sub { color: var(--admin-text-sub); font-size: .78rem; margin: 0 0 1rem; }
-.report-chart { min-height: 230px; display: flex; align-items: end; gap: .4rem; padding: 1rem .2rem .2rem; border-bottom: 1px solid var(--admin-border); }
+.report-chart { min-height: 230px; display: flex; align-items: end; gap: .4rem; padding: 1rem .2rem .2rem; border-bottom: 1px solid rgba(26,61,43,0.08); }
 .report-bar-col { flex: 1; min-width: 8px; display: flex; height: 205px; flex-direction: column; align-items: center; justify-content: end; gap: .35rem; }
 .report-bar { background: linear-gradient(180deg,var(--admin-gold-lt),var(--admin-gold)); border-radius: 5px 5px 1px 1px; width: min(100%,34px); min-height: 2px; }
 .report-bar-label { color: var(--admin-text-sub); font-size: .65rem; white-space: nowrap; }
 .report-list { display: grid; gap: .15rem; }
-.report-list-row { display: grid; grid-template-columns: minmax(90px,1fr) minmax(50px,auto) minmax(80px,auto); align-items: center; gap: .5rem; padding: .65rem .1rem; border-bottom: 1px solid #eee9e0; font-size: .82rem; }
+.report-list-row { display: grid; grid-template-columns: minmax(90px,1fr) minmax(50px,auto) minmax(80px,auto); align-items: center; gap: .5rem; padding: .65rem .1rem; border-bottom: 1px solid rgba(26,61,43,0.06); font-size: .82rem; }
 .report-list-row:last-child { border-bottom: 0; }
 .report-list-row strong { text-align: right; }
 .report-table-wrap { overflow-x: auto; }
 .report-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-.report-table th, .report-table td { text-align: left; padding: .7rem .55rem; border-bottom: 1px solid #eee9e0; }
+.report-table th, .report-table td { text-align: left; padding: .7rem .55rem; border-bottom: 1px solid rgba(26,61,43,0.06); }
 .report-table th { color: var(--admin-text-sub); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
 .report-table td:last-child, .report-table th:last-child { text-align: right; }
 .report-empty, .report-error { background: #fff; border: 1px solid var(--admin-border); border-radius: var(--admin-radius); padding: 2rem; color: var(--admin-text-sub); text-align: center; }
@@ -627,7 +701,7 @@ body.admin-body {
 .chart-mini-btn:hover, .chart-mini-btn:focus-visible { border-color: var(--admin-gold); color: var(--admin-sidebar); outline: 2px solid #c8973a55; }
 .chart-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .chart-svg text { fill: var(--admin-text-sub); font: 11px var(--font-body); }
-.chart-gridline { stroke: #e8e2d8; stroke-width: 1; }
+.chart-gridline { stroke: rgba(26,61,43,0.10); stroke-width: 1; }
 .chart-series-0 { stroke: #1a4c36; fill: #1a4c36; }
 .chart-series-1 { stroke: #b8842e; fill: #b8842e; }
 .chart-series-2 { stroke: #466f82; fill: #466f82; }
@@ -643,15 +717,15 @@ body.admin-body {
 .chart-data-details { margin-top: .55rem; color: var(--admin-text-sub); font-size: .75rem; }
 .chart-data-details summary { cursor: pointer; padding: .4rem 0; }
 .chart-data-table { border-collapse: collapse; width: 100%; font-size: .74rem; }
-.chart-data-table th, .chart-data-table td { border-bottom: 1px solid #eee9e0; padding: .45rem; text-align: left; }
+.chart-data-table th, .chart-data-table td { border-bottom: 1px solid rgba(26,61,43,0.06); padding: .45rem; text-align: left; }
 .chart-data-table th { color: var(--admin-text-sub); }
 .chart-state { background: #fbfaf7; border: 1px dashed var(--admin-border); color: var(--admin-text-sub); border-radius: 8px; text-align: center; padding: 2rem 1rem; font-size: .82rem; }
 .chart-state strong { color: var(--admin-text); display: block; margin-bottom: .25rem; }
-.report-preview-banner { grid-column: 1 / -1; padding: .7rem 1rem; border: 1px solid #d9bd82; border-radius: 8px; background: #fbf4e4; color: #614a20; font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-align: center; }
+.report-preview-banner { grid-column: 1 / -1; padding: .7rem 1rem; border: 1px solid rgba(217,189,130,0.7); border-radius: 10px; background: rgba(251,244,228,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #614a20; font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-align: center; }
 .chart-heatmap { display: grid; grid-template-columns: 40px repeat(7,minmax(11px,1fr)); gap: 3px; align-items: center; overflow-x: auto; }
 .chart-heat-label { color: var(--admin-text-sub); font-size: .62rem; text-align: right; padding-right: .2rem; }
 .chart-heat-day { color: var(--admin-text-sub); font-size: .65rem; text-align: center; }
-.chart-heat-cell { height: 13px; min-width: 10px; background: #f2eee7; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+.chart-heat-cell { height: 13px; min-width: 10px; background: rgba(242,238,231,0.6); border-radius: 3px; cursor: pointer; border: 1px solid rgba(255,255,255,0.35); }
 .chart-heat-cell:focus-visible { outline: 2px solid #132e21; }
 .chart-donut-wrap { display: flex; align-items: center; justify-content: center; }
 .chart-donut-svg { width: min(100%,210px); margin: auto; }
@@ -936,15 +1010,52 @@ body.admin-body {
       <div class="admin-section">
         <div class="admin-section-header">
           <h2 class="admin-section-title">Settings</h2>
+          <span class="admin-page-sub">Manage restaurant details, ordering, reservations, and website preferences.</span>
         </div>
         <div class="admin-section-body">
           <form id="settingsForm" class="admin-form-row" aria-label="Restaurant settings">
-            <label class="admin-form-group">Restaurant name<input class="admin-form-control" name="name" required></label><label class="admin-form-group">Address<input class="admin-form-control" name="address"></label>
-            <label class="admin-form-group">Phone<input class="admin-form-control" name="phone"></label><label class="admin-form-group">WhatsApp<input class="admin-form-control" name="whatsapp"></label>
-            <label class="admin-form-group">Delivery fee (KES)<input class="admin-form-control" type="number" min="0" name="deliveryFee"></label><label class="admin-form-group">Delivery radius (km)<input class="admin-form-control" type="number" min="0" name="deliveryRadiusKm"></label>
-            <label class="admin-form-group">Tax %<input class="admin-form-control" type="number" min="0" max="100" name="taxPercent"></label><label class="admin-form-group">Service charge %<input class="admin-form-control" type="number" min="0" max="100" name="serviceChargePercent"></label>
-            <label class="admin-form-group">Max party size<input class="admin-form-control" type="number" min="1" name="maximumPartySize"></label><label class="admin-form-group">Reservation slot (minutes)<input class="admin-form-control" type="number" min="15" name="reservationSlotMinutes"></label>
-            <label class="admin-form-group" style="grid-column:1/-1">Opening hours<textarea class="admin-form-control" name="openingHours"></textarea></label><button class="admin-btn admin-btn-primary" type="submit">Save settings</button>
+            <h3 class="admin-section-title" style="grid-column:1/-1;font-size:1rem;margin:.25rem 0;">Restaurant details</h3>
+            <label class="admin-form-group">Restaurant name<input class="admin-form-control" name="name" required></label>
+            <label class="admin-form-group">Public email<input class="admin-form-control" type="email" name="email" placeholder="hello@lakebite.com"></label>
+            <label class="admin-form-group">Address<input class="admin-form-control" name="address"></label>
+            <label class="admin-form-group">Google Maps URL<input class="admin-form-control" type="url" name="mapUrl" placeholder="https://maps.google.com/..."></label>
+            <label class="admin-form-group">Phone<input class="admin-form-control" name="phone"></label>
+            <label class="admin-form-group">WhatsApp<input class="admin-form-control" name="whatsapp"></label>
+            <label class="admin-form-group">Currency code<input class="admin-form-control" name="currency" placeholder="KES" maxlength="10"></label>
+            <label class="admin-form-group">Timezone<label class="admin-form-label" style="display:none">Timezone</label><input class="admin-form-control" name="timezone" placeholder="Africa/Nairobi"></label>
+            <label class="admin-form-group" style="grid-column:1/-1">Opening hours<textarea class="admin-form-control" name="openingHours" rows="3" placeholder="Mon–Sun: 11:00 AM – 10:00 PM"></textarea></label>
+
+            <h3 class="admin-section-title" style="grid-column:1/-1;font-size:1rem;margin:1rem 0 .25rem;">Ordering & delivery</h3>
+            <label class="admin-form-group">Delivery fee<input class="admin-form-control" type="number" min="0" step="0.01" name="deliveryFee"></label>
+            <label class="admin-form-group">Free delivery minimum<input class="admin-form-control" type="number" min="0" step="0.01" name="freeDeliveryMinimum" placeholder="0 = disabled"></label>
+            <label class="admin-form-group">Delivery radius (km)<input class="admin-form-control" type="number" min="0" step="0.1" name="deliveryRadiusKm"></label>
+            <label class="admin-form-group">Minimum order amount<input class="admin-form-control" type="number" min="0" step="0.01" name="minimumOrderAmount"></label>
+            <label class="admin-form-group">Tax %<input class="admin-form-control" type="number" min="0" max="100" step="0.01" name="taxPercent"></label>
+            <label class="admin-form-group">Service charge %<input class="admin-form-control" type="number" min="0" max="100" step="0.01" name="serviceChargePercent"></label>
+            <label class="admin-form-group" style="display:flex;align-items:center;gap:.6rem;padding-top:1.6rem;"><input type="checkbox" name="acceptingOrders" value="true"> Accepting online orders</label>
+            <label class="admin-form-group" style="display:flex;align-items:center;gap:.6rem;padding-top:1.6rem;"><input type="checkbox" name="acceptingReservations" value="true"> Accepting reservations</label>
+
+            <h3 class="admin-section-title" style="grid-column:1/-1;font-size:1rem;margin:1rem 0 .25rem;">Reservations</h3>
+            <label class="admin-form-group">Max party size<input class="admin-form-control" type="number" min="1" name="maximumPartySize"></label>
+            <label class="admin-form-group">Reservation slot (minutes)<input class="admin-form-control" type="number" min="15" name="reservationSlotMinutes"></label>
+            <label class="admin-form-group">Lead time (hours)<input class="admin-form-control" type="number" min="0" step="0.5" name="leadTimeHours" placeholder="Earliest booking window"></label>
+            <label class="admin-form-group">Cutoff (hours)<input class="admin-form-control" type="number" min="0" step="0.5" name="cutoffHours" placeholder="Latest booking before slot"></label>
+            <label class="admin-form-group" style="grid-column:1/-1">Reservation confirmation message<textarea class="admin-form-control" name="reservationConfirmationMessage" rows="2" placeholder="Shown/sent after a reservation is made"></textarea></label>
+
+            <h3 class="admin-section-title" style="grid-column:1/-1;font-size:1rem;margin:1rem 0 .25rem;">Website & social</h3>
+            <label class="admin-form-group">Website URL<input class="admin-form-control" type="url" name="websiteUrl" placeholder="https://lakebite.example"></label>
+            <label class="admin-form-group">SEO meta description<input class="admin-form-control" name="seoDescription" maxlength="300" placeholder="Short description for search engines"></label>
+            <label class="admin-form-group">Facebook URL<input class="admin-form-control" type="url" name="socialFacebook"></label>
+            <label class="admin-form-group">Instagram URL<input class="admin-form-control" type="url" name="socialInstagram"></label>
+            <label class="admin-form-group">X (Twitter) URL<input class="admin-form-control" type="url" name="socialX"></label>
+            <label class="admin-form-group">TikTok URL<input class="admin-form-control" type="url" name="socialTiktok"></label>
+            <label class="admin-form-group" style="grid-column:1/-1;display:flex;align-items:center;gap:.6rem;"><input type="checkbox" name="showAnnouncementBar" value="true"> Show website announcement bar</label>
+            <label class="admin-form-group" style="grid-column:1/-1">Announcement text<textarea class="admin-form-control" name="announcementText" rows="2" placeholder="Holiday hours, special offers, or notices"></textarea></label>
+
+            <div style="grid-column:1/-1;display:flex;gap:.75rem;align-items:center;margin-top:.5rem;">
+              <button class="admin-btn admin-btn-primary" type="submit">Save settings</button>
+              <span class="admin-page-sub">Only supported fields are stored by the server.</span>
+            </div>
           </form>
         </div>
       </div>
@@ -960,10 +1071,30 @@ body.admin-body {
       <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Guest CRM</h2><input class="admin-form-control" id="guestSearch" type="search" placeholder="Search guests"></div><div class="admin-section-body"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Guest</th><th>Contact</th><th>Visits</th><th>Spend</th><th>Last visit</th><th>Dietary notes</th><th>Tags & notes</th></tr></thead><tbody id="guestsTable"></tbody></table></div></div></div>
     </section>
     <section id="view-events" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Events & Private Dining</h2></div><div class="admin-section-body"><form id="eventForm" class="admin-form-row"><label class="admin-form-group">Title<input class="admin-form-control" name="title" required></label><label class="admin-form-group">Date & time<input class="admin-form-control" type="datetime-local" name="date" required></label><label class="admin-form-group">Type<select class="admin-form-control" name="type"><option>private dining</option><option>tasting</option><option>live music</option></select></label><label class="admin-form-group">Capacity<input class="admin-form-control" type="number" min="1" name="capacity" required></label><label class="admin-form-group">Price (KES)<input class="admin-form-control" type="number" min="0" name="price"></label><label class="admin-form-group">Image URL<input class="admin-form-control" type="url" name="image"></label><label class="admin-form-group" style="grid-column:1/-1">Description<textarea class="admin-form-control" name="description"></textarea></label><label><input type="checkbox" name="published"> Publish publicly</label><button class="admin-btn admin-btn-primary" type="submit">Create event</button></form><div id="eventsList" aria-live="polite"></div></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Events & Private Dining</h2></div><div class="admin-section-body"><form id="eventForm" class="admin-form-row" enctype="multipart/form-data"><label class="admin-form-group">Title<input class="admin-form-control" name="title" required></label><label class="admin-form-group">Date & time<input class="admin-form-control" type="datetime-local" name="date" required></label><label class="admin-form-group">Type<select class="admin-form-control" name="type"><option>private dining</option><option>tasting</option><option>live music</option></select></label><label class="admin-form-group">Capacity<input class="admin-form-control" type="number" min="1" name="capacity" required></label><label class="admin-form-group">Price (KES)<input class="admin-form-control" type="number" min="0" name="price"></label><label class="admin-form-group">Event photo (from device)<input class="admin-form-control" type="file" id="eventImage" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif"><small style="display:block;color:var(--admin-text-sub);margin-top:.35rem;">JPG, PNG, WebP, or GIF · max 5 MB</small><img id="eventImagePreview" alt="Event image preview" hidden style="display:none;max-width:160px;max-height:110px;object-fit:cover;border-radius:10px;margin-top:.5rem;border:1px solid var(--admin-border);"></label><label class="admin-form-group">Image URL (optional)<input class="admin-form-control" type="url" name="image" id="eventImageUrl" placeholder="https://... or use device upload"></label><label class="admin-form-group" style="grid-column:1/-1">Description<textarea class="admin-form-control" name="description"></textarea></label><label><input type="checkbox" name="published"> Publish publicly</label><button class="admin-btn admin-btn-primary" type="submit" id="eventSubmitBtn">Create event</button></form><div id="eventsList" aria-live="polite"></div></div></div>
     </section>
     <section id="view-website" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Website Content</h2></div><div class="admin-section-body"><p>Changes publish to the homepage and shared restaurant details.</p><form id="cmsForm" class="admin-form-row"><label class="admin-form-group">Homepage headline<input class="admin-form-control" name="heroTitle"></label><label class="admin-form-group">Homepage introduction<input class="admin-form-control" name="heroSubtitle"></label><label class="admin-form-group" style="grid-column:1/-1">About text<textarea class="admin-form-control" name="aboutText"></textarea></label><label class="admin-form-group" style="grid-column:1/-1">Gallery image URLs (one per line)<textarea class="admin-form-control" name="gallery"></textarea></label><button class="admin-btn admin-btn-primary" type="submit">Publish content</button></form></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Website Content</h2></div><div class="admin-section-body"><p>Changes publish to the homepage and shared restaurant details.</p><form id="cmsForm" class="admin-form-row"><label class="admin-form-group">Homepage headline<input class="admin-form-control" name="heroTitle"></label><label class="admin-form-group">Homepage introduction<input class="admin-form-control" name="heroSubtitle"></label><label class="admin-form-group" style="grid-column:1/-1">About text<textarea class="admin-form-control" name="aboutText"></textarea></label><button class="admin-btn admin-btn-primary" type="submit" id="cmsSubmitBtn">Save page content</button></form></div></div>
+
+      <div class="admin-section" id="galleryManagementSection">
+        <div class="admin-section-header" style="flex-wrap:wrap;gap:.75rem;">
+          <div><h2 class="admin-section-title">Gallery Management</h2><p class="admin-page-sub" style="margin-top:.25rem;">Add, replace, or delete website gallery photos. Changes are saved and applied to the website gallery.</p></div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            <label class="admin-form-label" style="margin:0;font-size:.72rem;">Add to
+              <select id="galleryAddCategory" class="admin-form-control" style="display:inline-block;width:auto;min-height:34px;padding:.3rem .5rem;font-size:.8rem;margin-left:.25rem;">
+                <option value="food">Our Food</option><option value="interior">Restaurant Interior</option><option value="events">Events &amp; Celebrations</option><option value="rooms">Our Rooms</option>
+              </select></label>
+            <label class="admin-btn admin-btn-primary admin-btn-sm" style="cursor:pointer;margin:0;"><i class="fa-solid fa-plus"></i> Add photos<input type="file" id="galleryAddFiles" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden></label>
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="gallerySaveBtn"><i class="fa-solid fa-floppy-disk"></i> Save gallery</button>
+          </div>
+        </div>
+        <div class="admin-section-body">
+          <div id="galleryManagerStatus" class="admin-alert admin-alert-info" style="display:none;" role="status" aria-live="polite"></div>
+          <div id="galleryManagerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;"></div>
+          <p id="galleryManagerEmpty" style="display:none;color:var(--admin-text-sub);text-align:center;padding:2rem 1rem;border:1px dashed rgba(26,61,43,.16);border-radius:12px;background:rgba(255,255,255,.35);">No gallery photos yet. Use <strong>Add photos</strong> to upload images from your device.</p>
+          <details style="margin-top:1rem;"><summary style="cursor:pointer;color:var(--admin-text-sub);font-size:.84rem;">Advanced: edit gallery URLs</summary><textarea class="admin-form-control" id="galleryUrls" rows="5" style="margin-top:.6rem;" placeholder="/uploads/gallery/... or https://... (one per line)"></textarea></details>
+        </div>
+      </div>
     </section>
     <section id="view-inbox" class="admin-view" style="display:none;">
       <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Guest Inbox</h2><input class="admin-form-control" id="inboxSearch" type="search" placeholder="Search messages"></div><div class="admin-section-body" id="inboxList" aria-live="polite"></div></div><div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Guest Reviews</h2></div><div class="admin-section-body" id="reviewsList" aria-live="polite"></div></div>
@@ -2053,14 +2184,345 @@ body.admin-body {
         const data = await api('/api/admin/reviews'); if (!data) return;
         document.getElementById('reviewsList').innerHTML = data.reviews.map(review => `<article class="report-panel"><h3>${escapeHtml(review.rating)} / 5 · ${escapeHtml(review.status)}</h3><p>${escapeHtml(review.name || 'Guest')} · ${new Date(review.createdAt).toLocaleDateString()}</p><p>${escapeHtml(review.comment)}</p>${review.reply ? `<p>Reply: ${escapeHtml(review.reply)}</p>` : ''}<div class="floor-table-actions"><button class="admin-action-btn" data-admin-action="review-status" data-status="approved" data-id="${escapeHtml(review._id)}">Approve</button><button class="admin-action-btn danger" data-admin-action="review-status" data-status="hidden" data-id="${escapeHtml(review._id)}">Hide</button></div></article>`).join('') || '<p>No guest reviews submitted.</p>';
       }
-      async function loadSettings() { const data = await api('/api/admin/settings'); if (!data) return; const form = document.getElementById('settingsForm'); for (const [key, value] of Object.entries(data.settings || {})) if (form.elements[key]) form.elements[key].value = value ?? ''; }
-      async function loadCms() { const data = await api('/api/admin/settings'); if (!data) return; const form = document.getElementById('cmsForm'); for (const key of ['heroTitle','heroSubtitle','aboutText']) form.elements[key].value = data.settings?.[key] || ''; form.elements.gallery.value = Array.isArray(data.settings?.gallery) ? data.settings.gallery.join('\n') : data.settings?.gallery || ''; }
+      async function loadSettings() {
+        const data = await api('/api/admin/settings'); if (!data) return;
+        const form = document.getElementById('settingsForm');
+        const settings = data.settings || {};
+        for (const [key, value] of Object.entries(settings)) {
+          const el = form.elements[key];
+          if (!el) continue;
+          if (el.type === 'checkbox') el.checked = value === true || value === 'true' || value === 1 || value === '1';
+          else el.value = value ?? '';
+        }
+        for (const box of ['acceptingOrders','acceptingReservations','showAnnouncementBar']) if (form.elements[box] && settings[box] == null) form.elements[box].checked = false;
+      }
+      async function loadCms() {
+        const data = await api('/api/admin/settings'); if (!data) return;
+        const form = document.getElementById('cmsForm');
+        for (const key of ['heroTitle','heroSubtitle','aboutText']) form.elements[key].value = data.settings?.[key] || '';
+        initGalleryManager(data.settings || {});
+      }
       async function loadIntegrationStatus() { const data = await api('/api/admin/integrations/status'); if (!data) return; document.getElementById('integrationStatus').innerHTML = `<p>M-Pesa: ${data.mpesa ? 'Environment keys detected' : 'Not configured'} · Email: ${data.email ? 'Environment keys detected' : 'Not configured'} · SMS: ${data.sms ? 'Environment keys detected' : 'Not configured'} · Analytics: ${data.analytics ? 'Connected ID configured' : 'Not configured'}</p>`; }
 
+      const GALLERY_CATEGORIES = [
+        { id: 'food', label: 'Our Food' },
+        { id: 'interior', label: 'Restaurant Interior' },
+        { id: 'events', label: 'Events & Celebrations' },
+        { id: 'rooms', label: 'Our Rooms' },
+      ];
+      const GALLERY_DEFAULTS = [
+              {
+                      "url": "imege/17-cuts-of-all-you-can.jpg",
+                      "category": "food",
+                      "description": "Nyama Choma Platter"
+              },
+              {
+                      "url": "imege/caption (6).jpg",
+                      "category": "food",
+                      "description": "Tilapia Fillet"
+              },
+              {
+                      "url": "imege/caption (7).jpg",
+                      "category": "food",
+                      "description": "Swahili Pilau"
+              },
+              {
+                      "url": "imege/caption (11).jpg",
+                      "category": "food",
+                      "description": "Mango Cheesecake"
+              },
+              {
+                      "url": "imege/caption (12).jpg",
+                      "category": "food",
+                      "description": "Sunday Brunch Spread"
+              },
+              {
+                      "url": "imege/caption (13).jpg",
+                      "category": "food",
+                      "description": "Mombasa Prawns"
+              },
+              {
+                      "url": "imege/caption (14).jpg",
+                      "category": "food",
+                      "description": "Chocolate Fondant"
+              },
+              {
+                      "url": "imege/caption (15).jpg",
+                      "category": "food",
+                      "description": "Kenyan Avocado Toast"
+              },
+              {
+                      "url": "imege/caption (16).jpg",
+                      "category": "food",
+                      "description": "Signature Burger"
+              },
+              {
+                      "url": "imege/caption (9).jpg",
+                      "category": "interior",
+                      "description": "Main Dining Hall"
+              },
+              {
+                      "url": "imege/caption (2).jpg",
+                      "category": "interior",
+                      "description": "Craft Bar"
+              },
+              {
+                      "url": "imege/caption (10).jpg",
+                      "category": "interior",
+                      "description": "VIP Conservatory"
+              },
+              {
+                      "url": "imege/caption (17).jpg",
+                      "category": "interior",
+                      "description": "Open-Air Terrace"
+              },
+              {
+                      "url": "imege/caption (13).jpg",
+                      "category": "interior",
+                      "description": "Private Dining Room"
+              },
+              {
+                      "url": "imege/mama-harvest-welcomes.jpg",
+                      "category": "interior",
+                      "description": "Our Kitchen"
+              },
+              {
+                      "url": "imege/event 2.jpg",
+                      "category": "events",
+                      "description": "Birthday Celebration"
+              },
+              {
+                      "url": "imege/event 3.jpg",
+                      "category": "events",
+                      "description": "Wedding Reception"
+              },
+              {
+                      "url": "imege/caption (8).jpg",
+                      "category": "events",
+                      "description": "Corporate Dinner"
+              },
+              {
+                      "url": "imege/carnivore-restaurant.jpg",
+                      "category": "events",
+                      "description": "Live Jazz Night"
+              },
+              {
+                      "url": "",
+                      "category": "events",
+                      "description": "Anniversary Dinner"
+              },
+              {
+                      "url": "",
+                      "category": "events",
+                      "description": "Heritage Feast Evening"
+              },
+              {
+                      "url": "imege/welcome-to-inti-a-nikkei.jpg",
+                      "category": "rooms",
+                      "description": "The Main Hall"
+              },
+              {
+                      "url": "imege/upepo-restaurant.jpg",
+                      "category": "rooms",
+                      "description": "VIP Conservatory"
+              },
+              {
+                      "url": "imege/caption (17).jpg",
+                      "category": "rooms",
+                      "description": "Open-Air Terrace"
+              },
+              {
+                      "url": "imege/caption (11).jpg",
+                      "category": "rooms",
+                      "description": "Family Dining Room"
+              }
+      ];
+      let galleryManagerItems = [];
+      function normalizeGalleryItem(item) {
+        if (!item) return null;
+        if (typeof item === 'string') return { url: item, category: 'interior', description: '' };
+        const url = String(item?.url || '').trim();
+        if (!url && !String(item?.description || item?.caption || '').trim()) return null;
+        const cat = GALLERY_CATEGORIES.some(c => c.id === item?.category) ? item.category : 'interior';
+        return { url, category: cat, description: String(item?.description || item?.caption || '').trim().slice(0, 240) };
+      }
+      function initGalleryManager(settings) {
+        let items = Array.isArray(settings.galleryItems) ? settings.galleryItems.map(normalizeGalleryItem).filter(Boolean) : [];
+        if (!items.length && Array.isArray(settings.gallery) && settings.gallery.length) {
+          items = settings.gallery.filter(Boolean).map(url => ({ url: String(url), category: 'interior', description: '' }));
+        }
+        // Seed with all existing website gallery photos when nothing is saved yet, so admin can manage every photo/category.
+        const hasSaved = Array.isArray(settings.galleryItems) ? settings.galleryItems.length > 0 : (Array.isArray(settings.gallery) && settings.gallery.length > 0);
+        if (!hasSaved) items = GALLERY_DEFAULTS.map(i => ({ ...i }));
+        // If only a few items were saved earlier, ensure all known defaults are available (no duplicates by url+category+description for placeholders)
+        if (hasSaved && items.length < GALLERY_DEFAULTS.length) {
+          const key = i => `${i.category}|${i.url}|${i.description}`;
+          const seen = new Set(items.map(key));
+          for (const d of GALLERY_DEFAULTS) if (!seen.has(key(d))) items.push({ ...d });
+        }
+        galleryManagerItems = items.slice(0, 200);
+        syncGalleryTextarea();
+        renderGalleryManager();
+      }
+      function syncGalleryTextarea() {
+        const ta = document.getElementById('galleryUrls'); if (ta) ta.value = JSON.stringify(galleryManagerItems, null, 2);
+      }
+      function galleryStatus(msg, isError) {
+        const el = document.getElementById('galleryManagerStatus'); if (!el) return;
+        el.textContent = msg || ''; el.style.display = msg ? 'flex' : 'none';
+        el.className = isError ? 'admin-alert admin-alert-error' : 'admin-alert admin-alert-info';
+      }
+      async function uploadGalleryFile(file) {
+        if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name} is larger than 5 MB.`);
+        const upload = await fetch('/api/admin/gallery-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Image-Type': file.type }, body: file, credentials: 'include' });
+        if (upload.status === 401) { window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+        const uploaded = await upload.json().catch(() => ({}));
+        if (upload.status === 404) throw new Error('Gallery upload route not found (404). Restart backend/server.js, then reload.');
+        if (!upload.ok) throw new Error(uploaded.error || `Upload failed for ${file.name}.`);
+        return uploaded.image;
+      }
+      async function saveGalleryManager(showToastMsg) {
+        galleryManagerItems = galleryManagerItems.filter(i => i && (i.url || i.description)).slice(0, 200);
+        syncGalleryTextarea();
+        const result = await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ galleryItems: galleryManagerItems }) });
+        if (result) {
+          renderGalleryManager();
+          // verify persisted content (helps confirm backend restart / live data)
+          try { await fetch('/api/site-content', { cache: 'no-store', credentials: 'same-origin' }); } catch {}
+          if (showToastMsg !== false) showAdminToast((showToastMsg || 'Gallery saved.') + ' Open or refresh gallery.html to see it live.');
+          return true;
+        }
+        return false;
+      }
+      function renderGalleryManager() {
+        const grid = document.getElementById('galleryManagerGrid');
+        const empty = document.getElementById('galleryManagerEmpty');
+        if (!grid) return;
+        if (!galleryManagerItems.length) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+        if (empty) empty.style.display = 'none';
+        const catOpts = (sel) => GALLERY_CATEGORIES.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${c.label}</option>`).join('');
+        grid.innerHTML = galleryManagerItems.map((item, i) => `
+          <article class="gallery-admin-card" style="background:rgba(255,255,255,.55);border:1px solid var(--admin-border);border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(20,50,34,.06);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
+            <div style="position:relative;height:132px;background:rgba(26,61,43,.06);">
+              <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.description || 'Gallery photo')}" style="width:100%;height:100%;object-fit:cover;display:block;${item.url ? '' : 'opacity:.18;'}" loading="lazy" onerror="this.style.opacity='.2';">
+              ${item.url ? '' : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--admin-text-sub);font-size:.78rem;font-weight:600;padding:.5rem;text-align:center;">No image yet — use Replace to upload</div>'}
+              <span style="position:absolute;top:.45rem;left:.45rem;background:rgba(255,255,255,.88);color:var(--admin-text);font-size:.66rem;font-weight:700;padding:.16rem .42rem;border-radius:999px;border:1px solid rgba(255,255,255,.6);">${escapeHtml((GALLERY_CATEGORIES.find(c=>c.id===item.category)||{}).label || item.category)}</span>
+            </div>
+            <div style="padding:.65rem;display:grid;gap:.45rem;">
+              <label style="display:grid;gap:.18rem;font-size:.68rem;font-weight:700;color:var(--admin-text-sub);text-transform:uppercase;letter-spacing:.03em;">Category
+                <select class="admin-form-control" data-gallery-cat="${i}" style="min-height:34px;padding:.35rem .5rem;font-size:.8rem;text-transform:none;font-weight:500;">${catOpts(item.category)}</select></label>
+              <label style="display:grid;gap:.18rem;font-size:.68rem;font-weight:700;color:var(--admin-text-sub);text-transform:uppercase;letter-spacing:.03em;">Description
+                <input class="admin-form-control" data-gallery-desc="${i}" value="${escapeHtml(item.description || '')}" placeholder="Short photo description" maxlength="240" style="min-height:34px;padding:.35rem .5rem;font-size:.8rem;text-transform:none;font-weight:500;"></label>
+              <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                <label class="admin-btn admin-btn-outline admin-btn-sm" style="cursor:pointer;margin:0;flex:1;justify-content:center;min-width:0;"><i class="fa-solid fa-arrows-rotate"></i> Replace<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-gallery-replace="${i}"></label>
+                <button type="button" class="admin-btn admin-btn-outline admin-btn-sm danger" style="flex:1;justify-content:center;min-width:0;" data-gallery-delete="${i}"><i class="fa-solid fa-trash"></i> Delete</button>
+              </div>
+            </div>
+          </article>`).join('');
+      }
+      document.getElementById('galleryAddFiles').addEventListener('change', async event => {
+        const files = [...(event.target.files || [])]; if (!files.length) return;
+        const addCat = (document.getElementById('galleryAddCategory')?.value) || 'food';
+        event.target.value = '';
+        try {
+          for (let i = 0; i < files.length; i++) {
+            galleryStatus(`Uploading ${i + 1} of ${files.length}…`);
+            galleryManagerItems.push({ url: await uploadGalleryFile(files[i]), category: addCat, description: '' });
+          }
+          syncGalleryTextarea(); renderGalleryManager();
+          await saveGalleryManager(`Added ${files.length} photo${files.length > 1 ? 's' : ''} to ${escapeHtml((GALLERY_CATEGORIES.find(c=>c.id===addCat)||{}).label || addCat)}. Applied to website.`);
+          galleryStatus('');
+        } catch (err) { galleryStatus(err.message || 'Could not upload photo.', true); showAdminToast(err.message || 'Upload failed.'); }
+      });
+      document.getElementById('galleryManagerGrid').addEventListener('click', async event => {
+        const del = event.target.closest('[data-gallery-delete]');
+        if (del) {
+          const i = Number(del.dataset.galleryDelete); if (!Number.isInteger(i) || !galleryManagerItems[i]) return;
+          if (!confirm('Delete this photo from the website gallery?')) return;
+          galleryManagerItems.splice(i, 1); syncGalleryTextarea(); renderGalleryManager();
+          await saveGalleryManager('Photo deleted. Gallery updated on the website.');
+        }
+      });
+      document.getElementById('galleryManagerGrid').addEventListener('change', async event => {
+        const replace = event.target.closest('[data-gallery-replace]');
+        if (replace && replace.files?.[0]) {
+          const i = Number(replace.dataset.galleryReplace); const file = replace.files[0]; replace.value = '';
+          if (!Number.isInteger(i) || !galleryManagerItems[i]) return;
+          try {
+            galleryStatus('Uploading replacement photo…');
+            galleryManagerItems[i].url = await uploadGalleryFile(file);
+            syncGalleryTextarea(); renderGalleryManager();
+            await saveGalleryManager('Photo replaced. Gallery updated on the website.'); galleryStatus('');
+          } catch (err) { galleryStatus(err.message || 'Could not replace photo.', true); showAdminToast(err.message || 'Replace failed.'); }
+          return;
+        }
+        const cat = event.target.closest('[data-gallery-cat]');
+        if (cat) { const i = Number(cat.dataset.galleryCat); if (galleryManagerItems[i]) { galleryManagerItems[i].category = cat.value; syncGalleryTextarea(); } }
+        const desc = event.target.closest('[data-gallery-desc]');
+        if (desc) { const i = Number(desc.dataset.galleryDesc); if (galleryManagerItems[i]) { galleryManagerItems[i].description = desc.value.slice(0,240); syncGalleryTextarea(); } }
+      });
+      document.getElementById('galleryManagerGrid').addEventListener('input', event => {
+        const desc = event.target.closest('[data-gallery-desc]');
+        if (desc) { const i = Number(desc.dataset.galleryDesc); if (galleryManagerItems[i]) { galleryManagerItems[i].description = desc.value.slice(0,240); syncGalleryTextarea(); } }
+      });
+      document.getElementById('gallerySaveBtn').addEventListener('click', async () => {
+        galleryStatus('Saving gallery…');
+        if (await saveGalleryManager('Gallery saved. Changes applied to the website.')) galleryStatus(''); else galleryStatus('Could not save gallery.', true);
+      });
+      document.getElementById('galleryUrls').addEventListener('change', () => {
+        try {
+          const val = JSON.parse(document.getElementById('galleryUrls').value || '[]');
+          if (Array.isArray(val)) initGalleryManager({ galleryItems: val });
+        } catch { /* ignore non-JSON edits */ }
+      });
+
       document.getElementById('tableForm').addEventListener('submit', async event => { event.preventDefault(); const body = Object.fromEntries(new FormData(event.currentTarget)); if (await api('/api/admin/tables', { method: 'POST', body: JSON.stringify(body) })) { event.currentTarget.reset(); showAdminToast('Table added.'); loadTables(); } });
-      document.getElementById('settingsForm').addEventListener('submit', async event => { event.preventDefault(); const body = Object.fromEntries(new FormData(event.currentTarget)); if (await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(body) })) showAdminToast('Restaurant settings saved.'); });
-      document.getElementById('cmsForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget, body = Object.fromEntries(new FormData(form)); body.gallery = body.gallery.split('\n').map(line => line.trim()).filter(Boolean).slice(0,50); if (await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(body) })) showAdminToast('Website content published.'); });
-      document.getElementById('eventForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget, body = Object.fromEntries(new FormData(form)); body.published = form.elements.published.checked; if (await api('/api/admin/events', { method: 'POST', body: JSON.stringify(body) })) { form.reset(); showAdminToast('Event created.'); loadEvents(); } });
+      document.getElementById('settingsForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const body = Object.fromEntries(new FormData(form));
+        for (const box of ['acceptingOrders','acceptingReservations','showAnnouncementBar']) body[box] = form.elements[box]?.checked || false;
+        if (await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(body) })) showAdminToast('Restaurant settings saved.');
+      });
+      document.getElementById('cmsForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const body = { heroTitle: form.elements.heroTitle.value, heroSubtitle: form.elements.heroSubtitle.value, aboutText: form.elements.aboutText.value };
+        if (await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(body) })) showAdminToast('Website page content saved.');
+      });
+      document.getElementById('eventImage').addEventListener('change', event => {
+        const file = event.target.files[0], preview = document.getElementById('eventImagePreview');
+        if (!file) { preview.hidden = true; preview.style.display = 'none'; preview.removeAttribute('src'); return; }
+        preview.src = URL.createObjectURL(file); preview.hidden = false; preview.style.display = 'block';
+      });
+      document.getElementById('eventForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget, submit = document.getElementById('eventSubmitBtn');
+        const body = Object.fromEntries(new FormData(form));
+        body.published = form.elements.published.checked;
+        delete body.imageFile;
+        const imageFile = document.getElementById('eventImage').files[0];
+        if (imageFile) {
+          try {
+            if (imageFile.size > 5 * 1024 * 1024) throw new Error('The event image must be 5 MB or smaller.');
+            submit.disabled = true; submit.textContent = 'Uploading photo…';
+            const upload = await fetch('/api/admin/event-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Image-Type': imageFile.type }, body: imageFile, credentials: 'include' });
+            if (upload.status === 401) { window.location.href = '/login.html'; return; }
+            const uploaded = await upload.json().catch(() => ({}));
+            if (upload.status === 404) throw new Error('Image upload route not found (404). Restart the updated backend/server.js, then reload this admin page.');
+            if (!upload.ok) throw new Error(uploaded.error || `Image upload failed (${upload.status}).`);
+            body.image = uploaded.image;
+          } catch (error) { showAdminToast(error.message || 'Could not upload the event photo.'); submit.disabled = false; submit.textContent = 'Create event'; return; }
+        }
+        submit.disabled = true; submit.textContent = 'Creating…';
+        if (await api('/api/admin/events', { method: 'POST', body: JSON.stringify(body) })) {
+          form.reset();
+          const preview = document.getElementById('eventImagePreview'); preview.hidden = true; preview.style.display = 'none'; preview.removeAttribute('src');
+          showAdminToast('Event created.');
+          loadEvents();
+        }
+        submit.disabled = false; submit.textContent = 'Create event';
+      });
       document.getElementById('staffInviteForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget; const result = await api('/api/admin/staff-invites', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) }); if (!result) return; const paragraph = document.createElement('p'), link = document.createElement('a'); link.href = result.inviteUrl; link.textContent = `${location.origin}${result.inviteUrl}`; paragraph.textContent = 'Share this single-use invitation link with the teammate: '; paragraph.appendChild(link); document.getElementById('staffInvitations').prepend(paragraph); form.reset(); showAdminToast('Invitation link created. Email delivery is not configured.'); });
       document.getElementById('staffInviteForm').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget; const result = await api('/api/admin/staff-invites', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) }); if (!result) return; const paragraph = document.createElement('p'), link = document.createElement('a'); link.href = result.inviteUrl; link.textContent = `${location.origin}${result.inviteUrl}`; paragraph.textContent = 'Share this single-use invitation link with the teammate: '; paragraph.appendChild(link); document.getElementById('staffInvitations').prepend(paragraph); form.reset(); showAdminToast('Invitation link created. Email delivery is not configured.'); });
       document.getElementById('guestSearch').addEventListener('input', event => loadGuests(event.target.value));
