@@ -78,7 +78,7 @@
   </div>
 
   <div class="page-banner">
-    <img src="imege/caption (11).jpg" alt="LakeBite reservation view">
+    <img src="imege/caption (11).jpg" alt="LakeBite reservation view" data-cms-image="reservationHero">
     <div class="page-banner-overlay"></div>
     <div class="page-banner-content">
       <h1>Reserve a Table</h1>
@@ -218,7 +218,7 @@
           <div class="divider divider-center"></div>
         </div>
         <div class="rooms-grid">
-          <div class="room-card reveal">
+          <div class="room-card reveal" data-space="The Main Hall">
             <div class="room-card-img"><img src="imege/caption (10).jpg" alt="Main Hall">
               <div class="room-cap-badge">160 Guests</div>
             </div>
@@ -231,9 +231,10 @@
                 <li><i class="fa-solid fa-check"></i> Full table service</li>
                 <li><i class="fa-solid fa-check"></i> Live music on weekends</li>
               </ul>
+              <button type="button" class="btn btn-primary room-book-btn" data-book-space="The Main Hall"><i class="fa-regular fa-calendar-check"></i> Book this space</button>
             </div>
           </div>
-          <div class="room-card reveal" style="transition-delay:0.1s">
+          <div class="room-card reveal" data-space="VIP Conservatory" style="transition-delay:0.1s">
             <div class="room-card-img"><img src="imege/caption (13).jpg" alt="VIP Conservatory">
               <div class="room-cap-badge room-cap-badge--gold">VIP</div>
             </div>
@@ -246,9 +247,10 @@
                 <li><i class="fa-solid fa-check"></i> Private butler service</li>
                 <li><i class="fa-solid fa-check"></i> Customisable décor</li>
               </ul>
+              <button type="button" class="btn btn-primary room-book-btn" data-book-space="VIP Conservatory"><i class="fa-regular fa-calendar-check"></i> Book this space</button>
             </div>
           </div>
-          <div class="room-card reveal" style="transition-delay:0.2s">
+          <div class="room-card reveal" data-space="Open-Air Terrace" style="transition-delay:0.2s">
             <div class="room-card-img"><img src="imege/restaurant-interior-entrance.jpg" alt="Open Air Terrace">
               <div class="room-cap-badge">90 Guests</div>
             </div>
@@ -261,9 +263,10 @@
                 <li><i class="fa-solid fa-check"></i> Live grill experience</li>
                 <li><i class="fa-solid fa-check"></i> Weather-covered canopy</li>
               </ul>
+              <button type="button" class="btn btn-primary room-book-btn" data-book-space="Open-Air Terrace"><i class="fa-regular fa-calendar-check"></i> Book this space</button>
             </div>
           </div>
-          <div class="room-card reveal" style="transition-delay:0.3s">
+          <div class="room-card reveal" data-space="Family Dining Room" style="transition-delay:0.3s">
             <div class="room-card-img"><img src="imege/jiko.jpg" alt="Family Room">
               <div class="room-cap-badge">Family</div>
             </div>
@@ -276,6 +279,7 @@
                 <li><i class="fa-solid fa-check"></i> High chairs & kids' menu</li>
                 <li><i class="fa-solid fa-check"></i> Seats up to 50 guests</li>
               </ul>
+              <button type="button" class="btn btn-primary room-book-btn" data-book-space="Family Dining Room"><i class="fa-regular fa-calendar-check"></i> Book this space</button>
             </div>
           </div>
         </div>
@@ -343,10 +347,47 @@
   <script>
     const reservationForm = document.getElementById('resForm');
     const tableSelect = document.getElementById('res-room');
+    let availableTables = [];
     document.getElementById('res-date').min = new Date().toISOString().split('T')[0];
+
+    function spaceToSection(space) {
+      const s = String(space || '').toLowerCase();
+      if (s.includes('vip') || s.includes('conservatory')) return /vip|conservatory|private/i;
+      if (s.includes('terrace') || s.includes('open')) return /terrace|outdoor|open/i;
+      if (s.includes('family')) return /family/i;
+      if (s.includes('main')) return /main|hall|indoor/i;
+      return null;
+    }
+
+    function applySpaceSelection(space) {
+      if (!space) return;
+      const re = spaceToSection(space);
+      const preferred = re ? availableTables.find(t => re.test(String(t.section || ''))) : null;
+      const occasion = document.getElementById('res-occasion');
+      if (occasion && !occasion.value.trim()) occasion.value = `Space preference: ${space}`;
+      if (tableSelect && preferred) tableSelect.value = String(preferred.number);
+      document.querySelectorAll('.room-card').forEach(card => card.classList.toggle('is-selected-space', card.dataset.space === space));
+      showToast?.(`${space} selected. Complete the reservation form below.`);
+      document.querySelector('.res-form-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => (tableSelect?.value ? tableSelect : document.getElementById('res-fname'))?.focus(), 350);
+    }
+
     fetch('/api/tables').then(response => response.json()).then(({ tables = [] }) => {
-      for (const table of tables) { const option = document.createElement('option'); option.value = table.number; option.textContent = `Table ${table.number} · ${table.section} · ${table.seats} seats`; tableSelect.appendChild(option); }
+      availableTables = Array.isArray(tables) ? tables : [];
+      for (const table of availableTables) {
+        const option = document.createElement('option');
+        option.value = table.number;
+        option.textContent = `Table ${table.number} · ${table.section || 'Dining'} · ${table.seats} seats`;
+        tableSelect.appendChild(option);
+      }
+      const pre = new URLSearchParams(location.search).get('space');
+      if (pre) applySpaceSelection(pre);
     }).catch(() => {});
+
+    document.querySelectorAll('.room-book-btn').forEach(btn => {
+      btn.addEventListener('click', () => applySpaceSelection(btn.dataset.bookSpace));
+    });
+
     reservationForm.addEventListener('submit', async event => {
       event.preventDefault();
       if (!(await requireSignedIn('reservation.html'))) return;
@@ -551,6 +592,8 @@
 
     .room-card-body {
       padding: 1.3rem;
+      display: flex;
+      flex-direction: column;
     }
 
     .room-card-body h3 {
@@ -570,6 +613,18 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .room-book-btn {
+      width: 100%;
+      justify-content: center;
+      margin-top: auto;
+    }
+
+    .room-card.is-selected-space {
+      border-color: var(--clr-gold);
+      box-shadow: 0 0 0 2px rgba(200,151,58,.18), var(--shadow-md);
     }
 
     .room-features li {

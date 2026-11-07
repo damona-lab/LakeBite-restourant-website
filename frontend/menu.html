@@ -78,7 +78,7 @@
   </div>
 
   <div class="page-banner">
-    <img src="imege/caption (10).jpg" alt="Colourful menu dishes at LakeBite">
+    <img src="imege/caption (10).jpg" alt="Colourful menu dishes at LakeBite" data-cms-image="menuHero">
     <div class="page-banner-overlay"></div>
     <div class="page-banner-content">
       <h1>Our Menu</h1>
@@ -90,7 +90,15 @@
     <section class="section">
       <div class="container">
 
-        <!-- Category Filter Tabs -->
+        <!-- Search & Category Filter -->
+        <div class="menu-controls reveal">
+          <label class="menu-search" for="menuSearch">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="menuSearch" type="search" list="menuSuggestions" autocomplete="on" placeholder="Search food by name or category…" aria-label="Search menu by food name or category">
+          </label>
+          <datalist id="menuSuggestions"></datalist>
+        </div>
+
         <div class="menu-tabs reveal">
           <button class="tab-btn active" data-cat="all">All</button>
           <button class="tab-btn" data-cat="kenyan">🇰🇪 Kenyan</button>
@@ -560,25 +568,105 @@
   <div class="toast"></div>
   <script src="script.js"></script>
   <script>
-    // Menu filter tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const cat = btn.dataset.cat;
+    // Menu search + filter tabs
+    (() => {
+      const tabs = document.querySelectorAll('.tab-btn');
+      const searchInput = document.getElementById('menuSearch');
+      const suggestions = document.getElementById('menuSuggestions');
+      const grid = document.getElementById('menuGrid');
+      if (!grid) return;
+
+      const norm = v => String(v || '').toLowerCase().trim();
+      const cardInfo = card => {
+        const name = norm(card.querySelector('h3')?.textContent);
+        const catLabel = norm(card.querySelector('.mc-cat')?.textContent);
+        const cat = norm(card.dataset.cat);
+        return { name, catLabel, cat };
+      };
+      const activeCat = () => document.querySelector('.tab-btn.active')?.dataset.cat || 'all';
+
+      function refreshSuggestions(extraItems = []) {
+        if (!suggestions) return;
+        const seen = new Set();
+        const opts = [];
+        const add = (label, value) => {
+          const key = norm(value || label);
+          if (!key || seen.has(key)) return;
+          seen.add(key);
+          const o = document.createElement('option');
+          o.value = value || label;
+          if (label && label !== value) o.label = label;
+          opts.push(o);
+        };
         document.querySelectorAll('.menu-card').forEach(card => {
-          if (cat === 'all' || card.dataset.cat === cat) {
-            card.style.display = '';
-            setTimeout(() => card.classList.add('visible'), 50);
-          } else {
-            card.style.display = 'none';
-          }
+          const { name, catLabel } = cardInfo(card);
+          const nameText = card.querySelector('h3')?.textContent?.trim();
+          const catText = card.querySelector('.mc-cat')?.textContent?.trim();
+          if (nameText) add(nameText, nameText);
+          if (catText) add(`${catText} (category)`, catText);
+        });
+        tabs.forEach(btn => {
+          const text = btn.textContent.replace(/\s+/g, ' ').trim();
+          if (text && norm(btn.dataset.cat) !== 'all') add(text, text.replace(/^[^\w]+/u, '').trim());
+        });
+        extraItems.forEach(item => {
+          if (item?.name) add(item.name, item.name);
+          if (item?.category) add(`${item.category} (category)`, item.category);
+        });
+        suggestions.replaceChildren(...opts.slice(0, 300));
+      }
+
+      function applyFilters() {
+        const cat = activeCat();
+        const q = norm(searchInput?.value);
+        document.querySelectorAll('.menu-card').forEach(card => {
+          const info = cardInfo(card);
+          const matchesCat = cat === 'all' || info.cat === cat;
+          const matchesSearch = !q || info.name.includes(q) || info.cat.includes(q) || info.catLabel.includes(q);
+          const show = matchesCat && matchesSearch;
+          card.style.display = show ? '' : 'none';
+          if (show) setTimeout(() => card.classList.add('visible'), 30);
+        });
+      }
+
+      tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tabs.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyFilters();
         });
       });
-    });
+
+      if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+        searchInput.addEventListener('change', applyFilters);
+        searchInput.addEventListener('search', applyFilters);
+      }
+
+      refreshSuggestions();
+      fetch('/api/menu', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(data => {
+        if (Array.isArray(data?.menu)) refreshSuggestions(data.menu);
+      }).catch(() => {});
+
+      if ('MutationObserver' in window) {
+        new MutationObserver(() => { refreshSuggestions(); applyFilters(); }).observe(grid, { childList: true });
+      }
+    })();
   </script>
 
   <style>
+    .menu-controls { margin-bottom: 1rem; }
+    .menu-search {
+      display: flex; align-items: center; gap: .65rem; width: min(560px, 100%);
+      padding: .75rem 1rem; background: var(--clr-card); border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md); color: var(--clr-text-sub); box-shadow: var(--shadow-sm);
+    }
+    .menu-search:focus-within { border-color: var(--clr-gold); box-shadow: 0 0 0 3px rgba(200,151,58,.12); color: var(--clr-gold); }
+    .menu-search input {
+      width: 100%; border: 0; background: transparent; color: var(--clr-text);
+      font: inherit; outline: none;
+    }
+    .menu-search input::placeholder { color: var(--clr-text-sub); }
     /* ═══ Menu Page Styles ═══ */
     .menu-tabs {
       display: flex;

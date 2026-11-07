@@ -116,6 +116,33 @@ function loadPublicContent() {
         wrap.append(img, overlay); gallery.appendChild(wrap);
       });
     }
+    const pageImages = content.pageImages && typeof content.pageImages === 'object' ? content.pageImages : {};
+    document.querySelectorAll('[data-cms-image]').forEach(img => {
+      const key = img.dataset.cmsImage; const url = safeImageUrl(pageImages[key]);
+      if (!url) return;
+      img.src = url;
+      if (!img.getAttribute('srcset')) img.removeAttribute('srcset');
+    });
+    const featuredHost = document.querySelector('[data-cms-featured-menu]');
+    if (featuredHost) {
+      const ids = Array.isArray(content.featuredMenuIds) ? content.featuredMenuIds.map(String) : [];
+      if (ids.length) {
+        fetch('/api/menu', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(menuRes => {
+          const menu = Array.isArray(menuRes?.menu) ? menuRes.menu : [];
+          const byId = new Map(menu.map(i => [String(i.catalogId || i._id || ''), i]));
+          const items = ids.map(id => byId.get(String(id))).filter(i => i && i.available !== false);
+          if (!items.length) return;
+          featuredHost.replaceChildren();
+          items.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'dish-card reveal visible' + (idx === 1 ? ' dish-card--featured' : '');
+            const imgUrl = safeImageUrl(item.image);
+            card.innerHTML = `<div class="dish-img-wrap">${imgUrl ? `<img src="${window.escapeHtml ? window.escapeHtml(imgUrl) : imgUrl}" alt="${window.escapeHtml ? window.escapeHtml(item.name) : item.name}" loading="lazy">` : ''}${idx === 0 ? '<div class="dish-badge">Featured</div>' : (idx === 1 ? '<div class="dish-badge dish-badge--gold">Chef\'s Pick</div>' : '')}</div><div class="dish-info"><div class="dish-tag">${window.escapeHtml ? window.escapeHtml(item.category || 'Menu') : (item.category || 'Menu')}</div><h3>${window.escapeHtml ? window.escapeHtml(item.name) : item.name}</h3><p>${window.escapeHtml ? window.escapeHtml(item.description || '') : (item.description || '')}</p><div class="dish-footer"><span class="dish-price">KES ${Number(item.price || 0).toLocaleString()}</span><button class="btn btn-primary add-to-cart-btn" data-id="${window.escapeHtml ? window.escapeHtml(item.catalogId || item._id || '') : (item.catalogId || item._id || '')}" data-name="${window.escapeHtml ? window.escapeHtml(item.name || '') : (item.name || '')}" data-price="${Number(item.price || 0)}" data-img="${window.escapeHtml ? window.escapeHtml(imgUrl) : imgUrl}"><i class="fa-solid fa-plus"></i> Add</button></div></div>`;
+            featuredHost.appendChild(card);
+          });
+        }).catch(() => {});
+      }
+    }
   }).catch(() => {});
 }
 function loadPublicEventsAndReviews() {

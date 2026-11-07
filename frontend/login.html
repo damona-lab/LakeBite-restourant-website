@@ -11,13 +11,15 @@
   <link rel="stylesheet" href="global.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;isolation:isolate;overflow:hidden;padding:2rem;background:linear-gradient(135deg,rgba(8,30,20,.82),rgba(15,49,33,.55)),url('imege/jiko.jpg') center/cover fixed}
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;isolation:isolate;overflow:hidden;padding:2rem;background:linear-gradient(135deg,rgba(8,30,20,.82),rgba(15,49,33,.55)),url('imege/upepo-restaurant.jpg') center/cover fixed}
     .auth-wrap::before,.auth-wrap::after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(2px);pointer-events:none}
     .auth-wrap::before{width:340px;height:340px;top:7%;left:8%;background:radial-gradient(circle,rgba(224,181,90,.32),rgba(224,181,90,0) 70%)}
     .auth-wrap::after{width:440px;height:440px;right:5%;bottom:-12%;background:radial-gradient(circle,rgba(65,145,99,.38),rgba(65,145,99,0) 70%)}
-    .auth-card{width:100%;max-width:460px;position:relative;overflow:hidden;background:rgba(248,245,240,.78);-webkit-backdrop-filter:blur(24px) saturate(145%);backdrop-filter:blur(24px) saturate(145%);border:1px solid rgba(255,255,255,.55);border-radius:24px;padding:clamp(1.5rem,5vw,2.75rem);box-shadow:0 28px 90px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.65)}
-    [data-theme="dark"] .auth-card{background:rgba(19,32,25,.78);border-color:rgba(255,255,255,.14);box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.12)}
+    .auth-card{width:100%;max-width:460px;position:relative;overflow:hidden;background:rgba(248,245,240,.38);-webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%);border:1px solid rgba(255,255,255,.42);border-radius:24px;padding:clamp(1.5rem,5vw,2.75rem);box-shadow:0 28px 90px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.45);color:var(--clr-text);text-shadow:0 1px 1px rgba(255,255,255,.18)}
+    [data-theme="dark"] .auth-card{background:rgba(19,32,25,.34);border-color:rgba(255,255,255,.16);box-shadow:0 28px 90px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.1);text-shadow:0 1px 2px rgba(0,0,0,.35)}
     .auth-card::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,transparent,var(--clr-gold-lt),var(--clr-gold),transparent)}
+    .auth-card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 35%,rgba(0,0,0,.03) 100%);pointer-events:none}
+    [data-theme="dark"] .auth-card::after{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0) 35%,rgba(0,0,0,.08) 100%)}
     .auth-card{transform-style:preserve-3d;transform-origin:left center;backface-visibility:hidden}
     .auth-card.page-turn-out{animation:bookPageOut .42s cubic-bezier(.65,0,.35,1) both}
     .auth-card.page-turn-in{animation:bookPageIn .48s cubic-bezier(.2,.75,.25,1) both}
@@ -30,9 +32,14 @@
     .form-group{margin-bottom:1rem}
     .form-group label{display:block;margin-bottom:.5rem;font-size:.9rem;font-weight:500}
     .input-wrap{position:relative}
-    .input-wrap input{width:100%;padding:.9rem 2.8rem .9rem .95rem;border:1px solid rgba(106,119,107,.28);border-radius:11px;background:rgba(255,255,255,.48);color:var(--clr-text);font-size:.95rem;transition:border-color .2s,background .2s,box-shadow .2s}
-    [data-theme="dark"] .input-wrap input{background:rgba(0,0,0,.18);border-color:rgba(255,255,255,.16);color:var(--clr-text)}
-    .input-wrap input:focus-visible{outline:none;border-color:var(--clr-gold);background:rgba(255,255,255,.72);box-shadow:0 0 0 4px rgba(200,151,58,.15)}
+    .input-wrap input{width:100%;padding:.9rem 2.8rem .9rem .95rem;border:1px solid rgba(106,119,107,.28);border-radius:11px;background:rgba(255,255,255,.58);color:var(--clr-text);font-size:.95rem;font-weight:500;transition:border-color .2s,background .2s,box-shadow .2s}
+    [data-theme="dark"] .input-wrap input{background:rgba(0,0,0,.28);border-color:rgba(255,255,255,.18);color:var(--clr-text)}
+    .input-wrap input::placeholder{color:rgba(90,90,90,.85)}
+    [data-theme="dark"] .input-wrap input::placeholder{color:rgba(240,236,228,.58)}
+    .input-wrap input:focus-visible{outline:none;border-color:var(--clr-gold);background:rgba(255,255,255,.82);box-shadow:0 0 0 4px rgba(200,151,58,.16)}
+    [data-theme="dark"] .input-wrap input:focus-visible{background:rgba(0,0,0,.42)}
+    .form-group label{color:var(--clr-text);font-weight:600}
+    .auth-card-header p,.toggle,.form-group small{color:var(--clr-text);opacity:.88}
     .toggle-pass{position:absolute;right:.6rem;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--clr-text-sub);cursor:pointer}
     .auth-card button[type="submit"]{width:100%;margin-top:.5rem;padding:.95rem;border:none;border-radius:10px;background:linear-gradient(135deg,var(--clr-gold),#b8943f);color:#fff;cursor:pointer;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;display:flex;align-items:center;justify-content:center;gap:.6rem}
     .auth-card button[disabled]{opacity:.7;cursor:not-allowed}

@@ -1074,24 +1074,55 @@ body.admin-body {
       <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Events & Private Dining</h2></div><div class="admin-section-body"><form id="eventForm" class="admin-form-row" enctype="multipart/form-data"><label class="admin-form-group">Title<input class="admin-form-control" name="title" required></label><label class="admin-form-group">Date & time<input class="admin-form-control" type="datetime-local" name="date" required></label><label class="admin-form-group">Type<select class="admin-form-control" name="type"><option>private dining</option><option>tasting</option><option>live music</option></select></label><label class="admin-form-group">Capacity<input class="admin-form-control" type="number" min="1" name="capacity" required></label><label class="admin-form-group">Price (KES)<input class="admin-form-control" type="number" min="0" name="price"></label><label class="admin-form-group">Event photo (from device)<input class="admin-form-control" type="file" id="eventImage" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif"><small style="display:block;color:var(--admin-text-sub);margin-top:.35rem;">JPG, PNG, WebP, or GIF · max 5 MB</small><img id="eventImagePreview" alt="Event image preview" hidden style="display:none;max-width:160px;max-height:110px;object-fit:cover;border-radius:10px;margin-top:.5rem;border:1px solid var(--admin-border);"></label><label class="admin-form-group">Image URL (optional)<input class="admin-form-control" type="url" name="image" id="eventImageUrl" placeholder="https://... or use device upload"></label><label class="admin-form-group" style="grid-column:1/-1">Description<textarea class="admin-form-control" name="description"></textarea></label><label><input type="checkbox" name="published"> Publish publicly</label><button class="admin-btn admin-btn-primary" type="submit" id="eventSubmitBtn">Create event</button></form><div id="eventsList" aria-live="polite"></div></div></div>
     </section>
     <section id="view-website" class="admin-view" style="display:none;">
-      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Website Content</h2></div><div class="admin-section-body"><p>Changes publish to the homepage and shared restaurant details.</p><form id="cmsForm" class="admin-form-row"><label class="admin-form-group">Homepage headline<input class="admin-form-control" name="heroTitle"></label><label class="admin-form-group">Homepage introduction<input class="admin-form-control" name="heroSubtitle"></label><label class="admin-form-group" style="grid-column:1/-1">About text<textarea class="admin-form-control" name="aboutText"></textarea></label><button class="admin-btn admin-btn-primary" type="submit" id="cmsSubmitBtn">Save page content</button></form></div></div>
+      <div class="admin-section"><div class="admin-section-header"><h2 class="admin-section-title">Website Content</h2></div><div class="admin-section-body"><p>Changes publish to the homepage and shared restaurant details.</p>        <form id="cmsForm" class="admin-form-row">
+          <label class="admin-form-group">Homepage headline<input class="admin-form-control" name="heroTitle"></label>
+          <label class="admin-form-group">Homepage introduction<input class="admin-form-control" name="heroSubtitle"></label>
+          <label class="admin-form-group" style="grid-column:1/-1">About text<textarea class="admin-form-control" name="aboutText"></textarea></label>
+          <button class="admin-btn admin-btn-primary" type="submit" id="cmsSubmitBtn">Save page content</button>
+        </form>
+      </div></div>
+
+      <div class="admin-section" id="homepageDisplaySection">
+        <div class="admin-section-header"><h2 class="admin-section-title">Homepage Featured Food</h2></div>
+        <div class="admin-section-body">
+          <p class="admin-page-sub" style="margin-top:0;">Choose which menu items appear in the homepage “Signature Dishes” section. Click items to select them (up to 6). Selected items are clearly marked.</p>
+          <div id="homeFeaturedMenu" style="display:grid;gap:.5rem;max-height:340px;overflow:auto;padding:.25rem;border:1px solid var(--admin-border);border-radius:10px;background:rgba(255,255,255,.35);" aria-label="Featured homepage menu items"></div>
+          <div id="homeFeaturedCount" style="margin-top:.5rem;font-size:.8rem;color:var(--admin-text-sub);">0 selected (max 6)</div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;">
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="homeFeaturedReload"><i class="fa-solid fa-rotate"></i> Reload menu items</button>
+            <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="homeFeaturedSave"><i class="fa-solid fa-floppy-disk"></i> Save featured food</button>
+          </div>
+          <div id="homeFeaturedStatus" class="admin-alert admin-alert-info" style="display:none;margin-top:.75rem;" role="status"></div>
+        </div>
+      </div>
+
+      <div class="admin-section" id="sitePhotosSection">
+        <div class="admin-section-header"><h2 class="admin-section-title">Website Page Photos</h2></div>
+        <div class="admin-section-body">
+          <p class="admin-page-sub" style="margin-top:0;">The photo currently holding each website area is shown below. Upload a new photo or paste a URL, then click <strong>Save</strong> to replace it. “Current” means the site’s default photo; “Custom” means an admin replacement.</p>
+          <div id="sitePhotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
+          <div id="sitePhotosStatus" class="admin-alert admin-alert-info" style="display:none;margin-top:.75rem;" role="status"></div>
+        </div>
+      </div>
 
       <div class="admin-section" id="galleryManagementSection">
         <div class="admin-section-header" style="flex-wrap:wrap;gap:.75rem;">
-          <div><h2 class="admin-section-title">Gallery Management</h2><p class="admin-page-sub" style="margin-top:.25rem;">Add, replace, or delete website gallery photos. Changes are saved and applied to the website gallery.</p></div>
-          <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
-            <label class="admin-form-label" style="margin:0;font-size:.72rem;">Add to
-              <select id="galleryAddCategory" class="admin-form-control" style="display:inline-block;width:auto;min-height:34px;padding:.3rem .5rem;font-size:.8rem;margin-left:.25rem;">
-                <option value="food">Our Food</option><option value="interior">Restaurant Interior</option><option value="events">Events &amp; Celebrations</option><option value="rooms">Our Rooms</option>
-              </select></label>
-            <label class="admin-btn admin-btn-primary admin-btn-sm" style="cursor:pointer;margin:0;"><i class="fa-solid fa-plus"></i> Add photos<input type="file" id="galleryAddFiles" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden></label>
-            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="gallerySaveBtn"><i class="fa-solid fa-floppy-disk"></i> Save gallery</button>
-          </div>
+           <div><h2 class="admin-section-title">Gallery Management</h2><p class="admin-page-sub" style="margin-top:.25rem;">Write a short description, choose a category, then click <strong>Add photo</strong> to upload. Click <strong>Save gallery</strong> to commit changes to the website.</p></div>
+           <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;">
+             <label class="admin-form-label" style="margin:0;font-size:.72rem;min-width:220px;flex:1;">Description (required before upload)
+               <input id="galleryAddDescription" class="admin-form-control" type="text" maxlength="240" placeholder="Short photo description" required style="display:block;width:100%;min-height:34px;padding:.35rem .5rem;font-size:.8rem;margin-top:.2rem;text-transform:none;font-weight:500;"></label>
+             <label class="admin-form-label" style="margin:0;font-size:.72rem;">Add to
+               <select id="galleryAddCategory" class="admin-form-control" style="display:inline-block;width:auto;min-height:34px;padding:.3rem .5rem;font-size:.8rem;margin-left:.25rem;">
+                 <option value="food">Our Food</option><option value="interior">Restaurant Interior</option><option value="events">Events &amp; Celebrations</option><option value="rooms">Our Rooms</option>
+               </select></label>
+             <label class="admin-btn admin-btn-primary admin-btn-sm" style="cursor:pointer;margin:0;"><i class="fa-solid fa-plus"></i> Add photo<input type="file" id="galleryAddFiles" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden></label>
+             <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="gallerySaveBtn"><i class="fa-solid fa-floppy-disk"></i> Save gallery</button>
+           </div>
         </div>
         <div class="admin-section-body">
           <div id="galleryManagerStatus" class="admin-alert admin-alert-info" style="display:none;" role="status" aria-live="polite"></div>
           <div id="galleryManagerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;"></div>
-          <p id="galleryManagerEmpty" style="display:none;color:var(--admin-text-sub);text-align:center;padding:2rem 1rem;border:1px dashed rgba(26,61,43,.16);border-radius:12px;background:rgba(255,255,255,.35);">No gallery photos yet. Use <strong>Add photos</strong> to upload images from your device.</p>
+          <p id="galleryManagerEmpty" style="display:none;color:var(--admin-text-sub);text-align:center;padding:2rem 1rem;border:1px dashed rgba(26,61,43,.16);border-radius:12px;background:rgba(255,255,255,.35);">No gallery photos yet. Write a description, choose a category, then click <strong>Add photo</strong> to upload. Click <strong>Save gallery</strong> to commit.</p>
           <details style="margin-top:1rem;"><summary style="cursor:pointer;color:var(--admin-text-sub);font-size:.84rem;">Advanced: edit gallery URLs</summary><textarea class="admin-form-control" id="galleryUrls" rows="5" style="margin-top:.6rem;" placeholder="/uploads/gallery/... or https://... (one per line)"></textarea></details>
         </div>
       </div>
@@ -2198,10 +2229,14 @@ body.admin-body {
       }
       async function loadCms() {
         const data = await api('/api/admin/settings'); if (!data) return;
+        const settings = data.settings || {};
         const form = document.getElementById('cmsForm');
-        for (const key of ['heroTitle','heroSubtitle','aboutText']) form.elements[key].value = data.settings?.[key] || '';
-        initGalleryManager(data.settings || {});
+        if (form) for (const key of ['heroTitle','heroSubtitle','aboutText']) if (form.elements[key]) form.elements[key].value = settings[key] || '';
+        initGalleryManager(settings);
+        renderSitePhotos(settings);
+        await loadFeaturedMenuOptions(settings.featuredMenuIds || []);
       }
+      async function loadSettings() { await loadSettingsView(); }
       async function loadIntegrationStatus() { const data = await api('/api/admin/integrations/status'); if (!data) return; document.getElementById('integrationStatus').innerHTML = `<p>M-Pesa: ${data.mpesa ? 'Environment keys detected' : 'Not configured'} · Email: ${data.email ? 'Environment keys detected' : 'Not configured'} · SMS: ${data.sms ? 'Environment keys detected' : 'Not configured'} · Analytics: ${data.analytics ? 'Connected ID configured' : 'Not configured'}</p>`; }
 
       const GALLERY_CATEGORIES = [
@@ -2346,6 +2381,124 @@ body.admin-body {
         const cat = GALLERY_CATEGORIES.some(c => c.id === item?.category) ? item.category : 'interior';
         return { url, category: cat, description: String(item?.description || item?.caption || '').trim().slice(0, 240) };
       }
+      async function loadSettingsView() {
+        const data = await api('/api/admin/settings');
+        const settings = data?.settings || {};
+        const form = document.getElementById('settingsForm');
+        if (form) {
+          Object.entries(settings).forEach(([key, value]) => { if (form.elements[key] && typeof value !== 'boolean' && typeof value !== 'object') form.elements[key].value = value; });
+          for (const box of ['acceptingOrders','acceptingReservations','showAnnouncementBar']) if (form.elements[box]) form.elements[box].checked = Boolean(settings[box]);
+        }
+        const cmsForm = document.getElementById('cmsForm');
+        if (cmsForm) ['heroTitle','heroSubtitle','aboutText'].forEach(key => { if (cmsForm.elements[key] && settings[key] !== undefined) cmsForm.elements[key].value = settings[key]; });
+        initGalleryManager(settings);
+        renderSitePhotos(settings);
+        await loadFeaturedMenuOptions(settings.featuredMenuIds || []);
+      }
+
+      const SITE_IMAGE_SLOTS = [
+        { key: 'homeHero', label: 'Homepage hero photo', hint: 'Large image at the top of the homepage.', current: '' },
+        { key: 'homeStoryMain', label: 'Homepage story photo', hint: 'Main image in the heritage/story section.', current: 'imege/caption (10).jpg' },
+        { key: 'homeStoryAccent', label: 'Homepage accent photo', hint: 'Small overlay image in the story section.', current: 'imege/cook1.jpeg' },
+        { key: 'homeCta', label: 'Homepage CTA banner', hint: 'Background for the bottom call-to-action section.', current: '' },
+        { key: 'aboutHero', label: 'About page banner', hint: 'Top banner image on About.', current: 'imege/caption (9).jpg' },
+        { key: 'menuHero', label: 'Menu page banner', hint: 'Top banner image on Menu.', current: 'imege/caption (10).jpg' },
+        { key: 'galleryHero', label: 'Gallery page banner', hint: 'Top banner image on Gallery.', current: 'imege/caption (5).jpg' },
+        { key: 'reservationHero', label: 'Reservation page banner', hint: 'Top banner image on Reservations.', current: 'imege/caption (11).jpg' },
+        { key: 'contactHero', label: 'Contact page banner', hint: 'Top banner image on Contact.', current: 'imege/jiko.jpg' }
+      ];
+
+      function sitePhotoStatus(msg, isError) {
+        const el = document.getElementById('sitePhotosStatus'); if (!el) return;
+        el.textContent = msg || ''; el.style.display = msg ? 'block' : 'none';
+        el.className = isError ? 'admin-alert admin-alert-error' : 'admin-alert admin-alert-info';
+      }
+
+      function renderSitePhotos(settings = {}) {
+        const grid = document.getElementById('sitePhotosGrid'); if (!grid) return;
+        const pageImages = settings.pageImages && typeof settings.pageImages === 'object' ? settings.pageImages : {};
+        grid.innerHTML = SITE_IMAGE_SLOTS.map(slot => {
+          const customUrl = String(pageImages[slot.key] || '').trim();
+          const displayUrl = customUrl || slot.current || '';
+          const safeUrl = escapeHtml(displayUrl);
+          const safeCustom = escapeHtml(customUrl);
+          const isCustom = !!customUrl;
+          return `<article style="background:rgba(255,255,255,.55);border:1px solid var(--admin-border);border-radius:12px;overflow:hidden;">
+            <div style="height:140px;background:rgba(26,61,43,.06);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">
+              ${displayUrl ? `<img src="${safeUrl}" alt="${escapeHtml(slot.label)}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" onerror="this.style.opacity='.25';this.alt='Image unavailable';">` : `<span style="color:var(--admin-text-sub);font-size:.8rem;padding:.75rem;text-align:center;">No photo currently set</span>`}
+              <span style="position:absolute;top:.45rem;left:.45rem;background:${isCustom ? 'rgba(200,151,58,.92)' : 'rgba(255,255,255,.88)'};color:${isCustom ? '#fff' : 'var(--admin-text)'};font-size:.64rem;font-weight:700;padding:.16rem .42rem;border-radius:999px;border:1px solid rgba(255,255,255,.5);">${isCustom ? 'Custom' : (slot.current ? 'Current' : 'Empty')}</span>
+            </div>
+            <div style="padding:.75rem;display:grid;gap:.45rem;">
+              <strong style="font-size:.86rem;">${escapeHtml(slot.label)}</strong>
+              <span style="font-size:.74rem;color:var(--admin-text-sub);line-height:1.4;">${escapeHtml(slot.hint)}</span>
+              ${slot.current ? `<span style="font-size:.72rem;color:var(--admin-text-sub);word-break:break-all;">Current: <code style="font-size:.7rem;">${escapeHtml(slot.current)}</code></span>` : ''}
+              <input type="url" class="admin-form-control" data-site-image-url="${slot.key}" value="${safeCustom}" placeholder="${isCustom ? 'Custom image URL' : 'Upload or paste URL to replace current photo'}" style="min-height:34px;padding:.35rem .5rem;font-size:.8rem;text-transform:none;font-weight:500;">
+              <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                <label class="admin-btn admin-btn-outline admin-btn-sm" style="cursor:pointer;margin:0;flex:1;justify-content:center;"><i class="fa-solid fa-upload"></i> Upload<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-site-image-file="${slot.key}"></label>
+                <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" style="flex:1;justify-content:center;" data-site-image-save="${slot.key}"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                ${isCustom ? `<button type="button" class="admin-btn admin-btn-outline admin-btn-sm" style="justify-content:center;" data-site-image-clear="${slot.key}" title="Remove custom photo and use current/default"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+              </div>
+            </div>
+          </article>`;
+        }).join('');
+      }
+
+      async function uploadSiteImage(file) {
+        if (file.size > 5 * 1024 * 1024) throw new Error('Image must be 5 MB or smaller.');
+        const upload = await fetch('/api/admin/site-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Image-Type': file.type }, body: file, credentials: 'include' });
+        if (upload.status === 401) { window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+        const uploaded = await upload.json().catch(() => ({}));
+        if (!upload.ok) throw new Error(uploaded.error || 'Upload failed.');
+        return uploaded.image;
+      }
+
+      async function saveSiteImageSlot(key) {
+        const input = document.querySelector(`[data-site-image-url="${CSS.escape(key)}"]`);
+        const url = String(input?.value || '').trim();
+        sitePhotoStatus(`Saving ${key}…`);
+        const result = await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ pageImages: { [key]: url } }) });
+        if (result) { renderSitePhotos(result.settings || {}); sitePhotoStatus('Photo saved. Refresh the public page to see it.'); showAdminToast('Website photo saved.'); }
+        else sitePhotoStatus('Could not save photo.', true);
+      }
+
+      async function loadFeaturedMenuOptions(selectedIds = []) {
+        const host = document.getElementById('homeFeaturedMenu'); if (!host) return;
+        const data = await api('/api/admin/menu');
+        const menu = Array.isArray(data?.menu) ? data.menu : [];
+        const selected = new Set((selectedIds || []).map(String));
+        host.innerHTML = menu.map(item => {
+          const id = String(item.catalogId || item._id || '');
+          const isSel = selected.has(id);
+          return `<label class="home-featured-option${isSel ? ' is-selected' : ''}" data-featured-id="${escapeHtml(id)}" style="display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border:1px solid ${isSel ? 'var(--clr-gold,#c8973a)' : 'var(--admin-border)'};border-radius:10px;background:${isSel ? 'rgba(200,151,58,.10)' : 'rgba(255,255,255,.55)'};cursor:pointer;transition:all .15s ease;">
+            <input type="checkbox" name="homeFeaturedItem" value="${escapeHtml(id)}" ${isSel ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--clr-gold,#c8973a);flex:0 0 auto;">
+            <span style="flex:1;min-width:0;">
+              <strong style="display:block;font-size:.88rem;line-height:1.2;">${escapeHtml(item.name)}</strong>
+              <span style="display:block;font-size:.74rem;color:var(--admin-text-sub);margin-top:.1rem;">${escapeHtml(item.category || 'Menu')} · KES ${Number(item.price || 0).toLocaleString()}</span>
+            </span>
+            <span class="home-featured-mark" style="font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:${isSel ? 'var(--clr-gold,#c8973a)' : 'var(--admin-text-sub)'};opacity:${isSel ? '1' : '.55'};flex:0 0 auto;">${isSel ? 'Selected' : 'Select'}</span>
+          </label>`;
+        }).join('') || '<p style="color:var(--admin-text-sub);padding:.5rem;">No menu items found. Add menu items first.</p>';
+        updateHomeFeaturedUi();
+      }
+
+      function updateHomeFeaturedUi() {
+        const host = document.getElementById('homeFeaturedMenu'); if (!host) return;
+        const checked = [...host.querySelectorAll('input[name="homeFeaturedItem"]:checked')];
+        const countEl = document.getElementById('homeFeaturedCount');
+        if (countEl) countEl.textContent = `${checked.length} selected (max 6)`;
+        host.querySelectorAll('.home-featured-option').forEach(label => {
+          const input = label.querySelector('input[name="homeFeaturedItem"]');
+          const mark = label.querySelector('.home-featured-mark');
+          const sel = !!input?.checked;
+          label.classList.toggle('is-selected', sel);
+          label.style.borderColor = sel ? 'var(--clr-gold,#c8973a)' : 'var(--admin-border)';
+          label.style.background = sel ? 'rgba(200,151,58,.10)' : 'rgba(255,255,255,.55)';
+          if (mark) { mark.textContent = sel ? 'Selected' : 'Select'; mark.style.color = sel ? 'var(--clr-gold,#c8973a)' : 'var(--admin-text-sub)'; mark.style.opacity = sel ? '1' : '.55'; }
+          if (input && !sel) input.disabled = checked.length >= 6;
+          label.style.opacity = (input?.disabled && !sel) ? '.6' : '1';
+        });
+      }
+
       function initGalleryManager(settings) {
         let items = Array.isArray(settings.galleryItems) ? settings.galleryItems.map(normalizeGalleryItem).filter(Boolean) : [];
         if (!items.length && Array.isArray(settings.gallery) && settings.gallery.length) {
@@ -2423,15 +2576,24 @@ body.admin-body {
       document.getElementById('galleryAddFiles').addEventListener('change', async event => {
         const files = [...(event.target.files || [])]; if (!files.length) return;
         const addCat = (document.getElementById('galleryAddCategory')?.value) || 'food';
+        const descInput = document.getElementById('galleryAddDescription');
+        const description = String(descInput?.value || '').trim().slice(0, 240);
         event.target.value = '';
+        if (!description) {
+          galleryStatus('Write a short description before uploading a photo.', true);
+          showAdminToast('Description required before upload.');
+          if (descInput) descInput.focus();
+          return;
+        }
         try {
           for (let i = 0; i < files.length; i++) {
             galleryStatus(`Uploading ${i + 1} of ${files.length}…`);
-            galleryManagerItems.push({ url: await uploadGalleryFile(files[i]), category: addCat, description: '' });
+            galleryManagerItems.push({ url: await uploadGalleryFile(files[i]), category: addCat, description });
           }
           syncGalleryTextarea(); renderGalleryManager();
-          await saveGalleryManager(`Added ${files.length} photo${files.length > 1 ? 's' : ''} to ${escapeHtml((GALLERY_CATEGORIES.find(c=>c.id===addCat)||{}).label || addCat)}. Applied to website.`);
-          galleryStatus('');
+          if (descInput) descInput.value = '';
+          galleryStatus(`Uploaded ${files.length} photo${files.length > 1 ? 's' : ''} with description. Click Save gallery to commit changes to the website.`);
+          showAdminToast('Photo added. Click Save gallery to commit changes.');
         } catch (err) { galleryStatus(err.message || 'Could not upload photo.', true); showAdminToast(err.message || 'Upload failed.'); }
       });
       document.getElementById('galleryManagerGrid').addEventListener('click', async event => {
@@ -2476,6 +2638,37 @@ body.admin-body {
         } catch { /* ignore non-JSON edits */ }
       });
 
+      document.getElementById('sitePhotosGrid').addEventListener('change', async event => {
+        const fileInput = event.target.closest('[data-site-image-file]');
+        if (!fileInput?.files?.[0]) return;
+        const key = fileInput.dataset.siteImageFile; const file = fileInput.files[0]; fileInput.value = '';
+        try { sitePhotoStatus('Uploading photo…'); const image = await uploadSiteImage(file); const urlInput = document.querySelector(`[data-site-image-url="${CSS.escape(key)}"]`); if (urlInput) urlInput.value = image; await saveSiteImageSlot(key); }
+        catch (err) { sitePhotoStatus(err.message || 'Upload failed.', true); showAdminToast(err.message || 'Upload failed.'); }
+      });
+      document.getElementById('sitePhotosGrid').addEventListener('click', async event => {
+        const clearBtn = event.target.closest('[data-site-image-clear]');
+        if (clearBtn) {
+          const key = clearBtn.dataset.siteImageClear;
+          sitePhotoStatus(`Reverting ${key} to current/default photo…`);
+          const result = await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ pageImages: { [key]: '' } }) });
+          if (result) { renderSitePhotos(result.settings || {}); sitePhotoStatus('Custom photo removed. The current/default photo will be used.'); showAdminToast('Reverted to current photo.'); }
+          else sitePhotoStatus('Could not revert photo.', true);
+          return;
+        }
+        const btn = event.target.closest('[data-site-image-save]'); if (!btn) return;
+        await saveSiteImageSlot(btn.dataset.siteImageSave);
+      });
+      document.getElementById('homeFeaturedMenu').addEventListener('change', updateHomeFeaturedUi);
+      document.getElementById('homeFeaturedReload').addEventListener('click', async () => { const data = await api('/api/admin/settings'); await loadFeaturedMenuOptions(data?.settings?.featuredMenuIds || []); showAdminToast('Menu items reloaded.'); });
+      document.getElementById('homeFeaturedSave').addEventListener('click', async () => {
+        const host = document.getElementById('homeFeaturedMenu');
+        const ids = [...(host?.querySelectorAll('input[name="homeFeaturedItem"]:checked') || [])].map(o => o.value).filter(Boolean).slice(0, 6);
+        const status = document.getElementById('homeFeaturedStatus');
+        if (status) { status.style.display = 'block'; status.className = 'admin-alert admin-alert-info'; status.textContent = 'Saving featured food…'; }
+        const result = await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ featuredMenuIds: ids }) });
+        if (result) { if (status) status.textContent = 'Featured homepage food saved. Refresh the homepage to see changes.'; showAdminToast('Homepage featured food saved.'); }
+        else if (status) { status.className = 'admin-alert admin-alert-error'; status.textContent = 'Could not save featured food.'; }
+      });
       document.getElementById('tableForm').addEventListener('submit', async event => { event.preventDefault(); const body = Object.fromEntries(new FormData(event.currentTarget)); if (await api('/api/admin/tables', { method: 'POST', body: JSON.stringify(body) })) { event.currentTarget.reset(); showAdminToast('Table added.'); loadTables(); } });
       document.getElementById('settingsForm').addEventListener('submit', async event => {
         event.preventDefault();
