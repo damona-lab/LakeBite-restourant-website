@@ -1,0 +1,7 @@
+﻿services:
+  - type: web
+    name: lakebite-restourant-website
+    runtime: node
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health

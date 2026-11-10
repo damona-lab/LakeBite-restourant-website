@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node -e \"process.env.NODE_ENV='development'; require('./backend/server.js')\""
+    "dev": "node backend/server.js",
+    "build": "npm install --prefix backend"
   }
 }

@@ -14,6 +14,11 @@ const { body, param, query, validationResult } = require('express-validator');
 
 const app = express();
 
+app.get('/api/health', (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({ status: databaseReady ? 'ok' : 'starting', database: databaseReady ? 'connected' : 'disconnected' });
+});
+
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
@@ -293,7 +298,7 @@ app.patch('/api/admin/users/:id', auth, adminOnly, async (req, res, next) => {
 });
 
 app.post('/api/admin/staff-invites', auth, adminOnly, async (req, res, next) => {
-  try { const email = String(req.body.email || '').trim().toLowerCase(); const role = req.body.role; if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !['admin','manager','host','kitchen'].includes(role)) return res.status(400).json({ error: 'Enter a valid email and staff role.' }); if (await User.exists({ email })) return res.status(409).json({ error: 'That email already has an account.' }); const rawToken = crypto.randomBytes(32).toString('hex'); await StaffInvite.findOneAndUpdate({ email }, { email, role, tokenHash: crypto.createHash('sha256').update(rawToken).digest('hex'), expiresAt: new Date(Date.now()+7*86400000) }, { upsert: true, new: true }); await logAudit(req.user.id, 'invite_staff', req.path, `${email} (${role})`); res.status(201).json({ inviteUrl: `/staff-invite.html?token=${rawToken}`, expiresInDays: 7, delivery: 'Copy this invitation link and send it through your approved channel.' }); } catch (error) { next(error); }
+  try { const email = String(req.body.email || '').trim().toLowerCase(); const role = req.body.role; if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !['admin','manager','host','kitchen'].includes(role)) return res.status(400).json({ error: 'Enter a valid email and staff role.' }); if (await User.exists({ email })) return res.status(409).json({ error: 'That email already has an account.' }); const rawToken = crypto.randomBytes(32).toString('hex'); await StaffInvite.findOneAndUpdate({ email }, { email, role, tokenHash: crypto.createHash('sha256').update(rawToken).digest('hex'), expiresAt: new Date(Date.now()+7*86400000) }, { upsert: true, returnDocument: 'after' }); await logAudit(req.user.id, 'invite_staff', req.path, `${email} (${role})`); res.status(201).json({ inviteUrl: `/staff-invite.html?token=${rawToken}`, expiresInDays: 7, delivery: 'Copy this invitation link and send it through your approved channel.' }); } catch (error) { next(error); }
 });
 app.post('/api/staff-invites/accept', authLimiter, async (req, res, next) => {
   try { const token = String(req.body.token || ''); const tokenHash = crypto.createHash('sha256').update(token).digest('hex'); const invite = await StaffInvite.findOne({ tokenHash, expiresAt: { $gt: new Date() } }); if (!invite) return res.status(400).json({ error: 'Invitation is expired or invalid.' }); const name = String(req.body.name || '').trim(); const password = req.body.password; if (!name || name.length > 100 || typeof password !== 'string' || password.length < 8) return res.status(400).json({ error: 'Enter your name and a password with at least 8 characters.' }); if (await User.exists({ email: invite.email })) return res.status(409).json({ error: 'This email already has an account.' }); const user = await User.create({ name, email: invite.email, password: await bcrypt.hash(password,12), role: invite.role }); await invite.deleteOne(); setAuthCookie(res, signToken(user)); res.status(201).json({ user: { name: user.name, email: user.email, role: user.role } }); } catch (error) { next(error); }
@@ -316,7 +321,7 @@ async function logAudit(actor, action, endpoint, details) {
   try { await AuditLog.create({ actor: String(actor), action, endpoint, details: details ? String(details).slice(0, 500) : '' }); } catch {}
 }
 
-// ── Orders (public create, auth/admin manage) ──
+// â”€â”€ Orders (public create, auth/admin manage) â”€â”€
 app.post('/api/orders', async (req, res) => {
   try {
     const operations = await Setting.findOne({ key: 'operations' });
@@ -437,7 +442,7 @@ function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
   const reservationStatuses = new Map();
   const reservationHours = new Map();
   const reservationHeat = new Map();
-  const leadTimes = new Map([['< 1 day', 0], ['1–3 days', 0], ['4–7 days', 0], ['8–14 days', 0], ['15+ days', 0], ['Not recorded', 0]]);
+  const leadTimes = new Map([['< 1 day', 0], ['1â€“3 days', 0], ['4â€“7 days', 0], ['8â€“14 days', 0], ['15+ days', 0], ['Not recorded', 0]]);
   const partySizes = new Map();
   const itemDayData = new Map();
   const getDay = key => {
@@ -528,12 +533,12 @@ function summarizeReportPeriod(orders, reservations, fromKey, toKey) {
     }
     const size = Number(reservation.partySize) || 0;
     if (size > 0) {
-      const sizeGroup = size <= 2 ? '1–2' : size <= 4 ? '3–4' : size <= 6 ? '5–6' : '7+';
+      const sizeGroup = size <= 2 ? '1â€“2' : size <= 4 ? '3â€“4' : size <= 6 ? '5â€“6' : '7+';
       partySizes.set(sizeGroup, (partySizes.get(sizeGroup) || 0) + 1);
     }
     if (reservation.createdAt) {
       const leadDays = Math.max(0, Math.round((Date.parse(`${reservationDay}T00:00:00Z`) - Date.parse(`${reportDateKey(reservation.createdAt)}T00:00:00Z`)) / 86400000));
-      const leadGroup = leadDays < 1 ? '< 1 day' : leadDays <= 3 ? '1–3 days' : leadDays <= 7 ? '4–7 days' : leadDays <= 14 ? '8–14 days' : '15+ days';
+      const leadGroup = leadDays < 1 ? '< 1 day' : leadDays <= 3 ? '1â€“3 days' : leadDays <= 7 ? '4â€“7 days' : leadDays <= 14 ? '8â€“14 days' : '15+ days';
       leadTimes.set(leadGroup, (leadTimes.get(leadGroup) || 0) + 1);
     } else leadTimes.set('Not recorded', (leadTimes.get('Not recorded') || 0) + 1);
   }
@@ -759,7 +764,7 @@ app.get('/api/admin/dashboard-stats', auth, authorize('admin','manager','host','
   });
 });
 
-// ── Reservations ──
+// â”€â”€ Reservations â”€â”€
 app.get('/api/admin/reservations', auth, authorize('admin','manager','host'), async (req, res) => {
   const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
   const filter = {}; if (req.query.status) filter.status = String(req.query.status); if (req.query.date) { const start = new Date(req.query.date); if (Number.isFinite(+start)) { start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate()+1); filter.date = { $gte: start, $lt: end }; } }
@@ -780,7 +785,7 @@ app.patch('/api/admin/reservations/:id', auth, authorize('admin','manager','host
   const existing = await Reservation.findById(req.params.id); if (!existing) return res.status(404).json({ error: 'Reservation not found' });
   const body = cleanReservationInput({ ...existing.toObject(), ...req.body }); const validationError = validateReservationBody(body); if (validationError) return res.status(400).json({ error: validationError });
   const conflict = await reservationConflict(body.tableNumber, body.date, body.time, existing._id, body.partySize); if (conflict) return res.status(409).json({ error: conflict });
-  const r = await Reservation.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
+  const r = await Reservation.findByIdAndUpdate(req.params.id, body, { returnDocument: 'after', runValidators: true });
   await logAudit(req.user.id || 'admin', 'update_reservation', `/api/admin/reservations/${req.params.id}`, `Status: ${r.status}`);
   res.json({ ok: true, reservation: r });
 });
@@ -791,7 +796,7 @@ app.delete('/api/admin/reservations/:id', auth, authorize('admin','manager','hos
   res.json({ ok: true });
 });
 
-// ── Menu Items ──
+// â”€â”€ Menu Items â”€â”€
 app.get('/api/admin/menu', auth, authorize('admin','manager','kitchen'), async (req, res) => {
   const filter = {}; if (req.query.q) { const q = String(req.query.q).slice(0,100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); filter.$or = ['name','category'].map(field => ({ [field]: { $regex: q, $options: 'i' } })); }
   const list = await MenuItem.find(filter).sort({ category: 1, name: 1 }).limit(500);
@@ -905,7 +910,7 @@ app.post('/api/admin/menu', auth, authorize('admin','manager'), async (req, res)
 });
 
 app.patch('/api/admin/menu/:id', auth, authorize('admin','manager'), async (req, res) => {
-  const item = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const item = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
   await logAudit(req.user.id || 'admin', 'update_menu_item', `/api/admin/menu/${req.params.id}`, item.name);
   res.json({ ok: true, item });
 });
@@ -915,7 +920,7 @@ app.delete('/api/admin/menu/:id', auth, authorize('admin','manager'), async (req
   res.json({ ok: true });
 });
 
-// ── Orders ──
+// â”€â”€ Orders â”€â”€
 app.get('/api/admin/orders', auth, authorize('admin','manager','kitchen'), async (req, res) => {
   const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100)); const filter = {};
   if (req.query.status) filter.status = String(req.query.status); if (req.query.date) { const start = new Date(req.query.date); if (Number.isFinite(+start)) { start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate()+1); filter.createdAt = { $gte: start, $lt: end }; } }
@@ -927,12 +932,12 @@ app.get('/api/admin/orders', auth, authorize('admin','manager','kitchen'), async
 app.patch('/api/admin/orders/:id', auth, authorize('admin','manager','kitchen'), async (req, res) => {
   const allowed = ['new','accepted','preparing','ready','out-for-delivery','completed','refunded','cancelled']; if (!allowed.includes(req.body.status)) return res.status(400).json({ error: 'Invalid order status' });
   const updates = { status: req.body.status, updatedAt: new Date() }; const timestamp = { accepted: 'acceptedAt', preparing: 'preparingAt', ready: 'readyAt', completed: 'completedAt' }[req.body.status]; if (timestamp) updates[timestamp] = new Date();
-  const order = await Order.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }); if (!order) return res.status(404).json({ error: 'Order not found' });
+  const order = await Order.findByIdAndUpdate(req.params.id, updates, { returnDocument: 'after', runValidators: true }); if (!order) return res.status(404).json({ error: 'Order not found' });
   await logAudit(req.user.id || 'admin', 'update_order', `/api/admin/orders/${req.params.id}`, `Status: ${order.status}`);
   res.json({ ok: true, order });
 });
 
-// ── Audit Logs ──
+// â”€â”€ Audit Logs â”€â”€
 app.get('/api/admin/audit-logs', auth, adminOnly, async (req, res) => {
   const logs = await AuditLog.find().sort({ timestamp: -1 }).limit(100);
   res.json({ logs });
@@ -959,11 +964,11 @@ app.post('/api/admin/tables', auth, authorize('admin','manager'), [body('number'
   catch (error) { next(error); }
 });
 app.patch('/api/admin/tables/:id', auth, authorize('admin','manager'), async (req, res, next) => {
-  try { const { section, seats, number } = req.body; const updates = {}; if (section !== undefined) updates.section = String(section).trim().slice(0,60); if (Number.isInteger(Number(seats)) && seats > 0) updates.seats = Number(seats); if (Number.isInteger(Number(number)) && number > 0) updates.number = Number(number); const table = await Table.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }); if (!table) return res.status(404).json({ error: 'Table not found' }); await logAudit(req.user.id, 'update_table', req.path, `Table ${table.number}`); res.json({ table }); }
+  try { const { section, seats, number } = req.body; const updates = {}; if (section !== undefined) updates.section = String(section).trim().slice(0,60); if (Number.isInteger(Number(seats)) && seats > 0) updates.seats = Number(seats); if (Number.isInteger(Number(number)) && number > 0) updates.number = Number(number); const table = await Table.findByIdAndUpdate(req.params.id, updates, { returnDocument: 'after', runValidators: true }); if (!table) return res.status(404).json({ error: 'Table not found' }); await logAudit(req.user.id, 'update_table', req.path, `Table ${table.number}`); res.json({ table }); }
   catch (error) { next(error); }
 });
 app.patch('/api/admin/tables/:id/status', auth, authorize('admin','manager','host'), async (req, res, next) => {
-  try { const { status, reason = '' } = req.body; if (!['available','blocked','seated'].includes(status)) return res.status(400).json({ error: 'Invalid table status' }); const table = await Table.findByIdAndUpdate(req.params.id, { status, blockReason: status === 'blocked' ? String(reason).slice(0,240) : '', updatedAt: new Date() }, { new: true, runValidators: true }); if (!table) return res.status(404).json({ error: 'Table not found' }); await logAudit(req.user.id, 'set_table_status', req.path, `Table ${table.number}: ${status}`); res.json({ table }); }
+  try { const { status, reason = '' } = req.body; if (!['available','blocked','seated'].includes(status)) return res.status(400).json({ error: 'Invalid table status' }); const table = await Table.findByIdAndUpdate(req.params.id, { status, blockReason: status === 'blocked' ? String(reason).slice(0,240) : '', updatedAt: new Date() }, { returnDocument: 'after', runValidators: true }); if (!table) return res.status(404).json({ error: 'Table not found' }); await logAudit(req.user.id, 'set_table_status', req.path, `Table ${table.number}: ${status}`); res.json({ table }); }
   catch (error) { next(error); }
 });
 app.delete('/api/admin/tables/:id', auth, authorize('admin','manager'), async (req, res, next) => {
@@ -977,12 +982,12 @@ app.post('/api/admin/walkins', auth, authorize('admin','manager','host'), async 
 });
 
 app.get('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'operations' }); res.json(entry?.value || { ordersPaused: false }); } catch (error) { next(error); } });
-app.patch('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, new: true }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
-app.patch('/api/admin/menu/:id/availability', auth, authorize('admin','manager','kitchen'), async (req, res, next) => { try { if (typeof req.body.available !== 'boolean') return res.status(400).json({ error: 'Availability must be true or false.' }); const item = await MenuItem.findByIdAndUpdate(req.params.id, { available: req.body.available }, { new: true }); if (!item) return res.status(404).json({ error: 'Menu item not found' }); await logAudit(req.user.id, 'toggle_menu_availability', req.path, `${item.name}: ${item.available ? 'available' : 'sold out'}`); res.json({ item }); } catch (error) { next(error); } });
+app.patch('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, returnDocument: 'after' }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
+app.patch('/api/admin/menu/:id/availability', auth, authorize('admin','manager','kitchen'), async (req, res, next) => { try { if (typeof req.body.available !== 'boolean') return res.status(400).json({ error: 'Availability must be true or false.' }); const item = await MenuItem.findByIdAndUpdate(req.params.id, { available: req.body.available }, { returnDocument: 'after' }); if (!item) return res.status(404).json({ error: 'Menu item not found' }); await logAudit(req.user.id, 'toggle_menu_availability', req.path, `${item.name}: ${item.available ? 'available' : 'sold out'}`); res.json({ item }); } catch (error) { next(error); } });
 
 app.post('/api/contact', authLimiter, auth, [body('name').trim().isLength({ min: 1, max: 100 }), body('email').isEmail().normalizeEmail(), body('message').trim().isLength({ min: 1, max: 3000 }), validateRequest], async (req, res, next) => { try { const message = await ContactMessage.create({ name: req.body.name, email: req.body.email, phone: String(req.body.phone || '').slice(0,40), subject: String(req.body.subject || '').slice(0,120), message: req.body.message }); res.status(201).json({ ok: true, id: message.id }); } catch (error) { next(error); } });
 app.get('/api/admin/inbox', auth, authorize('admin','manager'), async (req, res, next) => { try { const filter = {}; if (req.query.q) { const q = String(req.query.q).slice(0,100); filter.$or = ['name','email','subject','message'].map(key => ({ [key]: { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } })); } res.json({ messages: await ContactMessage.find(filter).sort({ createdAt: -1 }).limit(200).lean() }); } catch (error) { next(error); } });
-app.patch('/api/admin/inbox/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { if (!['unread','read','archived'].includes(req.body.status)) return res.status(400).json({ error: 'Invalid message status' }); const message = await ContactMessage.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true }); if (!message) return res.status(404).json({ error: 'Message not found' }); res.json({ message }); } catch (error) { next(error); } });
+app.patch('/api/admin/inbox/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { if (!['unread','read','archived'].includes(req.body.status)) return res.status(400).json({ error: 'Invalid message status' }); const message = await ContactMessage.findByIdAndUpdate(req.params.id, { status: req.body.status }, { returnDocument: 'after' }); if (!message) return res.status(404).json({ error: 'Message not found' }); res.json({ message }); } catch (error) { next(error); } });
 
 app.get('/api/events', async (req, res, next) => { try { res.json({ events: await Event.find({ published: true, date: { $gte: new Date() } }).sort({ date: 1 }).lean() }); } catch (error) { next(error); } });
 app.get('/api/admin/events', auth, authorize('admin','manager'), async (req, res, next) => { try { const events = await Event.find().sort({ date: 1 }).lean(); const bookings = await EventBooking.aggregate([{ $group: { _id: '$eventId', guests: { $sum: '$guests' }, bookings: { $sum: 1 } } }]); res.json({ events: events.map(event => ({ ...event, bookings: bookings.find(item => String(item._id) === String(event._id))?.bookings || 0, bookedGuests: bookings.find(item => String(item._id) === String(event._id))?.guests || 0 })) }); } catch (error) { next(error); } });
@@ -990,11 +995,11 @@ app.post('/api/admin/events', auth, authorize('admin','manager'), async (req, re
 app.post('/api/events/:id/bookings', authLimiter, async (req, res, next) => { try { const event = await Event.findOne({ _id: req.params.id, published: true }); if (!event) return res.status(404).json({ error: 'Event not found' }); const guests = Number(req.body.guests); if (!String(req.body.name || '').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(req.body.email || '')) || !Number.isInteger(guests) || guests < 1) return res.status(400).json({ error: 'Enter your contact details and guest count.' }); const booked = await EventBooking.aggregate([{ $match: { eventId: event._id } }, { $group: { _id: null, guests: { $sum: '$guests' } } }]); if ((booked[0]?.guests || 0) + guests > event.capacity) return res.status(409).json({ error: 'This event is at capacity.' }); const booking = await EventBooking.create({ eventId: event._id, name: req.body.name, email: req.body.email, phone: req.body.phone, guests }); res.status(201).json({ ok: true, bookingId: booking.id }); } catch (error) { next(error); } });
 
 app.get('/api/admin/guests', auth, authorize('admin','manager','host'), async (req, res, next) => { try { const reservations = await Reservation.find({ guestEmail: { $ne: '' } }).lean(); const orders = await Order.find({ customerEmail: { $ne: '' } }).lean(); const map = new Map(); for (const row of reservations) { const key = row.guestEmail.toLowerCase(); const guest = map.get(key) || { email: key, name: row.guestName, phone: row.guestPhone, visits: 0, spend: 0, lastVisit: row.date, dietary: new Set() }; if (['confirmed','seated','completed'].includes(row.status)) guest.visits++; if (row.dietary) guest.dietary.add(row.dietary); if (new Date(row.date) > new Date(guest.lastVisit)) guest.lastVisit = row.date; map.set(key, guest); } for (const row of orders) { const key = row.customerEmail.toLowerCase(); const guest = map.get(key) || { email: key, name: row.customerName, phone: row.customerPhone, visits: 0, spend: 0, lastVisit: row.createdAt, dietary: new Set() }; if (row.paymentStatus === 'paid' && row.status !== 'refunded') guest.spend += row.total; guest.visits++; if (new Date(row.createdAt) > new Date(guest.lastVisit)) guest.lastVisit = row.createdAt; map.set(key, guest); } let guests = [...map.values()].map(g => ({ ...g, dietary: [...g.dietary] })); if (req.query.q) { const q = String(req.query.q).toLowerCase(); guests = guests.filter(g => `${g.name} ${g.email} ${g.phone}`.toLowerCase().includes(q)); } const notes = await GuestNote.find({ email: { $in: guests.map(g => g.email) } }).lean(); guests = guests.map(g => ({ ...g, ...(notes.find(n => n.email === g.email) || {}), visits: g.visits, spend: g.spend, dietary: g.dietary })); res.json({ guests }); } catch (error) { next(error); } });
-app.patch('/api/admin/guests/:email', auth, authorize('admin','manager'), async (req, res, next) => { try { const email = decodeURIComponent(req.params.email).toLowerCase(); const tags = Array.isArray(req.body.tags) ? req.body.tags.filter(tag => ['VIP','Regular'].includes(tag)) : []; const staffNotes = String(req.body.staffNotes || '').slice(0,2000); const note = await GuestNote.findOneAndUpdate({ email }, { email, tags, staffNotes }, { new: true, upsert: true, runValidators: true }); res.json({ guest: note }); } catch (error) { next(error); } });
+app.patch('/api/admin/guests/:email', auth, authorize('admin','manager'), async (req, res, next) => { try { const email = decodeURIComponent(req.params.email).toLowerCase(); const tags = Array.isArray(req.body.tags) ? req.body.tags.filter(tag => ['VIP','Regular'].includes(tag)) : []; const staffNotes = String(req.body.staffNotes || '').slice(0,2000); const note = await GuestNote.findOneAndUpdate({ email }, { email, tags, staffNotes }, { returnDocument: 'after', upsert: true, runValidators: true }); res.json({ guest: note }); } catch (error) { next(error); } });
 
 app.get('/api/admin/reviews', auth, authorize('admin','manager'), async (req, res, next) => { try { res.json({ reviews: await Review.find().sort({ createdAt: -1 }).limit(200).lean() }); } catch (error) { next(error); } });
 app.post('/api/reviews', authLimiter, async (req, res, next) => { try { const rating = Number(req.body.rating); if (!Number.isInteger(rating) || rating < 1 || rating > 5 || String(req.body.comment || '').trim().length < 3) return res.status(400).json({ error: 'Review must include a rating from 1 to 5 and a comment.' }); const review = await Review.create({ name: String(req.body.name || 'Guest').slice(0,100), rating, comment: String(req.body.comment).slice(0,2000), reference: String(req.body.reference || '').slice(0,100) }); res.status(201).json({ ok: true, reviewId: review.id }); } catch (error) { next(error); } });
-app.patch('/api/admin/reviews/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { const updates = {}; if (['approved','hidden','pending'].includes(req.body.status)) updates.status = req.body.status; if (typeof req.body.reply === 'string') updates.reply = req.body.reply.slice(0,2000); const review = await Review.findByIdAndUpdate(req.params.id, updates, { new: true }); if (!review) return res.status(404).json({ error: 'Review not found' }); res.json({ review }); } catch (error) { next(error); } });
+app.patch('/api/admin/reviews/:id', auth, authorize('admin','manager'), async (req, res, next) => { try { const updates = {}; if (['approved','hidden','pending'].includes(req.body.status)) updates.status = req.body.status; if (typeof req.body.reply === 'string') updates.reply = req.body.reply.slice(0,2000); const review = await Review.findByIdAndUpdate(req.params.id, updates, { returnDocument: 'after' }); if (!review) return res.status(404).json({ error: 'Review not found' }); res.json({ review }); } catch (error) { next(error); } });
 app.get('/api/reviews', async (req, res, next) => { try { const reviews = await Review.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(100).lean(); const average = reviews.length ? reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length : null; res.json({ reviews, count: reviews.length, average }); } catch (error) { next(error); } });
 
 app.get('/api/admin/settings', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'restaurant' }); res.json({ settings: entry?.value || {} }); } catch (error) { next(error); } });
@@ -1051,8 +1056,9 @@ app.use((req, res) => {
 
 async function seedAdmin() {
   const email = process.env.ADMIN_EMAIL;
-  const exists = await User.findOne({ email });
-  if (!exists) {
+  if (email && !process.env.ADMIN_PASSWORD) throw new Error('ADMIN_PASSWORD is required when ADMIN_EMAIL is configured.');
+  const exists = email ? await User.findOne({ email }) : null;
+  if (email && !exists) {
     const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
     await User.create({ name: 'Administrator', email, password: hash, role: 'admin' });
     console.log('Admin seeded:', email);
@@ -1078,14 +1084,16 @@ async function seedAdmin() {
     const before = menuHtml.slice(Math.max(0, match.index - 2500), match.index);
     const category = before.match(/data-cat="([^"]+)"/g)?.at(-1)?.match(/"([^"]+)"/)?.[1] || 'menu';
     const image = before.match(/<img[^>]+src="([^"]*)"/)?.[1] || '';
-    await MenuItem.findOneAndUpdate({ $or: [{ catalogId }, { name }] }, { $setOnInsert: { name, price, category, available: true }, $set: { catalogId, image } }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    await MenuItem.findOneAndUpdate({ $or: [{ catalogId }, { name }] }, { $setOnInsert: { name, price, category, available: true }, $set: { catalogId, image } }, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true });
   }
 
   if (!(await Table.countDocuments())) {
     await Table.create(Array.from({ length: 12 }, (_, index) => ({ number: index + 1, section: index < 6 ? 'Indoor' : index < 10 ? 'Patio' : 'Lakeside', seats: index % 3 === 0 ? 6 : 4 })));
   }
-  if (!(await Setting.exists({ key: 'restaurant' }))) await Setting.create({ key: 'restaurant', value: { name: 'LakeBite', address: 'Waiyaki Way, Westlands, Nairobi', phone: '+254700000000', whatsapp: '+254700000000', deliveryFee: 150, deliveryRadiusKm: 10, taxPercent: 0, serviceChargePercent: 0, openingHours: 'Mon–Thu 11:00–22:00; Fri–Sat 11:00–00:00; Sun 10:00–21:00', reservationSlotMinutes: 90, maximumPartySize: 12, leadTimeHours: 1, cutoffHours: 2 } });
+  if (!(await Setting.exists({ key: 'restaurant' }))) await Setting.create({ key: 'restaurant', value: { name: 'LakeBite', address: 'Waiyaki Way, Westlands, Nairobi', phone: '+254700000000', whatsapp: '+254700000000', deliveryFee: 150, deliveryRadiusKm: 10, taxPercent: 0, serviceChargePercent: 0, openingHours: 'Monâ€“Thu 11:00â€“22:00; Friâ€“Sat 11:00â€“00:00; Sun 10:00â€“21:00', reservationSlotMinutes: 90, maximumPartySize: 12, leadTimeHours: 1, cutoffHours: 2 } });
   if (!(await Setting.exists({ key: 'operations' }))) await Setting.create({ key: 'operations', value: { ordersPaused: false } });
+
+  if (process.env.NODE_ENV === 'production' || process.env.SEED_DEMO_DATA !== 'true') return;
 
   const resCount = await Reservation.countDocuments();
   if (resCount === 0) {
@@ -1101,19 +1109,25 @@ async function seedAdmin() {
   const orderCount = await Order.countDocuments();
   if (orderCount === 0) {
     await Order.create([
-      { orderNumber: 'LB-1001', items: [{ name: 'Nyama Choma Platter', price: 2400, qty: 1 }], total: 2400, status: 'preparing', paymentStatus: 'paid' },
-      { orderNumber: 'LB-1002', items: [{ name: 'Whole Tilapia Fillet', price: 1850, qty: 1 }, { name: 'Swahili Pilau', price: 1200, qty: 1 }], total: 3050, status: 'new', paymentStatus: 'pending' }
+      { orderNumber: 'LB-1001', subtotal: 2400, items: [{ name: 'Nyama Choma Platter', price: 2400, qty: 1 }], total: 2400, status: 'preparing', paymentStatus: 'paid' },
+      { orderNumber: 'LB-1002', subtotal: 3050, items: [{ name: 'Whole Tilapia Fillet', price: 1850, qty: 1 }, { name: 'Swahili Pilau', price: 1200, qty: 1 }], total: 3050, status: 'new', paymentStatus: 'pending' }
     ]);
     console.log('Orders seeded');
   }
 }
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log('Server on port ' + port));
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log('MongoDB connected');
-    await seedAdmin();
-  })
-  .catch(e => console.error('MongoDB connection failed; website pages remain available, but database features are offline:', e.message));
+async function start() {
+  if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is required.');
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters.');
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('MongoDB connected');
+  await seedAdmin();
+  app.listen(port, () => console.log('Server on port ' + port));
+}
+
+start().catch(error => {
+  console.error('Server startup failed:', error.message);
+  process.exit(1);
+});
