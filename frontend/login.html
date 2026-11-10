@@ -57,6 +57,7 @@
     @media(max-width:520px){.auth-wrap{padding:1rem;background-attachment:scroll}.auth-card{border-radius:20px}.auth-card-header{margin-bottom:1.4rem}}
     .signup-only{display:none}
   </style>
+    <script src="/api-config.js"></script>
 </head>
 <body>
   <div class="auth-wrap">
@@ -190,7 +191,7 @@
         else if(['contact.html','reservation.html'].includes(returnPage)) location.href=returnPage;
         else location.href='/';
       } catch (err) {
-        msg.textContent='Network error. Please try again.';
+        msg.textContent='Unable to reach the LakeBite server. If this page is hosted on a different domain, add its exact URL to Render CORS_ORIGINS and redeploy the backend.';
         submitBtn.disabled=false;
         submitText.textContent=mode==='login'?'Sign In':'Create Account';
       }

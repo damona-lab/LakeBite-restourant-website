@@ -27,16 +27,17 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
+const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean) : [];
+
 const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 app.use((req, res, next) => {
   if (!writeMethods.has(req.method) || !req.cookies.token || req.path === '/api/payments/mpesa/callback') return next();
   const origin = req.get('origin');
-  if (origin && new URL(origin).host !== req.get('host')) return res.status(403).json({ error: 'Cross-site request rejected' });
+  if (origin && new URL(origin).host !== req.get('host') && !allowedOrigins.includes(origin)) return res.status(403).json({ error: 'Cross-site request rejected' });
   if (!origin && req.get('sec-fetch-site') === 'cross-site') return res.status(403).json({ error: 'Cross-site request rejected' });
   next();
 });
 
-const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o=>o.trim()) : [];
 app.use(cors({ origin(origin, callback) {
   if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
   if (!allowedOrigins.length) return callback(null, false);
@@ -206,7 +207,7 @@ function adminOnly(req, res, next) {
 
 function setAuthCookie(res, token) {
   const secure = process.env.NODE_ENV === 'production';
-  res.cookie('token', token, { httpOnly: true, secure, sameSite: 'lax', maxAge: 7*24*60*60*1000, path: '/' });
+  res.cookie('token', token, { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax', maxAge: 7*24*60*60*1000, path: '/' });
 }
 
 app.post('/api/register', authLimiter, async (req, res) => {
@@ -244,7 +245,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
 
 app.post('/api/logout', (req, res) => { 
   const secure = process.env.NODE_ENV === 'production';
-  res.clearCookie('token', { httpOnly: true, secure, sameSite: 'lax', path: '/' }); 
+  res.clearCookie('token', { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax', path: '/' }); 
   res.json({ ok: true }); 
 });
 
