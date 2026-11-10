@@ -145,6 +145,31 @@ function loadPublicContent() {
     }
   }).catch(() => {});
 }
+function startGuestReviewRotator(target) {
+  if (!target) return;
+  if (target._guestReviewTimer) { clearInterval(target._guestReviewTimer); target._guestReviewTimer = null; }
+  const cards = Array.from(target.querySelectorAll('[data-guest-review]'));
+  if (!cards.length) return;
+  target.classList.add('guest-review-rotator');
+  const visibleCount = cards.length === 1 ? 1 : 2;
+  const show = (startIndex) => {
+    cards.forEach((card, i) => {
+      const offset = (i - startIndex + cards.length) % cards.length;
+      const active = offset < visibleCount;
+      card.classList.toggle('is-active', active);
+      card.classList.add('visible');
+      card.setAttribute('aria-hidden', active ? 'false' : 'true');
+    });
+  };
+  let current = 0;
+  show(current);
+  if (cards.length <= visibleCount) return;
+  target._guestReviewTimer = setInterval(() => {
+    current = (current + visibleCount) % cards.length;
+    show(current);
+  }, 3000);
+}
+
 function loadPublicEventsAndReviews() {
   const eventsTarget = document.getElementById('publicEventsList');
   if (eventsTarget) fetch('/api/events').then(response => response.json()).then(({ events = [] }) => {
@@ -172,10 +197,32 @@ function loadPublicEventsAndReviews() {
   }).catch(() => { eventsTarget.classList.add('experience-grid--empty'); eventsTarget.innerHTML = '<div class="experience-empty"><p>Event information is temporarily unavailable.</p></div>'; });
   const reviewsTarget = document.getElementById('publicReviewsList');
   if (reviewsTarget) fetch('/api/reviews').then(response => response.json()).then(data => {
-    reviewsTarget.replaceChildren(); const summary = document.getElementById('publicReviewSummary');
-    if (data.average !== null) { summary.textContent = `${Number(data.average).toFixed(1)} out of 5 based on ${data.count} approved guest reviews.`; const ld = document.getElementById('aggregateReviews'); if (ld) ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Restaurant', name: 'LakeBite', aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(data.average).toFixed(1), reviewCount: data.count } }); }
-    for (const review of data.reviews || []) { const article = document.createElement('article'); article.className = 'menu-card'; const heading = document.createElement('h3'); heading.textContent = `${review.rating} / 5 · ${review.name || 'Guest'}`; const comment = document.createElement('p'); comment.textContent = review.comment; article.append(heading, comment); reviewsTarget.appendChild(article); }
-  }).catch(() => { reviewsTarget.textContent = 'Guest reviews are temporarily unavailable.'; });
+    const summary = document.getElementById('publicReviewSummary');
+    const approved = Array.isArray(data.reviews) ? data.reviews : [];
+    if (data.average !== null && summary) { summary.textContent = `${Number(data.average).toFixed(1)} out of 5 based on ${data.count} approved guest reviews.`; const ld = document.getElementById('aggregateReviews'); if (ld) ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Restaurant', name: 'LakeBite', aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(data.average).toFixed(1), reviewCount: data.count } }); }
+    if (!approved.length) { startGuestReviewRotator(reviewsTarget); return; } // keep static testimonials when there are no approved reviews yet
+    reviewsTarget.replaceChildren();
+    for (const review of approved) {
+      const article = document.createElement('article');
+      const isTestimonial = reviewsTarget.classList.contains('testimonials-grid') || reviewsTarget.classList.contains('guest-review-rotator');
+      article.className = isTestimonial ? 'testimonial-card reveal visible' : 'menu-card';
+      article.setAttribute('data-guest-review', '');
+      if (isTestimonial) {
+        const stars = document.createElement('div'); stars.className = 'stars'; stars.textContent = '★★★★★'.slice(0, Math.max(1, Math.min(5, Number(review.rating) || 5))).padEnd(5, '☆');
+        const comment = document.createElement('p'); comment.textContent = `"${String(review.comment || '').trim()}"`;
+        const author = document.createElement('div'); author.className = 'testimonial-author';
+        const avatar = document.createElement('div'); avatar.className = 'author-avatar'; avatar.innerHTML = `<i class="fa-regular fa-user" style="display:grid;place-items:center;width:100%;height:100%;color:var(--clr-gold,#c8973a);"></i>`;
+        const meta = document.createElement('div'); const strong = document.createElement('strong'); strong.textContent = review.name || 'Guest'; const span = document.createElement('span'); span.textContent = 'Approved guest review'; meta.append(strong, span); author.append(avatar, meta);
+        article.append(stars, comment, author);
+      } else {
+        const heading = document.createElement('h3'); heading.textContent = `${review.rating} / 5 · ${review.name || 'Guest'}`;
+        const comment = document.createElement('p'); comment.textContent = review.comment;
+        article.append(heading, comment);
+      }
+      reviewsTarget.appendChild(article);
+    }
+    startGuestReviewRotator(reviewsTarget);
+  }).catch(() => { if (!reviewsTarget.children.length) reviewsTarget.textContent = 'Guest reviews are temporarily unavailable.'; else startGuestReviewRotator(reviewsTarget); });
 }
 
 function applyTheme(theme) {
@@ -309,7 +356,7 @@ function initCheckoutPage() {
     submit.disabled = true; submit.textContent = 'Placing order…'; error.hidden = true;
     const data = new FormData(form);
     try {
-      const response = await fetch('/api/orders', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerName: data.get('name'), customerPhone: data.get('phone'), customerEmail: data.get('email'), type: data.get('type'), deliveryAddress: data.get('address'), notes: data.get('notes'), paymentMethod: data.get('paymentMethod'), items: cart.map(item => ({ id: item.id, name: item.name, qty: item.qty })) }) });
+      const response = await fetch('/api/orders', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },  body: JSON.stringify({ customerName: data.get('name'), customerPhone: data.get('phone'), customerEmail: data.get('email'), type: data.get('type'), deliveryAddress: data.get('address'), notes: data.get('notes'), paymentMethod: data.get('paymentMethod'), items: cart.map(item => ({ id: item.id, name: item.name, qty: item.qty })) }) });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || 'Could not place order.');
       cart = []; saveCart(); updateCartUI();

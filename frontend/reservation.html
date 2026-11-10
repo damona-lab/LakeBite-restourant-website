@@ -146,12 +146,12 @@
                     <option value="">Choose a table</option>
                   </select>
                 </div>
-                <div class="form-group" style="grid-column: span 2">
+                <div class="form-group res-full">
                   <label for="res-occasion">Special Occasion (optional)</label>
                   <input type="text" id="res-occasion" class="form-control"
                     placeholder="e.g. Birthday, Anniversary, Business Dinner...">
                 </div>
-                <div class="form-group" style="grid-column: span 2">
+                <div class="form-group res-full">
                   <label for="res-notes">Special Requests</label>
                   <textarea id="res-notes" class="form-control"
                     placeholder="Dietary requirements, seating preferences, decorations..."></textarea>
@@ -163,12 +163,12 @@
               </button>
             </form>
 
-            <div class="res-success" id="resSuccess" style="display:none">
+            <div class="res-success" id="resSuccess">
               <div class="res-success-icon"><i class="fa-solid fa-circle-check"></i></div>
               <h3>Reservation Received!</h3>
               <p>Thank you for choosing LakeBite. We'll confirm your booking within 2 hours at the email and phone
                 number you provided. We can't wait to host you!</p>
-              <a href="menu.html" class="btn btn-outline" style="margin-top:1.5rem">Browse Our Menu</a>
+              <a href="menu.html" class="btn btn-outline">Browse Our Menu</a>
             </div>
           </div>
 
@@ -308,7 +308,8 @@
             <li><a href="menu.html">Menu</a></li>
             <li><a href="gallery.html">Gallery</a></li>
             <li><a href="reservation.html">Reservations</a></li>
-            <li><a href="contact.html">Contact</a>`n        <a href="login.html" id="footerLoginLink">Login</a></li>
+              <li><a href="contact.html">Contact</a></li>
+              <li><a href="login.html" id="footerLoginLink">Login</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -405,131 +406,40 @@
   </script>
 
   <style>
-    /* ═══ Reservation Page Styles ═══ */
-    .reservation-layout {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 4rem;
-      align-items: flex-start;
-    }
+    .reservation-layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:1.5rem; align-items:start; }
+    .res-form-wrap, .res-info-card, .room-card { background:var(--clr-card); border:1px solid var(--clr-border); border-radius:16px; box-shadow:var(--shadow-sm); }
+    .res-form-wrap { padding:1.5rem 1.6rem; }
+    .res-form-header { margin-bottom:1.4rem; }
+    .res-form-header .section-title { font-size:clamp(1.75rem,2.8vw,2.35rem); }
+    .res-form-header .divider { margin:.65rem 0 1rem; }
+    .res-form-header p { color:var(--clr-text-sub); font-size:.92rem; line-height:1.65; max-width:62ch; margin:0; }
+    .res-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem 1rem; margin-bottom:1rem; }
+    .res-form-grid .form-group { margin:0; min-width:0; }
+    .res-form-grid .form-group label { font-size:.72rem; margin-bottom:.35rem; }
+    .res-form-grid .form-control { min-height:44px; padding:.72rem .9rem; font-size:.92rem; border-radius:10px; }
+    .res-form-grid textarea.form-control { min-height:112px; resize:vertical; }
+    .res-form-grid .res-full { grid-column:1 / -1; }
+    #reservationError { margin:.15rem 0 .85rem; color:#c0392b; font-size:.88rem; }
+    .res-submit-btn { width:100%; justify-content:center; min-height:46px; padding:.85rem 1.2rem; border-radius:10px; font-size:.84rem; }
+    .res-success { display:none; flex-direction:column; align-items:center; text-align:center; padding:2.25rem 1rem; }
+    .res-success-icon { width:64px; height:64px; display:grid; place-items:center; margin-bottom:1rem; border-radius:50%; background:rgba(200,151,58,.12); color:var(--clr-gold); font-size:1.8rem; }
+    .res-success h3 { font-family:var(--font-display); font-size:1.75rem; margin:0 0 .55rem; }
+    .res-success p { color:var(--clr-text-sub); font-size:.93rem; line-height:1.75; max-width:42ch; margin:0; }
+    .res-success .btn { margin-top:1.25rem; }
 
-    .res-form-header {
-      margin-bottom: 2.5rem;
-    }
-
-    .res-form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
-      margin-bottom: 2rem;
-    }
-
-    .res-submit-btn {
-      width: 100%;
-      justify-content: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .res-success {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 3rem 2rem;
-    }
-
-    .res-success-icon {
-      font-size: 3.5rem;
-      color: var(--clr-gold);
-      margin-bottom: 1.2rem;
-    }
-
-    .res-success h3 {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      margin-bottom: 0.8rem;
-    }
-
-    .res-success p {
-      color: var(--clr-text-sub);
-      font-size: 0.95rem;
-      line-height: 1.8;
-      max-width: 400px;
-    }
-
-    .res-info-col {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      position: sticky;
-      top: calc(var(--header-h) + 2rem);
-    }
-
-    .res-info-card {
-      background: var(--clr-card);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-md);
-      padding: 1.5rem;
-    }
-
-    .res-info-card h4 {
-      font-family: var(--font-body);
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--clr-gold);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .res-policy-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-    }
-
-    .res-policy-list li {
-      display: flex;
-      gap: 0.6rem;
-      font-size: 0.86rem;
-      color: var(--clr-text-sub);
-    }
-
-    .res-policy-list i {
-      color: var(--clr-gold);
-      margin-top: 3px;
-      font-size: 0.72rem;
-      flex-shrink: 0;
-    }
-
-    .res-phone-link {
-      font-family: var(--font-display);
-      font-size: 1.4rem;
-      color: var(--clr-gold);
-      font-weight: 600;
-    }
-
-    .hours-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid var(--clr-border);
-      color: var(--clr-text-sub);
-    }
-
-    .hours-row:last-child {
-      border-bottom: none;
-    }
-
-    .hours-row.highlight span {
-      color: var(--clr-gold);
-      font-weight: 500;
-    }
+    .res-info-col { display:grid; gap:1rem; position:sticky; top:calc(var(--header-h) + 1.25rem); }
+    .res-info-card { padding:1.2rem 1.25rem; }
+    .res-info-card h4 { display:flex; align-items:center; gap:.55rem; margin:0 0 .9rem; font-family:var(--font-body); font-size:.78rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--clr-gold); }
+    .res-info-card h4 i { width:30px; height:30px; display:grid; place-items:center; border-radius:8px; background:rgba(200,151,58,.12); font-size:.82rem; }
+    .res-policy-list { display:grid; gap:.65rem; margin:0; padding:0; list-style:none; }
+    .res-policy-list li { display:flex; gap:.65rem; align-items:flex-start; font-size:.86rem; color:var(--clr-text-sub); line-height:1.5; }
+    .res-policy-list i { color:var(--clr-gold); margin-top:.2rem; font-size:.72rem; flex:0 0 auto; }
+    .res-phone-link { display:inline-block; font-family:var(--font-display); font-size:1.45rem; color:var(--clr-gold); font-weight:600; line-height:1.2; }
+    .hours-row { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; padding:.6rem 0; border-bottom:1px solid var(--clr-border); font-size:.86rem; color:var(--clr-text-sub); }
+    .hours-row:last-child { border-bottom:none; padding-bottom:0; }
+    .hours-row span:first-child { color:var(--clr-text); font-weight:500; }
+    .hours-row span:last-child { text-align:right; }
+    .hours-row.highlight span { color:var(--clr-gold); font-weight:600; }
 
     .rooms-section {
       background: var(--clr-bg3);
@@ -639,36 +549,10 @@
       font-size: 0.72rem;
       margin-top: 4px;
     }
-
-    @media(max-width:1100px) {
-      .reservation-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .res-info-col {
-        position: static;
-      }
-    }
-
-    @media(max-width:900px) {
-      .rooms-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media(max-width:640px) {
-      .res-form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .res-form-grid .form-group[style*="span 2"] {
-        grid-column: span 1;
-      }
-
-      .rooms-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media(max-width:1100px){ .reservation-layout{ grid-template-columns:1fr; } .res-info-col{ position:static; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; } }
+    @media(max-width:900px){ .rooms-grid{ grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:760px){ .res-form-wrap,.res-info-card{ padding:1.15rem 1rem; } .res-info-col{ grid-template-columns:1fr; } .res-form-grid{ grid-template-columns:1fr; } .res-form-grid .res-full{ grid-column:auto; } }
+    @media(max-width:640px){ .rooms-grid{ grid-template-columns:1fr; } }
   </style>
 </body>
 

@@ -237,9 +237,10 @@
           </div>
           <div class="env-images reveal-right">
             <div class="env-img-grid">
-              <div class="env-img tall"><img src="" alt="Main dining hall"></div>
-              <div class="env-img"><img src="" alt="VIP conservatory room"></div>
-              <div class="env-img"><img src="" alt="Open-air terrace evening"></div>
+              <div class="env-img tall"><img src="imege/restaurant-interior-entrance.jpg" alt="Main dining hall" loading="lazy" decoding="async"></div>
+              <div class="env-img"><img src="imege/jiko-authentically-uplifts.jpg" alt="VIP conservatory room" loading="lazy" decoding="async"></div>
+              <div class="env-img"><img src="imege/sayari-outdoor-seating.jpg" alt="Open-air terrace evening" loading="lazy" decoding="async"></div>
+              <div class="env-img"><img src="imege/introducing-kahaani-our.jpg" alt="LakeBite dining ambiance" loading="lazy" decoding="async"></div>
             </div>
           </div>
         </div>
@@ -293,8 +294,8 @@
             <li><a href="about.html">Our Story</a></li>
             <li><a href="menu.html">Menu</a></li>
             <li><a href="gallery.html">Gallery</a></li>
-            <li><a href="reservation.html">Reserve a Table</a></li>
-            <li><a href="contact.html">Contact</a>`n        <a href="login.html" id="footerLoginLink">Login</a></li>
+              <li><a href="contact.html">Contact</a></li>
+              <li><a href="login.html" id="footerLoginLink">Login</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -574,26 +575,44 @@
 
     .env-img-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto;
-      gap: 1rem;
-      height: 440px;
+      grid-template-columns: 1.12fr .88fr;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      gap: .9rem;
+      height: 480px;
+      align-items: stretch;
     }
 
     .env-img {
-      border-radius: var(--radius-md);
+      position: relative;
+      min-height: 0;
+      border-radius: 16px;
       overflow: hidden;
-      background: var(--clr-bg3);
+      background: linear-gradient(135deg, var(--clr-bg3), var(--clr-bg2));
+      border: 1px solid var(--clr-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .env-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.16), rgba(0,0,0,0) 42%);
+      pointer-events: none;
     }
 
     .env-img img {
       width: 100%;
       height: 100%;
+      display: block;
       object-fit: cover;
+      object-position: center;
+      transition: transform .55s ease;
     }
 
+    .env-img:hover img { transform: scale(1.045); }
+
     .env-img.tall {
-      grid-row: span 2;
+      grid-row: 1 / -1;
     }
 
     .awards-section {
@@ -648,16 +667,18 @@
 
       .env-img-grid {
         height: auto;
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 220px 170px 170px;
       }
 
       .env-img.tall {
-        grid-row: auto;
-        height: 220px;
+        grid-row: 1 / 2;
+        grid-column: 1 / -1;
+        min-height: 220px;
       }
 
       .env-img {
-        height: 180px;
+        min-height: 170px;
       }
     }
   </style>

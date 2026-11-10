@@ -317,9 +317,10 @@
           <span class="section-label">Guest Reviews</span>
           <h2 class="section-title">What Our Guests Say</h2>
           <div class="divider divider-center"></div>
+          <p id="publicReviewSummary" style="margin-top:1rem;color:var(--clr-text-sub);"></p>
         </div>
-        <div class="testimonials-grid">
-          <div class="testimonial-card reveal">
+        <div class="testimonials-grid guest-review-rotator" id="publicReviewsList" aria-live="polite" aria-atomic="true">
+          <div class="testimonial-card reveal" data-guest-review>
             <div class="stars">★★★★★</div>
             <p>"The Nyama Choma here is absolutely unparalleled. The flavour, the ambiance, the service — LakeBite is
               the definition of fine dining in Nairobi. A must-visit."</p>
@@ -328,7 +329,7 @@
               <div><strong>Amara Ochieng</strong><span>Nairobi, Kenya</span></div>
             </div>
           </div>
-          <div class="testimonial-card reveal" style="transition-delay:0.1s">
+          <div class="testimonial-card reveal" data-guest-review style="transition-delay:0.1s">
             <div class="stars">★★★★★</div>
             <p>"Celebrated my anniversary in the VIP lakeside room and it was breathtaking. The chef's tasting menu was
               a culinary journey I won't forget anytime soon."</p>
@@ -338,7 +339,7 @@
               <div><strong>James & Priya Rao</strong><span>Nairobi, Kenya</span></div>
             </div>
           </div>
-          <div class="testimonial-card reveal" style="transition-delay:0.2s">
+          <div class="testimonial-card reveal" data-guest-review style="transition-delay:0.2s">
             <div class="stars">★★★★★</div>
             <p>"Best tilapia in the city, hands down. The coconut rice pairing is genius. The staff are warm and
               attentive — you feel like royalty from the moment you walk in."</p>
@@ -348,12 +349,12 @@
             </div>
           </div>
         </div>
+        <div style="text-align:center;margin-top:1.5rem;"><a href="contact.html#leaveReviewWrap" class="btn btn-outline"><i class="fa-regular fa-comment"></i> Leave a review</a></div>
       </div>
     </section>
 
     <!-- ════════════ CTA BANNER ════════════ -->
     <section class="section experiences-section" aria-labelledby="publicEventsTitle"><div class="container"><span class="section-label">What's on</span><h2 class="section-title" id="publicEventsTitle">Upcoming Experiences &amp; Events</h2><p class="section-sub">From lakeside tastings to private celebrations, discover what’s happening at LakeBite.</p><div id="publicEventsList" class="menu-grid experience-grid" aria-live="polite"><div class="experience-empty"><p>Loading experiences…</p></div></div></div></section>
-    <section class="section" aria-labelledby="publicReviewsTitle"><div class="container"><span class="section-label">Guest stories</span><h2 class="section-title" id="publicReviewsTitle">Guest reviews</h2><p id="publicReviewSummary"></p><div id="publicReviewsList" class="menu-grid" aria-live="polite"></div></div></section>
     <section class="cta-banner">
       <div class="cta-banner-bg"><img src="" alt="LakeBite terrace evening" data-cms-image="homeCta"></div>
       <div class="cta-banner-overlay"></div>
@@ -1112,5 +1113,5 @@
     }
   </style>
 </body>
-
+<!-- -->
 </html>
