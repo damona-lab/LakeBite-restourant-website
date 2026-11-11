@@ -27,7 +27,12 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
-const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean) : [];
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(value => value.trim()).filter(Boolean).map(value => {
+    try { return new URL(value).origin; }
+    catch { throw new Error(`Invalid CORS_ORIGINS entry: ${value}`); }
+  })
+  : [];
 
 const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 app.use((req, res, next) => {
