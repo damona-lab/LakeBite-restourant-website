@@ -141,7 +141,8 @@ const AuditLog = mongoose.model('AuditLog', auditLogSchema);
 
 const tableSchema = new mongoose.Schema({
   number: { type: Number, required: true, min: 1, unique: true }, section: { type: String, required: true, trim: true, maxlength: 60 },
-  seats: { type: Number, required: true, min: 1, max: 50 }, status: { type: String, enum: ['available','reserved','seated','blocked'], default: 'available' },
+  seats: { type: Number, required: true, min: 1, max: 50 }, status: { type: String, enum: ['available','reserved','seated','blocked','food-served','bill-requested','needs-cleaning'], default: 'available' },
+  assignedServer: { type: String, trim: true, maxlength: 100, default: '' }, currentBill: { type: Number, min: 0, default: 0 }, seatedAt: Date,
   blockReason: { type: String, trim: true, maxlength: 240, default: '' }, updatedAt: { type: Date, default: Date.now }
 });
 const Table = mongoose.model('Table', tableSchema);
@@ -1014,8 +1015,8 @@ app.post('/api/admin/walkins', auth, authorize('admin','manager','host'), async 
   catch (error) { next(error); }
 });
 
-app.get('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'operations' }); res.json(entry?.value || { ordersPaused: false }); } catch (error) { next(error); } });
-app.patch('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, returnDocument: 'after' }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
+app.get('/api/admin/operations', auth, authorize('admin','manager','kitchen'), async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'operations' }); res.json(entry?.value || { ordersPaused: false }); } catch (error) { next(error); } });
+app.patch('/api/admin/operations', auth, authorize('admin','manager'), async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, returnDocument: 'after' }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
 app.get('/api/admin/inventory', auth, authorize('admin','manager','kitchen'), async (req, res, next) => {
   try {
     const items = await StockItem.find().sort({ category: 1, name: 1 }).lean();

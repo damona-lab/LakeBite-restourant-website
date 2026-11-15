@@ -841,6 +841,39 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
 .admin-alert-success { background: #dce9df; color: #14776b; }
 .admin-alert-error { background: #f0ded7; color: #a64f33; }
 .admin-alert-info { background: #dce2e9; color: #22304a; }
+.admin-nav-count { margin-left: auto; min-width: 1.35rem; padding: .08rem .38rem; text-align: center; border-radius: 999px; background: #c4643f; color: #fff; font-size: .68rem; font-weight: 800; }
+.admin-live-order-switch { display: inline-flex; align-items: center; gap: .45rem; color: var(--admin-text); font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.admin-live-order-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.admin-live-switch-track { width: 2.15rem; height: 1.15rem; border-radius: 999px; background: #6b7663; box-shadow: inset 2px 3px 6px rgba(38,48,31,.35), inset -2px -2px 5px rgba(255,255,255,.28); position: relative; }
+.admin-live-switch-track::after { content: ''; position: absolute; width: .85rem; height: .85rem; top: .15rem; left: .15rem; border-radius: 50%; background: #e2e8dc; transition: transform .18s ease; box-shadow: 2px 2px 5px rgba(38,48,31,.25); }
+.admin-live-order-switch input:checked + .admin-live-switch-track { background: #14776b; }
+.admin-live-order-switch input:checked + .admin-live-switch-track::after { transform: translateX(1rem); }
+.admin-live-order-switch input:focus-visible + .admin-live-switch-track { outline: 2px solid #cf9b34; outline-offset: 2px; }
+.admin-live-order-switch input:disabled + .admin-live-switch-track { opacity: .55; }
+.admin-notification-wrap { position: relative; }
+.admin-notification-wrap .admin-notif-dot { position: absolute; top: .35rem; right: .35rem; width: .48rem; height: .48rem; border-radius: 50%; }
+.admin-notification-popover { position: absolute; top: calc(100% + .6rem); right: 0; width: min(320px, 88vw); padding: 1rem; z-index: 1250; background: #e2e8dc; border-radius: 18px; box-shadow: var(--admin-shadow-lg); }
+.admin-notification-popover[hidden] { display: none; }
+.admin-notification-popover > strong { display: block; margin-bottom: .65rem; }
+.admin-alert-link { display: flex; width: 100%; align-items: center; gap: .6rem; text-align: left; padding: .65rem .75rem; margin: .25rem 0; border: 0; border-radius: 12px; background: #dbe2d5; color: #26301f; font: inherit; cursor: pointer; }
+.admin-alert-link i { color: #cf9b34; }
+.admin-alert-link:hover { background: #e2e8dc; }
+.order-detail-drawer { position: fixed; inset: 0 0 0 auto; margin: 0 0 0 auto; width: min(560px, 96vw); height: 100vh; max-height: 100vh; padding: 0; border: 0; border-radius: 26px 0 0 26px; overflow-y: auto; background: #e2e8dc; color: #26301f; box-shadow: -12px 0 34px rgba(38,48,31,.25); animation: orderDrawerIn .22s ease-out; }
+.order-detail-drawer::backdrop { background: rgba(38,48,31,.38); }
+@keyframes orderDrawerIn { from { transform: translateX(2rem); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+.order-detail-drawer .admin-modal-header { position: sticky; top: 0; z-index: 1; }
+.order-detail-drawer .admin-modal-body { display: grid; gap: .85rem; }
+.order-status-stepper { display: flex; flex-wrap: wrap; gap: .4rem; }
+.order-status-stepper span { border-radius: 999px; padding: .35rem .65rem; color: #6b7663; background: #dbe2d5; font-size: .72rem; text-transform: capitalize; }
+.order-status-stepper span.is-complete { color: #fff; background: #14776b; }
+.order-payment-breakdown { padding: .8rem 1rem; border-radius: 16px; background: #dbe2d5; box-shadow: inset 3px 4px 9px rgba(104,118,100,.2), inset -2px -3px 8px rgba(255,255,255,.6); }
+.order-payment-breakdown p { display: flex; justify-content: space-between; gap: .6rem; margin: .4rem 0; }
+.order-payment-breakdown h3 { display: flex; justify-content: space-between; border-top: 1px solid rgba(104,118,100,.2); padding-top: .6rem; }
+@media (max-width: 720px) {
+  .admin-live-order-switch { font-size: 0; }
+  .admin-topbar-right { gap: .35rem; }
+  .order-detail-drawer { width: 100vw; border-radius: 20px 20px 0 0; }
+}
 @media (max-width: 768px) {
   .admin-sidebar { border-radius: 0 0 26px 26px; }
   .admin-topbar { left: 0; z-index: 1200; border-radius: 0 0 20px 20px; }
@@ -927,38 +960,22 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
     <section id="view-dashboard" class="admin-view">
       <div class="admin-stats">
         <div class="admin-stat-card">
-          <div class="admin-stat-icon green"><i class="fa-solid fa-calendar-check"></i></div>
-          <div class="admin-stat-info">
-            <p class="stat-value" id="statReservations">0</p>
-            <p class="stat-label">Reservations Today</p>
-          </div>
-        </div>
-        <div class="admin-stat-card">
-          <div class="admin-stat-icon"><i class="fa-solid fa-user-group"></i></div>
-          <div class="admin-stat-info">
-            <p class="stat-value" id="statCovers">0</p>
-            <p class="stat-label">Booked Covers Today</p>
-          </div>
-        </div>
-        <div class="admin-stat-card">
-          <div class="admin-stat-icon gold"><i class="fa-solid fa-clock"></i></div>
-          <div class="admin-stat-info">
-            <p class="stat-value" id="statArrivals">0</p>
-            <p class="stat-label">Expected Arrivals</p>
-          </div>
-        </div>
-        <div class="admin-stat-card">
           <div class="admin-stat-icon"><i class="fa-solid fa-chair"></i></div>
           <div class="admin-stat-info">
             <p class="stat-value" id="statOccupancy">—</p>
-            <p class="stat-label">Occupancy not tracked</p>
+            <p class="stat-label">Table Occupancy</p>
           </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-icon gold"><i class="fa-solid fa-stopwatch"></i></div>
+          <div class="admin-stat-info"><p class="stat-value" id="statPrepTime">—</p><p class="stat-label">Avg. Kitchen Prep Time</p></div>
         </div>
         <div class="admin-stat-card">
           <div class="admin-stat-icon gold"><i class="fa-solid fa-bag-shopping"></i></div>
           <div class="admin-stat-info">
             <p class="stat-value" id="statOrders">0</p>
             <p class="stat-label">Active Orders</p>
+            <p class="stat-label" id="statOrderChannels">Takeaway 0 · Delivery 0</p>
           </div>
         </div>
         <div class="admin-stat-card">
@@ -1066,6 +1083,7 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
           <button class="admin-btn admin-btn-primary admin-btn-sm" data-admin-action="new-menu-item"><i class="fa-solid fa-plus"></i> Add Item</button>
         </div>
         <div class="admin-section-body">
+          <div class="report-tabs" id="menuCategoryFilters" role="tablist" aria-label="Filter menu categories"></div>
           <div class="admin-table-wrap">
             <table class="admin-table">
               <thead>
@@ -1459,6 +1477,7 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
       let orderQueueById = new Map();
       let inventoryById = new Map();
       let activeOrderFilter = 'all';
+      let activeMenuCategory = 'All';
       let adminRole = '';
       let reservationPage = 1;
       let orderPage = 1;
@@ -1548,6 +1567,11 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
           case 'edit-reservation': adminEditReservation(id); break;
           case 'delete-reservation': adminDeleteReservation(id); break;
           case 'edit-menu': { const item = menuById.get(id); if (item) adminEditMenuItem(item._id, item.name, item.price, item.category, item.available, (item.allergens || []).join(','), (item.dietary || []).join(','), item.spiceLevel, item.image, item.description); break; }
+          case 'toggle-menu-availability': {
+            const item = menuById.get(String(id)); if (!item) break;
+            api(`/api/admin/menu/${encodeURIComponent(id)}/availability`, { method: 'PATCH', body: JSON.stringify({ available: control.dataset.available !== 'true' }) }).then(result => { if (result) { showAdminToast(`${item.name} ${result.item.available ? 'restored to the menu' : 'marked sold out'}.`); loadMenu(); loadDashboard(); } });
+            break;
+          }
           case 'delete-menu': adminDeleteMenuItem(id); break;
           case 'delete-user': adminDeleteUser(id); break;
           case 'refresh-floor': loadTables(); break;
@@ -1560,9 +1584,29 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
           case 'toggle-staff': updateStaff(id, { active: control.dataset.active !== 'true' }); break;
           case 'filter-reservations': loadReservations(); break;
           case 'filter-orders': loadOrders(); break;
+          case 'order-details': showOrderDetails(id); break;
+          case 'close-order-drawer': document.getElementById('orderDetailDrawer').close(); break;
+          case 'adjust-stock': adjustStock(id, control.dataset.delta); break;
+          case 'delete-stock': if (confirm('Remove this stock item?')) api(`/api/admin/inventory/${encodeURIComponent(id)}`, { method: 'DELETE' }).then(result => { if (result) { showAdminToast('Stock item removed.'); loadInventory(); } }); break;
           case 'reservation-page': reservationPage = Number(control.dataset.page); loadReservations(); break;
           case 'order-page': orderPage = Number(control.dataset.page); loadOrders(); break;
           case 'print-ticket': printKitchenTicket(id); break;
+        }
+      });
+      document.addEventListener('click', event => {
+        const filter = event.target.closest('[data-order-filter]');
+        if (filter) {
+          activeOrderFilter = filter.dataset.orderFilter;
+          document.querySelectorAll('[data-order-filter]').forEach(button => button.setAttribute('aria-selected', String(button === filter)));
+          loadDashboardOrders();
+          return;
+        }
+        const menuFilter = event.target.closest('[data-menu-category]');
+        if (menuFilter) { activeMenuCategory = menuFilter.dataset.menuCategory; loadMenu(); return; }
+        const viewButton = event.target.closest('[data-open-view], [data-view]');
+        if (viewButton && !viewButton.classList.contains('admin-nav-link')) {
+          document.getElementById('adminNotificationsPopover').hidden = true;
+          document.querySelector(`.admin-nav-link[data-view="${viewButton.dataset.openView || viewButton.dataset.view}"]`)?.click();
         }
       });
       document.addEventListener('change', event => {
@@ -2185,12 +2229,11 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
       async function loadDashboard() {
         const data = await api('/api/admin/dashboard-stats');
         if (!data) return;
-        document.getElementById('statReservations').textContent = data.reservationsToday;
-        document.getElementById('statCovers').textContent = data.coversToday;
-        document.getElementById('statArrivals').textContent = data.expectedArrivals;
-        document.getElementById('statOccupancy').textContent = '—';
+        document.getElementById('statOccupancy').textContent = `${data.occupiedTables || 0} / ${data.totalTables || 0}`;
         document.getElementById('statOrders').textContent = data.activeOrdersToday;
         document.getElementById('statRevenue').textContent = 'KES ' + data.revenueToday.toLocaleString();
+        document.getElementById('statPrepTime').textContent = data.avgPrepMinutes == null ? 'Not enough data' : `${data.avgPrepMinutes}m`;
+        document.getElementById('statOrderChannels').textContent = `Takeaway ${data.activeOrdersByChannel?.takeaway || 0} · Delivery ${data.activeOrdersByChannel?.delivery || 0}`;
 
         // upcoming reservations
         const resData = await api('/api/admin/reservations');
@@ -2210,6 +2253,8 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
           `;
           tbody.appendChild(tr);
         });
+        loadDashboardOrders();
+        loadNotifications();
         loadDashboardCharts();
       }
 
@@ -2250,14 +2295,16 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
         if (!data) return;
         const tbody = document.getElementById('menuTable');
         menuById = new Map((data.menu || []).map(item => [String(item._id), item]));
+        const categories = ['All', ...new Set((data.menu || []).map(item => item.category).filter(Boolean))];
+        document.getElementById('menuCategoryFilters').innerHTML = categories.map(category => `<button class="report-tab" type="button" data-menu-category="${escapeHtml(category)}" aria-selected="${category === activeMenuCategory}">${escapeHtml(category)}</button>`).join('');
         tbody.innerHTML = '';
-        (data.menu || []).forEach(item => {
+        (data.menu || []).filter(item => activeMenuCategory === 'All' || item.category === activeMenuCategory).forEach(item => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${escapeHtml(item.name)}</td>
             <td>${escapeHtml(item.category)}</td>
             <td>KES ${Number(item.price).toLocaleString()}</td>
-            <td><span class="admin-badge admin-badge-${item.available ? 'available' : 'unavailable'}">${item.available ? 'Available' : 'Unavailable'}</span></td>
+            <td><span class="admin-badge admin-badge-${item.available ? 'available' : 'unavailable'}">${item.available ? 'In stock' : 'Sold out'}</span> <button type="button" class="admin-action-btn" data-admin-action="toggle-menu-availability" data-id="${escapeHtml(item._id)}" data-available="${item.available !== false}">${item.available ? '86' : 'Restore'}</button></td>
             <td>${escapeHtml((item.allergens || []).join(', ') || '—')}</td>
             <td>
               <button class="admin-action-btn" data-admin-action="edit-menu" data-id="${escapeHtml(item._id)}">Edit</button>
@@ -2269,6 +2316,85 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
       }
 
       // ── Load Orders ──
+      async function loadInventory() {
+        const data = await api('/api/admin/inventory');
+        if (!data) return;
+        const rows = data.items || [];
+        inventoryById = new Map(rows.map(item => [String(item._id), item]));
+        document.getElementById('inventoryTable').innerHTML = rows.map(item => {
+          const low = Number(item.quantity) <= Number(item.lowStockThreshold);
+          return `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.category || 'General')}</td><td><strong>${Number(item.quantity).toLocaleString()} ${escapeHtml(item.unit || 'units')}</strong>${low ? ' <span class="admin-badge admin-badge-pending">Low stock</span>' : ''}</td><td>${Number(item.lowStockThreshold).toLocaleString()} ${escapeHtml(item.unit || 'units')}</td><td>${new Date(item.updatedAt || item.createdAt).toLocaleString()}</td><td><button type="button" class="admin-action-btn" data-admin-action="adjust-stock" data-id="${escapeHtml(item._id)}" data-delta="-1" aria-label="Reduce ${escapeHtml(item.name)} by one">−</button> <button type="button" class="admin-action-btn" data-admin-action="adjust-stock" data-id="${escapeHtml(item._id)}" data-delta="1" aria-label="Add one ${escapeHtml(item.name)}">+</button> <button type="button" class="admin-action-btn danger" data-admin-action="delete-stock" data-id="${escapeHtml(item._id)}">Remove</button></td></tr>`;
+        }).join('');
+        document.getElementById('inventoryEmpty').hidden = rows.length > 0;
+        document.getElementById('inventoryAlertDot').hidden = !data.lowStockCount;
+        document.getElementById('inventoryAlertDot').title = `${data.lowStockCount || 0} low-stock items`;
+        document.getElementById('inventorySummary').textContent = `${data.lowStockCount || 0} low-stock alert${data.lowStockCount === 1 ? '' : 's'} · ${rows.length} items tracked`;
+      }
+      async function adjustStock(id, delta) {
+        const item = inventoryById.get(String(id)); if (!item) return;
+        const quantity = Math.max(0, Number(item.quantity) + Number(delta));
+        if (quantity === Number(item.quantity)) return showAdminToast('Stock quantity cannot go below zero.');
+        const result = await api(`/api/admin/inventory/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ quantity }) });
+        if (result) { showAdminToast(`${item.name} stock updated.`); loadInventory(); }
+      }
+
+      async function loadDashboardOrders() {
+        if (!['admin','manager','kitchen'].includes(adminRole)) return;
+        const params = new URLSearchParams({ queue: 'active', limit: '100' });
+        const query = document.getElementById('adminSearch').value.trim(); if (query) params.set('q', query);
+        const data = await api('/api/admin/orders?' + params);
+        if (!data) return;
+        const orders = data.orders || [];
+        orderQueueById = new Map(orders.map(order => [String(order._id), order]));
+        const orderCount = document.getElementById('activeOrderCount');
+        orderCount.textContent = orders.length; orderCount.hidden = !orders.length;
+        document.getElementById('dashboardOrderCount').textContent = `${orders.length} active`;
+        const visible = orders.filter(order => activeOrderFilter === 'all' || (activeOrderFilter === 'pending' ? ['new','accepted'].includes(order.status) : order.status === activeOrderFilter));
+        document.getElementById('dashboardOrderRows').innerHTML = visible.map(order => {
+          const elapsed = Math.max(0, Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000));
+          const items = (order.items || []).map(item => `${Number(item.qty) || 1} × ${item.name}`).join(', ');
+          return `<tr><td><strong>${escapeHtml(order.orderNumber)}</strong></td><td>${escapeHtml(order.customerName || 'Guest')}<small style="display:block;color:var(--admin-text-sub)">${escapeHtml(order.customerPhone || '')}</small></td><td><span class="admin-badge ${order.type === 'delivery' ? 'admin-badge-seated' : 'admin-badge-available'}">${order.type === 'delivery' ? 'Delivery' : 'Takeaway'}</span></td><td>${escapeHtml(items || 'No items')}</td><td>KES ${Number(order.total || 0).toLocaleString()}<small style="display:block;color:var(--admin-text-sub)">${escapeHtml(order.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Pay on delivery')} · ${escapeHtml(order.paymentStatus || 'pending')}</small></td><td>${elapsed}m</td><td><select class="admin-form-control" data-admin-action="update-order" data-id="${escapeHtml(order._id)}" aria-label="Update ${escapeHtml(order.orderNumber)} status">${['new','accepted','preparing','ready','out-for-delivery','completed'].map(status => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select><button type="button" class="admin-action-btn" data-admin-action="order-details" data-id="${escapeHtml(order._id)}">Details</button></td></tr>`;
+        }).join('');
+        const empty = document.getElementById('dashboardOrdersEmpty');
+        empty.hidden = visible.length > 0;
+        empty.querySelector('h3').textContent = orders.length ? 'No orders in this status' : 'No active orders';
+        empty.querySelector('p').textContent = orders.length ? 'Choose another filter to see active orders.' : 'New orders will appear here as they arrive.';
+        renderDashboardAlerts(orders);
+      }
+      async function renderDashboardAlerts(activeOrders = []) {
+        const [stockData, tableData] = await Promise.all([api('/api/admin/inventory'), api('/api/admin/tables')]);
+        const alerts = [];
+        document.getElementById('inventoryAlertDot').hidden = !(stockData?.lowStockCount);
+        (stockData?.items || []).filter(item => Number(item.quantity) <= Number(item.lowStockThreshold)).forEach(item => alerts.push({ icon: 'fa-boxes-stacked', text: `${item.name} — ${Number(item.quantity)} ${item.unit || 'units'} left`, view: 'inventory' }));
+        activeOrders.filter(order => ['new','accepted','preparing'].includes(order.status) && Date.now() - new Date(order.createdAt).getTime() > 20 * 60000).forEach(order => alerts.push({ icon: 'fa-clock', text: `Order ${order.orderNumber} delayed over 20 minutes`, view: 'orders' }));
+        (tableData?.tables || []).filter(table => table.serviceStatus === 'blocked').forEach(table => alerts.push({ icon: 'fa-chair', text: `Table ${table.number} is blocked${table.blockReason ? `: ${table.blockReason}` : ''}`, view: 'floor' }));
+        const host = document.getElementById('dashboardAlerts');
+        host.innerHTML = alerts.length ? alerts.map(alert => `<button type="button" class="admin-alert-link" data-open-view="${alert.view}"><i class="fa-solid ${alert.icon}"></i><span>${escapeHtml(alert.text)}</span></button>`).join('') : '<div class="admin-empty"><i class="fa-solid fa-circle-check"></i><h3>No active alerts</h3><p>Stock and kitchen timing are within recorded thresholds.</p></div>';
+      }
+      function showOrderDetails(id) {
+        const order = orderQueueById.get(String(id)) || ordersById.get(String(id)); if (!order) return;
+        const steps = ['new','preparing','ready','completed'], currentStep = ({ new: 0, accepted: 0, preparing: 1, ready: 2, 'out-for-delivery': 2, completed: 3 })[order.status] ?? -1;
+        const options = ['new','accepted','preparing','ready','out-for-delivery','completed'];
+        const items = (order.items || []).map(item => `<tr><td>${escapeHtml(item.name)}${item.modifiers?.length ? `<small style="display:block">${escapeHtml(item.modifiers.join(', '))}</small>` : ''}</td><td>${Number(item.qty) || 1}</td><td>KES ${Number(item.price || 0).toLocaleString()}</td></tr>`).join('');
+        document.getElementById('orderDetailTitle').textContent = `Order ${order.orderNumber}`;
+        document.getElementById('orderDetailContent').innerHTML = `<p><strong>${escapeHtml(order.customerName || 'Guest')}</strong> · ${escapeHtml(order.customerPhone || 'No phone')} · ${order.type === 'delivery' ? 'Delivery' : 'Takeaway'}</p><p>${new Date(order.createdAt).toLocaleString()} · ${escapeHtml(order.deliveryAddress || '')}</p><div class="order-status-stepper">${steps.map((step,index) => `<span class="${index <= currentStep ? 'is-complete' : ''}">${step.replace('-', ' ')}</span>`).join('')}</div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Item / modifiers</th><th>Qty</th><th>Price</th></tr></thead><tbody>${items || '<tr><td colspan="3">No item details were saved.</td></tr>'}</tbody></table></div><p><strong>Kitchen notes:</strong> ${escapeHtml(order.notes || 'None')}</p><div class="order-payment-breakdown"><p>Subtotal <strong>KES ${Number(order.subtotal || 0).toLocaleString()}</strong></p><p>Delivery <strong>KES ${Number(order.deliveryFee || 0).toLocaleString()}</strong></p><p>Tax, discount, and tip details are not stored on this order.</p><p>Payment <strong>${escapeHtml(order.paymentMethod === 'mpesa' ? 'M-Pesa' : 'Pay on delivery')} · ${escapeHtml(order.paymentStatus || 'pending')}</strong></p><p>Transaction reference <strong>${escapeHtml(order.mpesaReceipt || 'Not recorded')}</strong></p><h3>Total <strong>KES ${Number(order.total || 0).toLocaleString()}</strong></h3></div><label class="admin-form-group">Update status<select class="admin-form-control" data-admin-action="update-order" data-id="${escapeHtml(order._id)}">${options.map(status => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></label><div class="floor-table-actions"><button type="button" class="admin-btn admin-btn-outline" data-admin-action="print-ticket" data-id="${escapeHtml(order._id)}"><i class="fa-solid fa-print"></i> Print kitchen ticket</button></div><p class="admin-page-sub">Payment refunds or voids cannot be issued here because no payment gateway refund action is configured.</p>`;
+        document.getElementById('orderDetailDrawer').showModal();
+      }
+
+      async function loadOperationsStatus() {
+        const ops = await api('/api/admin/operations'); if (!ops) return;
+        const accepting = !ops.ordersPaused, toggle = document.getElementById('acceptingOnlineOrders');
+        toggle.checked = accepting; toggle.disabled = !['admin','manager'].includes(adminRole);
+        document.getElementById('acceptingOnlineOrdersLabel').textContent = accepting ? 'Accepting online orders' : 'Online orders paused';
+      }
+      async function loadNotifications() {
+        if (!['admin','manager','host','kitchen'].includes(adminRole)) return;
+        const data = await api('/api/admin/notifications'); if (!data) return;
+        const alerts = data.alerts || [];
+        document.getElementById('adminNotificationDot').hidden = !alerts.length;
+        document.getElementById('adminNotificationsList').innerHTML = alerts.length ? alerts.map(alert => `<button type="button" class="admin-alert-link" data-open-view="${alert.type === 'orders' ? 'orders' : alert.type === 'reservations' ? 'reservations' : alert.type === 'menu' ? 'menu' : 'inbox'}"><span>${escapeHtml(alert.label)}</span><strong>${Number(alert.count)}</strong></button>`).join('') : '<p>No critical alerts right now.</p>';
+      }
+
       async function loadOrders() {
         const params = new URLSearchParams({ page: String(orderPage), limit: '25' });
         const status = document.getElementById('orderStatusFilter')?.value, date = document.getElementById('orderDateFilter')?.value, search = document.getElementById('adminSearch')?.value;
@@ -2295,7 +2421,7 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
                 <option value="ready" ${o.status === 'ready' ? 'selected' : ''}>Ready</option>
                 <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
                 <option value="refunded" ${o.status === 'refunded' ? 'selected' : ''}>Refunded</option>
-              </select><button class="admin-action-btn" data-admin-action="print-ticket" data-id="${escapeHtml(o._id)}">Kitchen ticket</button>
+              </select><button class="admin-action-btn" data-admin-action="order-details" data-id="${escapeHtml(o._id)}">Details</button><button class="admin-action-btn" data-admin-action="print-ticket" data-id="${escapeHtml(o._id)}">Kitchen ticket</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -2304,7 +2430,7 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
       }
 
       function printKitchenTicket(id) {
-        const order = ordersById.get(id); if (!order) return;
+        const order = ordersById.get(id) || orderQueueById.get(id); if (!order) return;
         const ticketWindow = window.open('', '_blank', 'width=440,height=650'); if (!ticketWindow) return showAdminToast('Allow pop-ups to print kitchen tickets.');
         const items = order.items.map(item => `<li>${escapeHtml(item.qty)} × ${escapeHtml(item.name)}</li>`).join('');
         ticketWindow.document.write(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Kitchen ticket ${escapeHtml(order.orderNumber)}</title><style>body{font:16px Arial;padding:24px}h1{font-size:22px}li{padding:8px 0;border-bottom:1px solid #ddd}</style><h1>LakeBite · Kitchen ticket</h1><p>Order ${escapeHtml(order.orderNumber)} · ${new Date(order.createdAt).toLocaleString()}</p><p>${escapeHtml(order.customerName)} · ${escapeHtml(order.type)} · ${escapeHtml(order.customerPhone)}</p><ul>${items}</ul><p>Notes: ${escapeHtml(order.notes || 'None')}</p><script>window.onload=()=>window.print()<\/script></html>`);
@@ -2811,6 +2937,28 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
         else if (status) { status.className = 'admin-alert admin-alert-error'; status.textContent = 'Could not save featured food.'; }
       });
       document.getElementById('tableForm').addEventListener('submit', async event => { event.preventDefault(); const body = Object.fromEntries(new FormData(event.currentTarget)); if (await api('/api/admin/tables', { method: 'POST', body: JSON.stringify(body) })) { event.currentTarget.reset(); showAdminToast('Table added.'); loadTables(); } });
+      document.getElementById('inventoryForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget, body = Object.fromEntries(new FormData(form));
+        body.quantity = Number(body.quantity); body.lowStockThreshold = Number(body.lowStockThreshold);
+        const result = await api('/api/admin/inventory', { method: 'POST', body: JSON.stringify(body) });
+        if (result) { form.reset(); form.elements.lowStockThreshold.value = '0'; showAdminToast('Stock item added.'); loadInventory(); loadNotifications(); }
+      });
+      document.getElementById('acceptingOnlineOrders').addEventListener('change', async event => {
+        const toggle = event.currentTarget, ordersPaused = !toggle.checked;
+        toggle.disabled = true;
+        const result = await api('/api/admin/operations', { method: 'PATCH', body: JSON.stringify({ ordersPaused }) });
+        toggle.disabled = !['admin','manager'].includes(adminRole);
+        if (!result) { toggle.checked = !ordersPaused; return; }
+        document.getElementById('acceptingOnlineOrdersLabel').textContent = ordersPaused ? 'Online orders paused' : 'Accepting online orders';
+        showAdminToast(ordersPaused ? 'Online orders paused.' : 'Online orders resumed.');
+      });
+      document.getElementById('adminNotificationsButton').addEventListener('click', () => {
+        const popover = document.getElementById('adminNotificationsPopover'), open = popover.hidden;
+        popover.hidden = !open;
+        document.getElementById('adminNotificationsButton').setAttribute('aria-expanded', String(open));
+        if (open) loadNotifications();
+      });
       document.getElementById('settingsForm').addEventListener('submit', async event => {
         event.preventDefault();
         const form = event.currentTarget;
@@ -2863,7 +3011,7 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
       document.getElementById('inboxSearch').addEventListener('input', event => loadInbox(event.target.value));
       document.getElementById('adminSearch').addEventListener('input', event => {
         const view = document.querySelector('.admin-nav-link.active')?.dataset.view;
-        if (view === 'reservations') loadReservations(); if (view === 'orders') loadOrders(); if (view === 'menu') loadMenu(); if (view === 'guests') loadGuests(event.target.value);
+        if (view === 'reservations') loadReservations(); if (view === 'orders') loadOrders(); if (view === 'menu') loadMenu(); if (view === 'inventory') loadInventory(); if (view === 'dashboard') loadDashboardOrders(); if (view === 'guests') loadGuests(event.target.value);
       });
       document.getElementById('guestsTable').addEventListener('click', async event => { const button = event.target.closest('[data-admin-action="save-guest"]'); if (!button) return; const email = button.dataset.email, tag = document.querySelector(`.guest-tag[data-email="${CSS.escape(email)}"]`).value, staffNotes = document.querySelector(`.guest-notes[data-email="${CSS.escape(email)}"]`).value; if (await api(`/api/admin/guests/${encodeURIComponent(email)}`, { method: 'PATCH', body: JSON.stringify({ tags: tag ? [tag] : [], staffNotes }) })) showAdminToast('Guest profile saved.'); });
       document.getElementById('floorPlan').addEventListener('click', event => { const card = event.target.closest('.floor-table-card'); if (card) document.getElementById('floorReservations').textContent = card.querySelector('p:nth-of-type(2)')?.textContent || 'No reservation details for this table.'; });
@@ -3013,8 +3161,12 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
 
       // ── Order Status ──
       async function adminUpdateOrderStatus(id, status) {
-        if (!await api('/api/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) })) return;
-        loadOrders();
+        const result = await api('/api/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+        if (!result) return;
+        if (result.order) { orderQueueById.set(String(id), result.order); ordersById.set(String(id), result.order); }
+        showAdminToast('Order status updated.');
+        loadOrders(); loadDashboardOrders();
+        if (document.getElementById('orderDetailDrawer').open) showOrderDetails(id);
       }
 
       // ── Staff Delete ──
@@ -3027,7 +3179,7 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
       // ── Placeholder actions ──
       function adminAddWalkIn() { openQuickDialog('walk-in'); }
       function adminBlockTable() { openQuickDialog('block'); }
-      async function adminPauseOrders() { const data = await api('/api/admin/operations'); if (!data) return; const result = await api('/api/admin/operations', { method: 'PATCH', body: JSON.stringify({ ordersPaused: !data.ordersPaused }) }); if (result) { showAdminToast(result.ordersPaused ? 'Online ordering paused.' : 'Online ordering resumed.'); loadPublicMenuState(); } }
+      async function adminPauseOrders() { const data = await api('/api/admin/operations'); if (!data) return; const result = await api('/api/admin/operations', { method: 'PATCH', body: JSON.stringify({ ordersPaused: !data.ordersPaused }) }); if (result) { showAdminToast(result.ordersPaused ? 'Online ordering paused.' : 'Online ordering resumed.'); loadPublicMenuState(); loadOperationsStatus(); } }
       function adminMarkUnavailable() { openQuickDialog('unavailable'); }
 
       // ── Init: check auth ──
@@ -3038,12 +3190,15 @@ body.admin-body *, body.admin-body *::before, body.admin-body *::after {
         avatar.textContent = (me.user.name || 'A').charAt(0).toUpperCase();
         document.querySelector('.admin-profile-role').textContent = me.user.role;
         const role = me.user.role;
-        const allowedViews = role === 'admin' ? null : role === 'manager' ? ['dashboard','reservations','floor','orders','menu','guests','events','website','inbox','reports','integrations','settings'] : role === 'host' ? ['reservations','floor'] : ['orders'];
+        adminRole = role;
+        const allowedViews = role === 'admin' ? null : role === 'manager' ? ['dashboard','reservations','floor','orders','menu','inventory','guests','events','website','inbox','reports','integrations','settings'] : role === 'host' ? ['reservations','floor'] : ['orders','inventory'];
         if (allowedViews) document.querySelectorAll('.admin-nav-link').forEach(link => { if (!allowedViews.includes(link.dataset.view)) link.closest('.admin-nav-item').hidden = true; });
         if (allowedViews && allowedViews.length) document.querySelector(`.admin-nav-link[data-view="${allowedViews[0]}"]`)?.click();
         const reportCapabilities = ['admin','manager'].includes(role) ? await api('/api/admin/reports/capabilities') : null;
         reportPreviewAllowed = Boolean(reportCapabilities?.previewAllowed);
         document.getElementById('reportPreview').hidden = !reportPreviewAllowed;
+        loadOperationsStatus();
+        loadNotifications();
         if (!allowedViews || allowedViews.includes('dashboard')) loadDashboard();
       })();
     })();
