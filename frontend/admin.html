@@ -6,8 +6,11 @@
 <title>Admin — LakeBite</title>
 <link rel="stylesheet" href="global.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ════════════ ADMIN PANEL (Glassmorphism) ════════════ */
+/* ════════════ ADMIN PANEL ════════════ */
 :root {
   --admin-bg-a: #eef3ee;
   --admin-bg-b: #f7f1e6;
@@ -746,6 +749,103 @@ body.admin-body {
 /* Hide default mobile-nav / header-actions from global if present on admin page */
 .site-header, .mobile-nav, .cart-drawer, .cart-overlay, .toast { display: none !important; }
 
+/* Dusty-sage clay theme: presentation only; existing admin content and behavior stay intact. */
+body.admin-body {
+  --admin-bg-a: #c5d0be;
+  --admin-bg-b: #c5d0be;
+  --admin-sidebar: #dbe2d5;
+  --admin-sidebar-solid: #26301f;
+  --admin-sidebar-dark: #26301f;
+  --admin-gold: #cf9b34;
+  --admin-gold-lt: #cf9b34;
+  --admin-card: #e2e8dc;
+  --admin-card-strong: #e2e8dc;
+  --admin-border: #dbe2d5;
+  --admin-border-subtle: rgba(104,118,100,.22);
+  --admin-text: #26301f;
+  --admin-text-sub: #6b7663;
+  --admin-shadow: 12px 14px 30px rgba(88,104,84,.34), -8px -10px 22px rgba(255,255,255,.82);
+  --admin-shadow-lg: 16px 18px 34px rgba(88,104,84,.38), -9px -11px 24px rgba(255,255,255,.88);
+  --admin-radius: 26px;
+  --font-display: 'Baloo 2', sans-serif;
+  --font-body: 'Figtree', sans-serif;
+  color: var(--admin-text);
+  background: #c5d0be;
+  font-family: 'Figtree', sans-serif;
+}
+body.admin-body *, body.admin-body *::before, body.admin-body *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.admin-topbar { left: 260px; right: 0; width: auto; background: #dbe2d5; border-color: #c5d0be; box-shadow: 8px 9px 22px rgba(88,104,84,.28), -5px -6px 16px rgba(255,255,255,.75); }
+.admin-sidebar { background: #dbe2d5; border: 0; border-radius: 0 26px 26px 0; box-shadow: 8px 10px 26px rgba(88,104,84,.32), -6px -7px 18px rgba(255,255,255,.7); }
+.admin-sidebar-header, .admin-section-header, .admin-modal-header, .admin-modal-footer { background: #dbe2d5; border-color: rgba(104,118,100,.16); }
+.admin-sidebar-logo, .admin-nav-link, .admin-nav-link:hover, .admin-nav-link.active { color: #26301f; }
+.admin-sidebar-logo span { color: #14776b; }
+.admin-nav-link { border: 0; border-radius: 999px; }
+.admin-nav-link:hover { background: #e2e8dc; box-shadow: 4px 5px 10px rgba(104,118,100,.25), -3px -4px 9px rgba(255,255,255,.75); }
+.admin-nav-link.active { background: #14776b; color: #fff; box-shadow: inset 4px 5px 10px rgba(8,67,60,.42), inset -3px -4px 9px rgba(255,255,255,.22); }
+.admin-nav-divider { background: rgba(104,118,100,.24); }
+.admin-nav-footer { border-color: rgba(104,118,100,.2); }
+.admin-logout { color: #26301f; background: #dbe2d5; border-color: #dbe2d5; box-shadow: 5px 6px 12px rgba(88,104,84,.25), -4px -5px 11px rgba(255,255,255,.78); }
+.admin-topbar, .admin-stat-card, .admin-section, .report-toolbar, .report-panel, .report-kpi, .chart-card, .admin-modal, .floor-table-card {
+  background: #e2e8dc;
+  border: 0;
+  border-radius: 26px;
+  box-shadow: var(--admin-shadow);
+}
+.admin-stat-card, .admin-section, .report-toolbar, .report-panel, .report-kpi, .chart-card { padding: 1.2rem; }
+.admin-page-title, .admin-section-title, .chart-card h3, .report-panel h3 { font-family: 'Baloo 2', sans-serif; color: #26301f; }
+.admin-brand-mini, .admin-profile-name, .admin-profile-role { color: #26301f; }
+.admin-brand-mini span { color: #14776b !important; }
+.admin-loc-select, .admin-search, .report-filter select, .report-filter input, .admin-form-control {
+  color: #26301f; background: #dbe2d5; border: 0; border-radius: 999px;
+  box-shadow: inset 4px 5px 10px rgba(104,118,100,.34), inset -3px -4px 9px rgba(255,255,255,.72);
+}
+.admin-loc-select option { background: #e2e8dc; color: #26301f; }
+.admin-search::placeholder, .admin-form-control::placeholder { color: #6b7663; }
+.admin-icon-btn, .admin-burger, .admin-profile, .admin-btn, .chart-mini-btn, .admin-action-btn {
+  background: #e2e8dc; color: #26301f; border: 0; border-radius: 999px;
+  box-shadow: 6px 7px 15px rgba(88,104,84,.3), -5px -6px 14px rgba(255,255,255,.8);
+}
+.admin-btn-primary, .admin-btn-primary:hover { background: #14776b; color: #fff; box-shadow: 6px 7px 15px rgba(20,119,107,.25), -4px -5px 12px rgba(255,255,255,.6); }
+.admin-btn-outline, .admin-action-btn { color: #14776b; }
+.admin-notif-dot { background: #c4643f; }
+.admin-mobile-overlay { background: rgba(38,48,31,.28); }
+.admin-modal-overlay { background: rgba(38,48,31,.38); }
+.admin-modal { background: #e2e8dc; }
+.admin-table { border-collapse: separate; border-spacing: 0 .3rem; }
+.admin-table th { background: #dbe2d5; box-shadow: inset 3px 4px 9px rgba(104,118,100,.25), inset -2px -3px 8px rgba(255,255,255,.7); color: #6b7663; }
+.admin-table td { background: #e2e8dc; border-color: rgba(104,118,100,.14); }
+.admin-table tr:hover td { background: #dbe2d5; }
+.admin-stat-icon, .admin-badge, .admin-status, .chart-state { border: 0; box-shadow: 4px 5px 10px rgba(88,104,84,.18), -3px -4px 9px rgba(255,255,255,.72); }
+.admin-stat-icon { background: #dbe2d5; color: #14776b; }
+.admin-badge-confirmed, .admin-badge-available, .admin-badge-accepted { background: #dce9df; color: #14776b; }
+.admin-badge-pending, .admin-badge-new { background: #efe4c9; color: #9a701e; }
+.admin-badge-cancelled, .admin-badge-no-show, .admin-badge-unavailable { background: #f0ded7; color: #a64f33; }
+.admin-badge-seated, .admin-badge-ready { background: #dce2e9; color: #22304a; }
+.admin-badge-completed { background: #dbe2d5; color: #6b7663; }
+.admin-toast { background: #14776b; border: 0; border-radius: 18px; box-shadow: var(--admin-shadow); }
+.floor-table-card { background: #e2e8dc; }
+.floor-table-card[data-status="seated"] { background: #dce9df; }
+.floor-table-card[data-status="blocked"] { background: #f0ded7; }
+.report-tab { border-radius: 999px; background: #dbe2d5; box-shadow: inset 3px 4px 9px rgba(104,118,100,.22), inset -2px -3px 8px rgba(255,255,255,.72); }
+.report-tab[aria-selected="true"] { background: #14776b; color: #fff; box-shadow: inset 4px 5px 10px rgba(8,67,60,.38), inset -3px -4px 8px rgba(255,255,255,.22); }
+.chart-mini-btn { box-shadow: inset 3px 4px 8px rgba(104,118,100,.2), inset -2px -3px 7px rgba(255,255,255,.7); }
+.chart-series-0 { stroke: #14776b; fill: #14776b; }
+.chart-series-1 { stroke: #cf9b34; fill: #cf9b34; }
+.chart-series-2 { stroke: #22304a; fill: #22304a; }
+.chart-series-3 { stroke: #c4643f; fill: #c4643f; }
+.chart-gridline { stroke: rgba(38,48,31,.14); }
+.report-preview-banner { background: #efe4c9; color: #765619; border: 0; }
+.admin-alert-success { background: #dce9df; color: #14776b; }
+.admin-alert-error { background: #f0ded7; color: #a64f33; }
+.admin-alert-info { background: #dce2e9; color: #22304a; }
+@media (max-width: 768px) {
+  .admin-sidebar { border-radius: 0 0 26px 26px; }
+  .admin-topbar { left: 0; z-index: 1200; border-radius: 0 0 20px 20px; }
+}
+
 </style>
     <script src="/api-config.js"></script>
 </head>
@@ -761,11 +861,12 @@ body.admin-body {
       <span class="admin-brand-mini">LakeBite <span style="font-size:0.6rem;color:var(--admin-gold);">Admin</span></span>
     </div>
     <div class="admin-topbar-center">
-      <input type="search" class="admin-search" id="adminSearch" placeholder="Search reservations, guests, menu items..." aria-label="Search the admin records">
+      <input type="search" class="admin-search" id="adminSearch" placeholder="Search order #ID, dish, or customer..." aria-label="Search restaurant orders, dishes, and customers">
       <span class="admin-date-pill" id="adminDatePill">Today</span>
     </div>
     <div class="admin-topbar-right">
-      <button class="admin-icon-btn" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span class="admin-notif-dot"></span></button>
+      <label class="admin-live-order-switch"><input id="acceptingOnlineOrders" type="checkbox"><span class="admin-live-switch-track"></span><span id="acceptingOnlineOrdersLabel">Loading order status…</span></label>
+      <div class="admin-notification-wrap"><button class="admin-icon-btn" id="adminNotificationsButton" aria-label="Notifications" aria-expanded="false" aria-controls="adminNotificationsPopover"><i class="fa-regular fa-bell"></i><span class="admin-notif-dot" id="adminNotificationDot" hidden></span></button><div class="admin-notification-popover" id="adminNotificationsPopover" hidden><strong>Service alerts</strong><div id="adminNotificationsList">Loading alerts…</div></div></div>
       <div class="admin-profile" id="adminProfile">
         <div class="admin-profile-avatar" id="adminAvatar">A</div>
         <div class="admin-profile-info">
@@ -791,13 +892,14 @@ body.admin-body {
         <li class="admin-nav-item"><a href="#" class="admin-nav-link active" data-view="dashboard" id="nav-dashboard"><i class="fa-solid fa-chart-pie"></i> Overview</a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="reservations" id="nav-reservations"><i class="fa-solid fa-calendar-days"></i> Reservations</a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="floor" id="nav-floor"><i class="fa-solid fa-table"></i> Floor & Tables</a></li>
-        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="orders" id="nav-orders"><i class="fa-solid fa-utensils"></i> Orders</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="orders" id="nav-orders"><i class="fa-solid fa-utensils"></i> Live Orders <span class="admin-nav-count" id="activeOrderCount" hidden>0</span></a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="menu" id="nav-menu"><i class="fa-solid fa-book"></i> Menus</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="inventory" id="nav-inventory"><i class="fa-solid fa-boxes-stacked"></i> Inventory & Stock <span class="admin-notif-dot" id="inventoryAlertDot" hidden aria-label="Low stock alert"></span></a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="guests" id="nav-guests"><i class="fa-solid fa-users"></i> Guests</a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="events" id="nav-events"><i class="fa-solid fa-ticket"></i> Events</a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="website" id="nav-website"><i class="fa-solid fa-pen-nib"></i> Website</a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="inbox" id="nav-inbox"><i class="fa-solid fa-inbox"></i> Inbox & Reviews</a></li>
-        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="reports" id="nav-reports"><i class="fa-solid fa-chart-line"></i> Reports</a></li>
+        <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="reports" id="nav-reports"><i class="fa-solid fa-chart-line"></i> Transactions & Reports</a></li>
         <li class="admin-nav-divider"></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="staff" id="nav-staff"><i class="fa-solid fa-id-card"></i> Staff</a></li>
         <li class="admin-nav-item"><a href="#" class="admin-nav-link" data-view="integrations" id="nav-integrations"><i class="fa-solid fa-plug"></i> Integrations</a></li>
@@ -894,12 +996,23 @@ body.admin-body {
             <h2 class="admin-section-title">Alerts & Tasks</h2>
           </div>
           <div class="admin-section-body">
-            <div class="admin-empty">
-              <i class="fa-solid fa-bell"></i>
-              <h3>No alerts</h3>
-              <p>All clear for today's service.</p>
-            </div>
+            <div id="dashboardAlerts" aria-live="polite" class="admin-alert-list"><p>Checking live stock and kitchen alerts…</p></div>
           </div>
+        </div>
+      </div>
+
+      <div class="admin-section" style="margin-top:1.5rem;">
+        <div class="admin-section-header"><h2 class="admin-section-title">Live Order Queue</h2><span id="dashboardOrderCount" class="admin-page-sub">0 active</span></div>
+        <div class="admin-section-body">
+          <div class="report-tabs" role="tablist" aria-label="Filter live orders">
+            <button class="report-tab" type="button" data-order-filter="all" aria-selected="true">All</button>
+            <button class="report-tab" type="button" data-order-filter="pending" aria-selected="false">Pending</button>
+            <button class="report-tab" type="button" data-order-filter="preparing" aria-selected="false">Preparing</button>
+            <button class="report-tab" type="button" data-order-filter="ready" aria-selected="false">Ready</button>
+            <button class="report-tab" type="button" data-order-filter="out-for-delivery" aria-selected="false">Out for delivery</button>
+          </div>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Channel</th><th>Items</th><th>Total / Payment</th><th>Elapsed</th><th>Status / Details</th></tr></thead><tbody id="dashboardOrderRows"></tbody></table></div>
+          <div id="dashboardOrdersEmpty" class="admin-empty" hidden><h3>No active orders</h3><p>New orders will appear here as they arrive.</p></div>
         </div>
       </div>
 
@@ -961,6 +1074,24 @@ body.admin-body {
               <tbody id="menuTable"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-inventory" class="admin-view" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-header"><h2 class="admin-section-title">Inventory & Stock</h2><span class="admin-page-sub" id="inventorySummary">Stock quantities and alert thresholds</span></div>
+        <div class="admin-section-body">
+          <form id="inventoryForm" class="admin-form-row">
+            <label class="admin-form-group">Item<input class="admin-form-control" name="name" maxlength="100" required placeholder="Fresh salmon"></label>
+            <label class="admin-form-group">Category<input class="admin-form-control" name="category" maxlength="60" placeholder="Seafood"></label>
+            <label class="admin-form-group">Quantity<input class="admin-form-control" name="quantity" type="number" min="0" step="any" required></label>
+            <label class="admin-form-group">Unit<input class="admin-form-control" name="unit" maxlength="24" placeholder="portions"></label>
+            <label class="admin-form-group">Low-stock alert at<input class="admin-form-control" name="lowStockThreshold" type="number" min="0" step="any" value="0" required></label>
+            <button class="admin-btn admin-btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Add stock item</button>
+          </form>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Item</th><th>Category</th><th>In stock</th><th>Alert below</th><th>Updated</th><th>Actions</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
+          <div id="inventoryEmpty" class="admin-empty" hidden><h3>No stock items recorded</h3><p>Add your first item above to start tracking stock and low-stock alerts.</p></div>
         </div>
       </div>
     </section>
@@ -1176,6 +1307,7 @@ body.admin-body {
   </main>
 
   <dialog id="adminActionDialog" aria-labelledby="actionDialogTitle" style="border:0;border-radius:12px;padding:1.5rem;max-width:460px;width:calc(100% - 2rem)"><form id="adminActionForm"><h2 id="actionDialogTitle" class="admin-section-title"></h2><div id="actionDialogFields"></div><div class="admin-modal-footer"><button type="button" class="admin-btn admin-btn-outline" data-action-cancel>Cancel</button><button type="submit" class="admin-btn admin-btn-primary">Save</button></div></form></dialog>
+  <dialog id="orderDetailDrawer" class="order-detail-drawer" aria-labelledby="orderDetailTitle"><div class="admin-modal-header"><h2 class="admin-modal-title" id="orderDetailTitle">Order details</h2><button type="button" class="admin-modal-close" data-admin-action="close-order-drawer" aria-label="Close order details">&times;</button></div><div class="admin-modal-body" id="orderDetailContent"></div></dialog>
   <div id="adminToast" class="admin-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Reservation Modal -->
@@ -1324,6 +1456,10 @@ body.admin-body {
       let menuById = new Map();
       let usersById = new Map();
       let ordersById = new Map();
+      let orderQueueById = new Map();
+      let inventoryById = new Map();
+      let activeOrderFilter = 'all';
+      let adminRole = '';
       let reservationPage = 1;
       let orderPage = 1;
 
@@ -1336,15 +1472,18 @@ body.admin-body {
         const open = !sidebar.classList.contains('collapsed');
         if (open) {
           sidebar.classList.add('collapsed');
-          overlay.classList.add('open');
+          overlay.classList.remove('open');
+          burger.setAttribute('aria-expanded', 'false');
         } else {
           sidebar.classList.remove('collapsed');
-          overlay.classList.remove('open');
+          overlay.classList.toggle('open', window.innerWidth <= 768);
+          burger.setAttribute('aria-expanded', 'true');
         }
       });
       overlay.addEventListener('click', () => {
         sidebar.classList.add('collapsed');
         overlay.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
       });
 
       // Navigation
@@ -1363,6 +1502,7 @@ body.admin-body {
             floor: 'Floor & Tables',
             orders: 'Orders',
             menu: 'Menus',
+            inventory: 'Inventory & Stock',
             guests: 'Guests',
             events: 'Events',
             website: 'Website',
@@ -1373,11 +1513,10 @@ body.admin-body {
             settings: 'Settings'
           };
           document.getElementById('adminPageTitle').textContent = titleMap[view] || 'Overview';
-          sidebar.classList.add('collapsed');
-          overlay.classList.remove('open');
           if (view === 'dashboard') loadDashboard();
           if (view === 'reservations') loadReservations();
           if (view === 'menu') loadMenu();
+          if (view === 'inventory') loadInventory();
           if (view === 'orders') loadOrders();
           if (view === 'staff') loadStaff();
           if (view === 'reports') loadReports();
@@ -1446,6 +1585,7 @@ body.admin-body {
         if (view === 'dashboard') loadDashboard();
         if (view === 'reservations') loadReservations();
         if (view === 'menu') loadMenu();
+        if (view === 'inventory') loadInventory();
         if (view === 'orders') loadOrders();
         if (view === 'staff') loadStaff();
         if (view === 'reports') loadReports();

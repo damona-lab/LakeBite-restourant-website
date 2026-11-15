@@ -191,7 +191,9 @@
         else if(['contact.html','reservation.html'].includes(returnPage)) location.href=returnPage;
         else location.href='/';
       } catch (err) {
-        msg.textContent='Unable to reach the LakeBite server. If this page is hosted on a different domain, add its exact URL to Render CORS_ORIGINS and redeploy the backend.';
+        msg.textContent=['localhost','127.0.0.1','::1'].includes(location.hostname)
+          ? 'Unable to reach the local LakeBite server. Make sure the backend is running at http://localhost:3000.'
+          : 'Unable to reach the LakeBite server. If this page is hosted on a different domain, add its exact URL to Render CORS_ORIGINS and redeploy the backend.';
         submitBtn.disabled=false;
         submitText.textContent=mode==='login'?'Sign In':'Create Account';
       }

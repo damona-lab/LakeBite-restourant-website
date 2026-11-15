@@ -11,7 +11,9 @@ window.escapeHtml = function (value) {
 };
 function safeImageUrl(value) {
   const url = String(value || '').trim();
-  return /^(https:\/\/|\/|\.\/|imege\/)/i.test(url) && !/^\/\//.test(url) ? url : '';
+  const isSecureOrRelative = /^(https:\/\/|\/|\.\/|imege\/)/i.test(url) && !/^\/\//.test(url);
+  const isLocalHttp = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(url);
+  return isSecureOrRelative || isLocalHttp ? url : '';
 }
 function renderPublicMenuItems(menu) {
   const grid = document.getElementById('menuGrid');

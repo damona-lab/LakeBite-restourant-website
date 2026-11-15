@@ -45,6 +45,7 @@ app.use((req, res, next) => {
 
 app.use(cors({ origin(origin, callback) {
   if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+  if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return callback(null, true);
   if (!allowedOrigins.length) return callback(null, false);
   return callback(new Error('Origin is not allowed'));
 }, credentials: true }));
@@ -144,6 +145,15 @@ const tableSchema = new mongoose.Schema({
   blockReason: { type: String, trim: true, maxlength: 240, default: '' }, updatedAt: { type: Date, default: Date.now }
 });
 const Table = mongoose.model('Table', tableSchema);
+const stockItemSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true, maxlength: 100 },
+  category: { type: String, trim: true, maxlength: 60, default: 'General' },
+  quantity: { type: Number, min: 0, required: true },
+  unit: { type: String, trim: true, maxlength: 24, default: 'units' },
+  lowStockThreshold: { type: Number, min: 0, default: 0 },
+  updatedAt: { type: Date, default: Date.now }
+});
+const StockItem = mongoose.model('StockItem', stockItemSchema);
 const settingSchema = new mongoose.Schema({ key: { type: String, unique: true }, value: { type: mongoose.Schema.Types.Mixed, default: {} }, updatedAt: { type: Date, default: Date.now } });
 const Setting = mongoose.model('Setting', settingSchema);
 const contactSchema = new mongoose.Schema({ name: { type: String, required: true, trim: true }, email: { type: String, required: true, lowercase: true, trim: true }, phone: { type: String, trim: true }, subject: { type: String, trim: true }, message: { type: String, required: true, trim: true }, status: { type: String, enum: ['unread','read','archived'], default: 'unread' }, createdAt: { type: Date, default: Date.now } });
@@ -745,13 +755,25 @@ app.get('/api/admin/dashboard-stats', auth, authorize('admin','manager','host','
   const today = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
   const reservations = await Reservation.find({ date: { $gte: today, $lt: tomorrow } });
-  const orders = await Order.find({ createdAt: { $gte: today, $lt: tomorrow } });
+  const [orders, activeOrders, tables, seatedReservations, prepOrders] = await Promise.all([
+    Order.find({ createdAt: { $gte: today, $lt: tomorrow } }).lean(),
+    Order.find({ status: { $in: ['new','accepted','preparing','ready','out-for-delivery'] } }).lean(),
+    Table.find().select('number status').lean(),
+    Reservation.find({ date: { $gte: today, $lt: tomorrow }, status: 'seated' }).select('tableNumber').lean(),
+    Order.find({ createdAt: { $gte: today, $lt: tomorrow }, preparingAt: { $exists: true }, readyAt: { $exists: true } }).select('preparingAt readyAt').lean()
+  ]);
   const revenue = orders.reduce((sum, order) => {
     const refunded = order.paymentStatus === 'refunded' || order.status === 'refunded';
     return !refunded && (order.paymentStatus === 'paid' || order.status === 'completed') ? sum + (order.total || 0) : sum;
   }, 0);
   const paidOrdersToday = orders.filter(order => order.paymentStatus !== 'refunded' && order.status !== 'refunded' && (order.paymentStatus === 'paid' || order.status === 'completed')).length;
-  const activeOrdersToday = orders.filter(order => ['new', 'accepted', 'preparing', 'ready', 'out-for-delivery'].includes(order.status)).length;
+  const activeOrdersToday = activeOrders.length;
+  const activeOrdersByChannel = {
+    takeaway: activeOrders.filter(order => order.type === 'pickup').length,
+    delivery: activeOrders.filter(order => order.type === 'delivery').length
+  };
+  const occupiedTableNumbers = new Set([...tables.filter(table => table.status === 'seated').map(table => Number(table.number)), ...seatedReservations.map(reservation => Number(reservation.tableNumber))]);
+  const avgPrepMinutes = prepOrders.length ? Math.round(prepOrders.reduce((sum, order) => sum + (new Date(order.readyAt) - new Date(order.preparingAt)), 0) / prepOrders.length / 60000) : null;
   const expectedArrivals = reservations.filter(reservation => ['pending', 'confirmed'].includes(reservation.status)).length;
   const coversToday = reservations.filter(reservation => ['pending', 'confirmed', 'seated'].includes(reservation.status)).reduce((sum, reservation) => sum + (Number(reservation.partySize) || 0), 0);
   res.json({
@@ -762,6 +784,10 @@ app.get('/api/admin/dashboard-stats', auth, authorize('admin','manager','host','
     seatedToday: reservations.filter(r => r.status === 'seated').length,
     ordersToday: orders.length,
     activeOrdersToday,
+    activeOrdersByChannel,
+    occupiedTables: occupiedTableNumbers.size,
+    totalTables: tables.length,
+    avgPrepMinutes,
     paidOrdersToday,
     revenueToday: revenue,
     totalUsers: await User.countDocuments(),
@@ -929,6 +955,7 @@ app.delete('/api/admin/menu/:id', auth, authorize('admin','manager'), async (req
 // â”€â”€ Orders â”€â”€
 app.get('/api/admin/orders', auth, authorize('admin','manager','kitchen'), async (req, res) => {
   const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100)); const filter = {};
+  if (req.query.queue === 'active') filter.status = { $in: ['new','accepted','preparing','ready','out-for-delivery'] };
   if (req.query.status) filter.status = String(req.query.status); if (req.query.date) { const start = new Date(req.query.date); if (Number.isFinite(+start)) { start.setHours(0,0,0,0); const end = new Date(start); end.setDate(end.getDate()+1); filter.createdAt = { $gte: start, $lt: end }; } }
   if (req.query.q) { const q = String(req.query.q).slice(0,100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); filter.$or = ['orderNumber','customerName','customerPhone','customerEmail'].map(field => ({ [field]: { $regex: q, $options: 'i' } })); }
   const [list,total] = await Promise.all([Order.find(filter).sort({ createdAt: -1 }).skip((page-1)*limit).limit(limit), Order.countDocuments(filter)]);
@@ -989,6 +1016,47 @@ app.post('/api/admin/walkins', auth, authorize('admin','manager','host'), async 
 
 app.get('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const entry = await Setting.findOne({ key: 'operations' }); res.json(entry?.value || { ordersPaused: false }); } catch (error) { next(error); } });
 app.patch('/api/admin/operations', auth, adminOnly, async (req, res, next) => { try { const ordersPaused = Boolean(req.body.ordersPaused); const entry = await Setting.findOneAndUpdate({ key: 'operations' }, { $set: { value: { ordersPaused }, updatedAt: new Date() } }, { upsert: true, returnDocument: 'after' }); await logAudit(req.user.id, 'toggle_online_orders', req.path, ordersPaused ? 'Paused' : 'Resumed'); res.json(entry.value); } catch (error) { next(error); } });
+app.get('/api/admin/inventory', auth, authorize('admin','manager','kitchen'), async (req, res, next) => {
+  try {
+    const items = await StockItem.find().sort({ category: 1, name: 1 }).lean();
+    res.json({ items, lowStockCount: items.filter(item => item.quantity <= item.lowStockThreshold).length });
+  } catch (error) { next(error); }
+});
+app.post('/api/admin/inventory', auth, authorize('admin','manager'), async (req, res, next) => {
+  try {
+    const name = String(req.body.name || '').trim();
+    const category = String(req.body.category || 'General').trim().slice(0,60);
+    const unit = String(req.body.unit || 'units').trim().slice(0,24);
+    const quantity = Number(req.body.quantity), lowStockThreshold = Number(req.body.lowStockThreshold ?? 0);
+    if (!name || name.length > 100 || !Number.isFinite(quantity) || quantity < 0 || !Number.isFinite(lowStockThreshold) || lowStockThreshold < 0) return res.status(400).json({ error: 'Enter a name and valid non-negative stock and alert quantities.' });
+    const item = await StockItem.create({ name, category, unit, quantity, lowStockThreshold, updatedAt: new Date() });
+    await logAudit(req.user.id, 'create_stock_item', req.path, item.name);
+    res.status(201).json({ item });
+  } catch (error) { next(error); }
+});
+app.patch('/api/admin/inventory/:id', auth, authorize('admin','manager','kitchen'), async (req, res, next) => {
+  try {
+    const updates = { updatedAt: new Date() };
+    for (const field of ['quantity','lowStockThreshold']) if (req.body[field] !== undefined) {
+      const value = Number(req.body[field]);
+      if (!Number.isFinite(value) || value < 0) return res.status(400).json({ error: `${field} must be a non-negative number.` });
+      updates[field] = value;
+    }
+    if (req.body.unit !== undefined) updates.unit = String(req.body.unit).trim().slice(0,24);
+    const item = await StockItem.findByIdAndUpdate(req.params.id, updates, { returnDocument: 'after', runValidators: true });
+    if (!item) return res.status(404).json({ error: 'Stock item not found.' });
+    await logAudit(req.user.id, 'update_stock_item', req.path, `${item.name}: ${item.quantity} ${item.unit}`);
+    res.json({ item });
+  } catch (error) { next(error); }
+});
+app.delete('/api/admin/inventory/:id', auth, authorize('admin','manager'), async (req, res, next) => {
+  try {
+    const item = await StockItem.findByIdAndDelete(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Stock item not found.' });
+    await logAudit(req.user.id, 'delete_stock_item', req.path, item.name);
+    res.json({ ok: true });
+  } catch (error) { next(error); }
+});
 app.patch('/api/admin/menu/:id/availability', auth, authorize('admin','manager','kitchen'), async (req, res, next) => { try { if (typeof req.body.available !== 'boolean') return res.status(400).json({ error: 'Availability must be true or false.' }); const item = await MenuItem.findByIdAndUpdate(req.params.id, { available: req.body.available }, { returnDocument: 'after' }); if (!item) return res.status(404).json({ error: 'Menu item not found' }); await logAudit(req.user.id, 'toggle_menu_availability', req.path, `${item.name}: ${item.available ? 'available' : 'sold out'}`); res.json({ item }); } catch (error) { next(error); } });
 
 app.post('/api/contact', authLimiter, auth, [body('name').trim().isLength({ min: 1, max: 100 }), body('email').isEmail().normalizeEmail(), body('message').trim().isLength({ min: 1, max: 3000 }), validateRequest], async (req, res, next) => { try { const message = await ContactMessage.create({ name: req.body.name, email: req.body.email, phone: String(req.body.phone || '').slice(0,40), subject: String(req.body.subject || '').slice(0,120), message: req.body.message }); res.status(201).json({ ok: true, id: message.id }); } catch (error) { next(error); } });

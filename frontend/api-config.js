@@ -1,5 +1,8 @@
 ﻿(() => {
-  const API_BASE_URL = 'https://lakebite-restourant-website.onrender.com';
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+  const API_BASE_URL = isLocalhost
+    ? `${window.location.protocol}//${window.location.hostname}:3000`
+    : 'https://lakebite-restourant-website.onrender.com';
   const nativeFetch = window.fetch.bind(window);
 
   function rewriteAssetUrls(value) {
